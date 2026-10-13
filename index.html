@@ -67,6 +67,11 @@
     .razbor-card__text > span:last-child { display: block; font-size: 15px; line-height: 1.5; color: #C9D0E4; }
     .razbor-card__go { padding: 12px 18px; background: var(--ng-bright); color: var(--ink); font: 700 12px/1.3 var(--mono); letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
     @media (max-width: 700px) { .razbor-card { grid-template-columns: 1fr; } .razbor-card__go { justify-self: start; } }
+    .toc--work { margin-top: 10px; border-top: 0; }
+    .toc--work li { border-bottom: 0; }
+    .toc--work s { padding: 7px 10px; margin-top: 6px; border: 2px solid var(--ink); font-size: 14px; color: var(--ink-soft); }
+    .toc--work .work-kind { flex: 0 0 112px; white-space: nowrap; font: 600 10px/1.6 var(--pixel); letter-spacing: 1px; text-transform: uppercase; color: var(--acc); }
+    .module--ng .toc--work .work-kind { color: var(--ng); }
   </style>
 </head>
 <body>
@@ -83,11 +88,11 @@
         <section class="cover">
           <div>
             <h1>Справочник<br>по <span class="g">Angular</span><br>и <span class="r">React</span></h1>
-            <p class="cover__sub">Фронтенд-разработка в 2026 году:<br>механизмы фреймворков и работа с ИИ</p>
+            <p class="cover__sub">Фронтенд в 2026 году:<br>React, автоматизации и работа с ИИ</p>
             <p>Книга начинается с вопроса о том, зачем в 2026 году учить фреймворки, если код пишут инструменты ИИ. Модуль 0 отвечает на него по данным исследований, отчётов компаний и опросов разработчиков, со ссылками на источники.</p>
-            <p>Дальше React и Angular изучаются по очереди и в одном порядке: сначала механизм и код без ИИ, затем та же задача с ИИ-агентом и проверка того, что он написал. Одна и та же задача показывается на обоих фреймворках; переключатель в шапке главы выбирает, какой код показывать, и запоминает выбор.</p>
+            <p>Основной фреймворк — React. Каждый модуль состоит из трёх частей: немного теории, нужной для проекта, небольшой проект на React и автоматизация вокруг него — бот Telegram, языковая модель, проверка по расписанию. Все инструменты бесплатны. Angular разбирается одной обзорной парой: тот же компонент, записанный по-другому.</p>
             <div class="cover__meta">
-              <span>React 19</span><span>Angular 22</span><span>TypeScript</span><span>ИИ-агенты</span>
+              <span>React 19</span><span>n8n · PocketBase</span><span>Telegram-боты</span><span>GitHub Actions</span><span>ИИ-агенты</span>
             </div>
           </div>
 
@@ -110,7 +115,7 @@
         </a>
 
         <h2><span class="sec">План</span>Модули и главы</h2>
-        <p>Дисциплина рассчитана на 4–6 недель по пять пар. Распределение пар по модулям и правила работы с ИИ — в главе <a href="temy/05-kak-ustroena-disciplina/index.html">0.5</a>.</p>
+        <p>Дисциплина рассчитана на 4–6 недель по пять пар. В каждом модуле — теория, проект и автоматизация; распределение пар и правила работы с ИИ — в главе <a href="temy/05-kak-ustroena-disciplina/index.html">0.5</a>.</p>
 
         <div class="modules">
           <article class="module">
@@ -128,16 +133,23 @@
             </div>
           </article>
 
-          <article class="module">
+          <article class="module module--react">
             <div class="module__spine"><b>МОДУЛЬ 1</b></div>
             <div class="module__body">
-              <h3>Рабочее место и TypeScript</h3>
-              <span class="module__tag">3 пары</span>
-              <p>Node.js и npm, создание проектов на Vite и Angular CLI, типы TypeScript для компонентов, инструменты разработчика в браузере.</p>
+              <h3>React: первый проект и первый бот</h3>
+              <span class="module__tag">6 пар</span>
+              <p>Установка и запуск React, компоненты, состояние, списки и формы — темы, нужные для первого проекта.</p>
               <ul class="toc">
-                <li><s><b>1.1</b><span>Node.js, npm и первый проект</span><em>готовится</em></s></li>
-                <li><s><b>1.2</b><span>TypeScript для компонентов</span><em>готовится</em></s></li>
-                <li><s><b>1.3</b><span>Инструменты разработчика в браузере</span><em>готовится</em></s></li>
+                <li><s><b>1.1</b><span>Node.js, npm и проект на Vite</span><em>готовится</em></s></li>
+                <li><s><b>1.2</b><span>JSX и компоненты</span><em>готовится</em></s></li>
+                <li><s><b>1.3</b><span>Props: данные от родителя</span><em>готовится</em></s></li>
+                <li><s><b>1.4</b><span>Состояние и события</span><em>готовится</em></s></li>
+                <li><s><b>1.5</b><span>Списки, ключи, условный вывод</span><em>готовится</em></s></li>
+                <li><s><b>1.6</b><span>Формы и отправка данных</span><em>готовится</em></s></li>
+              </ul>
+              <ul class="toc toc--work">
+                <li><s><span class="work-kind">ПРОЕКТ</span><span>Доска заявок</span></s></li>
+                <li><s><span class="work-kind">АВТОМАТИЗАЦИЯ</span><span>Заявка → n8n → сообщение в Telegram</span></s></li>
               </ul>
             </div>
           </article>
@@ -145,15 +157,19 @@
           <article class="module module--react">
             <div class="module__spine"><b>МОДУЛЬ 2</b></div>
             <div class="module__body">
-              <h3>React: компоненты и состояние</h3>
-              <span class="module__tag">5 пар</span>
-              <p>Компонент как функция, JSX, props, состояние и события, списки и ключи, эффекты и случаи, когда они не нужны.</p>
+              <h3>Данные с сервера и ИИ-диспетчер</h3>
+              <span class="module__tag">6 пар</span>
+              <p>Эффекты, загрузка данных, база PocketBase. Языковая модель внутри продукта сортирует заявки.</p>
               <ul class="toc">
-                <li><s><b>2.1</b><span>Компонент и JSX</span><em>готовится</em></s></li>
-                <li><s><b>2.2</b><span>Props: данные от родителя</span><em>готовится</em></s></li>
-                <li><s><b>2.3</b><span>useState и события</span><em>готовится</em></s></li>
-                <li><s><b>2.4</b><span>Списки, ключи, условный вывод</span><em>готовится</em></s></li>
-                <li><s><b>2.5</b><span>useEffect и вычисляемые значения</span><em>готовится</em></s></li>
+                <li><s><b>2.1</b><span>Эффекты и когда они не нужны</span><em>готовится</em></s></li>
+                <li><s><b>2.2</b><span>Загрузка данных: загрузка и ошибка</span><em>готовится</em></s></li>
+                <li><s><b>2.3</b><span>Собственный хук</span><em>готовится</em></s></li>
+                <li><s><b>2.4</b><span>PocketBase: коллекции и правила доступа</span><em>готовится</em></s></li>
+                <li><s><b>2.5</b><span>Обновление по событиям из базы</span><em>готовится</em></s></li>
+              </ul>
+              <ul class="toc toc--work">
+                <li><s><span class="work-kind">ПРОЕКТ</span><span>Доска заявок с базой</span></s></li>
+                <li><s><span class="work-kind">АВТОМАТИЗАЦИЯ</span><span>ИИ-диспетчер и кнопки «Взять» в Telegram</span></s></li>
               </ul>
             </div>
           </article>
@@ -161,31 +177,37 @@
           <article class="module module--react">
             <div class="module__spine"><b>МОДУЛЬ 3</b></div>
             <div class="module__body">
-              <h3>React: приложение целиком</h3>
+              <h3>Несколько экранов, публикация, расписание</h3>
               <span class="module__tag">5 пар</span>
-              <p>Маршруты, запросы к серверу, формы, общие данные и тесты; первая работа с ИИ-агентом на React.</p>
+              <p>Маршрутизация, общие данные, публикация на GitHub Pages и автоматизация без своего сервера.</p>
               <ul class="toc">
                 <li><s><b>3.1</b><span>Маршрутизация</span><em>готовится</em></s></li>
-                <li><s><b>3.2</b><span>Запросы к серверу и загрузка</span><em>готовится</em></s></li>
-                <li><s><b>3.3</b><span>Формы и проверка ввода</span><em>готовится</em></s></li>
-                <li><s><b>3.4</b><span>Тесты компонентов</span><em>готовится</em></s></li>
-                <li><s><b>3.5</b><span>Агент пишет, вы проверяете</span><em>готовится</em></s></li>
+                <li><s><b>3.2</b><span>Контекст: общие данные</span><em>готовится</em></s></li>
+                <li><s><b>3.3</b><span>Сборка и публикация на GitHub Pages</span><em>готовится</em></s></li>
+                <li><s><b>3.4</b><span>GitHub Actions: конвейер и расписание</span><em>готовится</em></s></li>
+              </ul>
+              <ul class="toc toc--work">
+                <li><s><span class="work-kind">ПРОЕКТ</span><span>Мониторинг сайтов группы</span></s></li>
+                <li><s><span class="work-kind">АВТОМАТИЗАЦИЯ</span><span>Ночная проверка сайтов и оповещение</span></s></li>
               </ul>
             </div>
           </article>
 
-          <article class="module module--ng">
+          <article class="module module--react">
             <div class="module__spine"><b>МОДУЛЬ 4</b></div>
             <div class="module__body">
-              <h3>Angular: компоненты и сигналы</h3>
-              <span class="module__tag">5 пар</span>
-              <p>Автономные компоненты, шаблоны с блоками @if и @for, сигналы и computed, input и output, службы и внедрение зависимостей.</p>
+              <h3>Работа с ИИ-агентом и обзор Angular</h3>
+              <span class="module__tag">6 пар</span>
+              <p>Тесты и доступность, постановка задачи агенту и проверка его кода. Одна обзорная пара по Angular.</p>
               <ul class="toc">
-                <li><s><b>4.1</b><span>Компонент и шаблон</span><em>готовится</em></s></li>
-                <li><s><b>4.2</b><span>Сигналы и computed</span><em>готовится</em></s></li>
-                <li><s><b>4.3</b><span>input и output</span><em>готовится</em></s></li>
-                <li><s><b>4.4</b><span>@if, @for и ключи списка</span><em>готовится</em></s></li>
-                <li><s><b>4.5</b><span>Службы и внедрение зависимостей</span><em>готовится</em></s></li>
+                <li><s><b>4.1</b><span>Тесты компонентов</span><em>готовится</em></s></li>
+                <li><s><b>4.2</b><span>Доступность интерфейса</span><em>готовится</em></s></li>
+                <li><s><b>4.3</b><span>Задача для ИИ-агента и проверка результата</span><em>готовится</em></s></li>
+                <li><s><b>4.4</b><span>Angular: тот же компонент</span><em>готовится</em></s></li>
+              </ul>
+              <ul class="toc toc--work">
+                <li><s><span class="work-kind">ПРОЕКТ</span><span>Дайджест новостей, код пишет агент</span></s></li>
+                <li><s><span class="work-kind">АВТОМАТИЗАЦИЯ</span><span>RSS → модель → дайджест в Telegram</span></s></li>
               </ul>
             </div>
           </article>
@@ -193,31 +215,16 @@
           <article class="module module--ng">
             <div class="module__spine"><b>МОДУЛЬ 5</b></div>
             <div class="module__body">
-              <h3>Angular: приложение целиком</h3>
+              <h3>Свой проект и защита</h3>
               <span class="module__tag">5 пар</span>
-              <p>Маршрутизатор, HttpClient, Signal Forms, тесты; работа с агентом через сервер MCP Angular.</p>
-              <ul class="toc">
-                <li><s><b>5.1</b><span>Маршрутизатор</span><em>готовится</em></s></li>
-                <li><s><b>5.2</b><span>HttpClient и данные с сервера</span><em>готовится</em></s></li>
-                <li><s><b>5.3</b><span>Signal Forms</span><em>готовится</em></s></li>
-                <li><s><b>5.4</b><span>Тесты</span><em>готовится</em></s></li>
-                <li><s><b>5.5</b><span>Агент и сервер MCP Angular</span><em>готовится</em></s></li>
+              <p>Проект из каталога или своя задача по шаблону технического задания, защита с работающей автоматизацией.</p>
+              <ul class="toc toc--work">
+                <li><s><span class="work-kind">КАТАЛОГ</span><span>Сторож страницы, чек → бюджет, голос → задачи, ассистент по конспектам, карта заявок</span></s></li>
+                <li><s><span class="work-kind">ЗАЩИТА</span><span>Автоматизация в работе, код, журнал работы с ИИ</span></s></li>
               </ul>
             </div>
           </article>
 
-          <article class="module">
-            <div class="module__spine"><b>МОДУЛЬ 6</b></div>
-            <div class="module__body">
-              <h3>Итоговый проект с ИИ-агентом</h3>
-              <span class="module__tag">5 пар</span>
-              <p>Одно приложение от технического задания до защиты: постановка задачи агенту, проверка по списку, журнал работы с ИИ.</p>
-              <ul class="toc">
-                <li><s><b>6.1</b><span>Техническое задание и критерии готовности</span><em>готовится</em></s></li>
-                <li><s><b>6.2</b><span>Проверка и защита проекта</span><em>готовится</em></s></li>
-              </ul>
-            </div>
-          </article>
         </div>
 
         <div class="colophon">
