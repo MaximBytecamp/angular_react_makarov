@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>0.1 Фронтенд и фреймворки · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    /* Демонстрация «корзина»: одна и та же витрина, две модели обновления. */
+    .shop { border: 2px solid var(--ink); background: #fff; }
+    .shop__bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--ink); color: #fff; font: 600 13px/1.3 var(--body); }
+    .shop__badge { min-width: 26px; padding: 2px 8px; background: var(--acc-bright); color: var(--ink); font: 700 13px/1.3 var(--mono); text-align: center; }
+    .shop__body { padding: 12px; }
+    .shop__item { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14.5px; }
+    .shop__total { padding-top: 8px; border-top: 1px dashed var(--rule); font: 600 14px/1.4 var(--mono); }
+    .shop__btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .shop__log { margin: 10px 0 0; padding: 8px 10px; min-height: 92px; max-height: 140px; overflow: auto; background: var(--ink); color: #DCE6F5; font: 400 12px/1.55 var(--mono); }
+    .shop__log .bad { color: #FFB08A; }
+    .shop__log .ok { color: var(--acc-bright); }
+    .shop h4 { margin: 0 0 8px; font: 600 11px/1.4 var(--pixel); letter-spacing: 1.1px; text-transform: uppercase; }
+    .shop--broken { box-shadow: 0 0 0 3px var(--clay); }
+    /* Дерево компонентов страницы магазина. */
+    .tree text { font: 600 13px var(--mono); fill: var(--ink); }
+    .tree .box { fill: var(--page); stroke: var(--ink); stroke-width: 2.5; }
+    .tree .box--root { fill: var(--ink); }
+    .tree .box--root + text { fill: var(--acc-bright); }
+    .tree .box--hit { fill: var(--acc-pale); stroke: var(--acc); }
+    .tree path { fill: none; stroke: var(--ink); stroke-width: 2; }
+    .tree .small { font: 400 11.5px var(--body); fill: var(--ink-soft); }
+    /* Слои: что выполняется у пользователя, что на сервере. */
+    .layers text { font: 600 13px var(--body); fill: var(--ink); }
+    .layers .cap { font: 600 11px var(--mono); fill: var(--ink-soft); }
+    .layers rect { stroke: var(--ink); stroke-width: 2.5; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 0 · Фронтенд в эпоху ИИ</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 0 · фронтенд в эпоху ИИ</p>
+          <p class="running__folio">0.1</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">0.1</span>
+          <h1>Фронтенд<br>и фреймворки</h1>
+          <p class="lead">В этой главе разобрано, что такое фронтенд и какую работу он выполняет в приложении. По годам показано, как веб-страница превратилась в приложение и почему появились фреймворки. Центральная часть главы — задача синхронизации состояния и интерфейса: она показана на работающей витрине магазина, и именно её решают и React, и Angular.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>Основы</dd></div>
+          <div><dt>Уровень</dt><dd>Вводный</dd></div>
+          <div><dt>Что нужно знать</dt><dd>HTML, CSS и основы JavaScript: переменная, функция, обработчик события</dd></div>
+          <div><dt>Зачем это знать</dt><dd>Понимать, какую задачу решает фреймворк, прежде чем учить его синтаксис</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Фронтенд и бэкенд</a></li>
+            <li><a href="#s2">От страницы к приложению</a></li>
+            <li><a href="#s3">Состояние и интерфейс</a></li>
+            <li><a href="#s4">Компоненты</a></li>
+            <li><a href="#s5">Что берёт на себя фреймворк</a></li>
+            <li><a href="#s6">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Фронтенд и бэкенд</h2>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В ресторане есть зал и кухня. Гость видит зал: меню, стол, официанта, счёт. Кухня от гостя скрыта: там хранятся продукты и готовятся блюда. Зал отвечает за то, как гость делает заказ и что он при этом видит; кухня — за то, чтобы заказ был выполнен правильно.</p>
+          <p class="miss">Зал ресторана не может готовить сам, а фронтенд может часть работы выполнять без сервера: считать сумму, проверять форму, хранить черновик.</p>
+        </div></div>
+
+        <p>Веб-приложение делится на две части по месту, где выполняется код. <span class="term">Фронтенд</span> — часть приложения, которая работает в браузере пользователя: она показывает интерфейс, принимает нажатия и ввод с клавиатуры и отправляет запросы на сервер. <span class="term">Бэкенд</span> — часть, которая работает на сервере: хранит данные в базе, проверяет права, считает деньги и отвечает на запросы фронтенда. В сравнении с рестораном фронтенд — это зал, бэкенд — кухня.</p>
+
+        <p>Фронтенд строится из трёх технологий, которые браузер исполняет без дополнительных программ. HTML описывает структуру страницы: заголовки, списки, кнопки, поля ввода. CSS задаёт внешний вид: цвета, шрифты, расположение блоков. JavaScript описывает поведение: что происходит при нажатии, как меняется страница, когда пришли данные. React и Angular написаны на JavaScript и в итоге тоже выдают браузеру HTML, CSS и JavaScript — других языков браузер не исполняет.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Где выполняется код приложения</p>
+          <div class="scheme__body">
+            <svg class="layers" viewBox="0 0 760 210" role="img" aria-label="Схема: браузер с HTML, CSS, JavaScript связан запросами с сервером и базой данных">
+              <rect x="10" y="20" width="330" height="170" fill="#D6F0F9"/>
+              <text x="26" y="46">Браузер пользователя — фронтенд</text>
+              <rect x="26" y="64" width="92" height="44" fill="#fff"/><text x="50" y="91">HTML</text>
+              <rect x="128" y="64" width="92" height="44" fill="#fff"/><text x="156" y="91">CSS</text>
+              <rect x="230" y="64" width="92" height="44" fill="#fff"/><text x="238" y="91">JavaScript</text>
+              <text class="cap" x="26" y="138">структура · вид · поведение</text>
+              <text class="cap" x="26" y="160">React и Angular работают здесь</text>
+              <path d="M350 92 H 410" stroke="#161A2E" stroke-width="2.5" marker-end="url(#ar)"/>
+              <path d="M410 122 H 350" stroke="#161A2E" stroke-width="2.5" marker-end="url(#ar)"/>
+              <text class="cap" x="352" y="84">запрос</text>
+              <text class="cap" x="356" y="142">ответ</text>
+              <rect x="420" y="20" width="330" height="170" fill="#F0EEE8"/>
+              <text x="436" y="46">Сервер — бэкенд</text>
+              <rect x="436" y="64" width="140" height="44" fill="#fff"/><text x="452" y="91">код сервера</text>
+              <rect x="592" y="64" width="140" height="44" fill="#fff"/><text x="610" y="91">база данных</text>
+              <text class="cap" x="436" y="138">права · деньги · хранение</text>
+              <text class="cap" x="436" y="160">пользователь этот код не видит</text>
+              <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#161A2E"/></marker></defs>
+            </svg>
+          </div>
+          <p class="scheme__note">Код фронтенда скачивается в браузер и выполняется на компьютере пользователя. Поэтому его может прочитать любой, кто открыл страницу: пароли и ключи доступа в нём хранить нельзя.</p>
+        </figure>
+
+        <p>Из того, что код фронтенда выполняется у пользователя, следует важное ограничение. Всё, что попало во фронтенд, видно в инструментах разработчика браузера: код, адреса запросов, данные ответов. Проверка «есть ли у пользователя право удалить заказ» обязана выполняться на сервере, даже если кнопка «Удалить» на странице скрыта. Фронтенд отвечает за удобство и понятность, сервер — за правила и сохранность данных.</p>
+
+        <p class="bridge">Так фронтенд устроен сейчас. Двадцать лет назад его роль была гораздо скромнее, и следующий раздел показывает, как она выросла.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>От страницы к приложению</h2>
+
+        <p>Первые сайты были документами: сервер присылал готовую страницу, пользователь читал её и нажимал ссылку, после чего сервер присылал следующую страницу целиком. JavaScript, появившийся в 1995 году, сначала использовали для мелочей: проверить поле формы, показать подсказку. Перелом произошёл, когда страница научилась получать данные с сервера, не перезагружаясь. В 2004 году Google выпустил почту Gmail, где письма открывались без перезагрузки страницы, а в 2005 году этот подход получил название Ajax.</p>
+
+        <p>С этого момента на странице появилось то, что раньше было только у программ на компьютере: данные, которые меняются, пока пользователь работает. Чем больше таких данных, тем сложнее следить, чтобы все части страницы показывали одно и то же. Фреймворки появились как ответ на эту сложность. Лента ниже показывает основные даты; синие отметки относятся к React, малиновые — к Angular, чёрные — к инструментам ИИ.</p>
+
+        <ol class="era">
+          <li><b>1995</b><span><em>JavaScript</em> появляется в браузере Netscape Navigator. Язык написан Бренданом Айком за десять дней.</span></li>
+          <li><b>2004</b><span><em>Gmail</em>: письма открываются без перезагрузки страницы. В 2005 году подход называют Ajax.</span></li>
+          <li><b>2006</b><span><em>jQuery</em> — библиотека, которая упростила поиск элементов на странице и их изменение. Подход остаётся ручным: разработчик сам решает, какой элемент и когда поменять.</span></li>
+          <li class="era--ng"><b>2010</b><span><em>AngularJS</em> от Google: шаблон связывается с данными, и при изменении данных страница обновляется сама.</span></li>
+          <li class="era--react"><b>2013</b><span><em>React</em> от Facebook (сейчас Meta): интерфейс описывается как функция от данных и собирается из компонентов.</span></li>
+          <li class="era--ng"><b>2016</b><span><em>Angular 2</em>: фреймворк переписан с нуля на TypeScript. С этой версии название пишется без «JS»; AngularJS и Angular — разные продукты.</span></li>
+          <li class="era--react"><b>2019</b><span><em>Хуки в React 16.8</em>: состояние и эффекты описываются в обычных функциях. Так React пишут сейчас.</span></li>
+          <li class="era--ng"><b>2023</b><span><em>Сигналы в Angular 16</em>: новый способ хранить состояние, после которого Angular сблизился с React по модели работы.</span></li>
+          <li class="era--ai"><b>2025</b><span><em>Вайбкодинг</em>: Андрей Карпаты называет так работу, при которой код целиком пишет ИИ по описанию. Этому посвящена глава 0.3.</span></li>
+          <li class="era--react"><b>2026</b><span><em>React Foundation</em>: Meta передаёт React в Linux Foundation (24 февраля). <em>Angular 22</em> (3 июня) делает стабильными Signal Forms и инструменты для ИИ-агентов.</span></li>
+        </ol>
+
+        <p>В ленте видно, что React и Angular появились почти одновременно и решали одну задачу: как сделать, чтобы страница с меняющимися данными оставалась согласованной. За пятнадцать лет оба прошли через крупные переделки, и в 2026 году оба развиваются. Задача, ради которой они созданы, разобрана в следующем разделе на примере.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Состояние и интерфейс</h2>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Табло вылетов в аэропорту можно обновлять двумя способами. Первый: дежурный, узнав о задержке рейса, идёт к табло и переставляет буквы в строке рейса, затем к табло у выхода на посадку, затем к табло у стойки регистрации. Если он забыл одно табло, пассажиры видят разное время. Второй способ: есть одно расписание, и все табло перерисовываются из него. Дежурный меняет только расписание.</p>
+          <p class="miss">Табло перерисовываются целиком, а фреймворк меняет на странице только то, что действительно изменилось, — иначе страница работала бы медленно.</p>
+        </div></div>
+
+        <p><span class="term">Состояние</span> — данные, которые описывают, что сейчас происходит в интерфейсе: какие товары в корзине, какой пункт меню открыт, что введено в поле поиска. В сравнении с аэропортом состояние — это расписание. <span class="term">Интерфейс</span> — то, что пользователь видит на экране; в сравнении это табло. Задача фронтенда — чтобы интерфейс всегда соответствовал состоянию, сколько бы мест на экране ни показывали одни и те же данные.</p>
+
+        <h3>Демонстрация: одна витрина, два способа обновления</h3>
+        <p>Ниже две одинаковые витрины. Число товаров в корзине показано в трёх местах: значок в шапке, подпись на кнопке и строка «Итого». Цена показана в двух: в строке товара и в «Итого». В левой витрине каждое место обновляет отдельная строка кода — так писали с jQuery. В правой есть одна переменная состояния и одна функция, которая рисует витрину из неё. Под каждой витриной журнал показывает, какие изменения страницы выполнил код.</p>
+
+        <div class="demo" id="cart-demo">
+          <div class="demo__head"><span>Корзина: ручное обновление и обновление из состояния</span><span>работает в браузере</span></div>
+          <div class="demo__body">
+            <div class="shop" id="shop-a">
+              <div class="shop__bar"><span>Ручное обновление</span><span class="shop__badge" data-a="badge">0</span></div>
+              <div class="shop__body">
+                <div class="shop__item"><span>Кружка «Код без ошибок», 450 ₽</span></div>
+                <div class="shop__total" data-a="total">Итого: 0 шт. · 0 ₽</div>
+                <div class="shop__btns">
+                  <button class="btn" type="button" data-a="add">В корзину (<span data-a="btn">0</span>)</button>
+                  <button class="btn" type="button" data-a="sale">Скидка 10%</button>
+                </div>
+                <pre class="shop__log" data-a="log" aria-live="polite"></pre>
+              </div>
+            </div>
+            <div class="shop" id="shop-b">
+              <div class="shop__bar"><span>Из состояния</span><span class="shop__badge" data-b="badge">0</span></div>
+              <div class="shop__body">
+                <div class="shop__item"><span>Кружка «Код без ошибок», 450 ₽</span></div>
+                <div class="shop__total" data-b="total">Итого: 0 шт. · 0 ₽</div>
+                <div class="shop__btns">
+                  <button class="btn" type="button" data-b="add">В корзину (<span data-b="btn">0</span>)</button>
+                  <button class="btn" type="button" data-b="sale">Скидка 10%</button>
+                </div>
+                <pre class="shop__log" data-b="log" aria-live="polite"></pre>
+              </div>
+            </div>
+          </div>
+          <p class="demo__note">Нажмите «В корзину» два раза, затем «Скидка 10%» в обеих витринах. Слева обработчик скидки обновил строку «Итого», а в строке товара осталась старая цена 450 ₽: второе место, где показана цена, в обработчике не учтено. Справа обработчик меняет только состояние, а витрина перерисовывается целиком из него.</p>
+          <p class="demo__note"><button class="btn" type="button" id="cart-reset">Сбросить обе витрины</button></p>
+        </div>
+
+        <p>В левой витрине ошибка устроена так же, как в настоящих проектах. Пока событий два — «добавить» и «скидка» — и мест на экране три, разработчик помнит, что где обновлять. Когда событий двадцать, а мест, где показана корзина, десять (шапка, боковая панель, страница оформления, всплывающее окно), число связей «событие → место» растёт как произведение: двести строк, каждую из которых нужно не забыть. Код слева выглядит так:</p>
+
+        <figure class="code" data-run="no">
+          <figcaption><span>Ручное обновление · каждый обработчик обновляет места сам</span></figcaption>
+          <pre><span class="k">let</span> count = <span class="n">0</span>;
+<span class="k">let</span> price = <span class="n">450</span>;
+
+addButton.<span class="f">onclick</span> = () =&gt; {
+  count = count + <span class="n">1</span>;
+  badge.textContent = count;                        <span class="c">// место 1</span>
+  buttonCounter.textContent = count;                <span class="c">// место 2</span>
+  total.textContent = <span class="s">`Итого: ${count} шт. · ${count * price} ₽`</span>; <span class="c">// место 3</span>
+};
+
+saleButton.<span class="f">onclick</span> = () =&gt; {
+  price = <span class="n">405</span>;
+  total.textContent = <span class="s">`Итого: ${count} шт. · ${count * price} ₽`</span>;
+  <span class="c">// пропущено: priceLabel.textContent = `${price} ₽`;  — место 4, цена у товара</span>
+};</pre>
+        </figure>
+
+        <p>Справа код разделён на две части. Первая — функция <code>render</code>: она получает состояние и выставляет по нему все четыре места. Вторая — обработчики событий: они меняют только состояние и вызывают <code>render</code>. В обработчике скидки нет ни одного места экрана, поэтому пропустить место в нём нельзя: все места перечислены один раз, в <code>render</code>.</p>
+
+        <figure class="code" data-run="no">
+          <figcaption><span>Обновление из состояния · одна функция рисует всё</span></figcaption>
+          <pre><span class="k">const</span> state = { count: <span class="n">0</span>, price: <span class="n">450</span> };
+
+<span class="k">function</span> <span class="f">render</span>(state) {
+  badge.textContent = state.count;
+  buttonCounter.textContent = state.count;
+  priceLabel.textContent = <span class="s">`${state.price} ₽`</span>;
+  total.textContent = <span class="s">`Итого: ${state.count} шт. · ${state.count * state.price} ₽`</span>;
+}
+
+addButton.<span class="f">onclick</span> = () =&gt; { state.count += <span class="n">1</span>; <span class="f">render</span>(state); };
+saleButton.<span class="f">onclick</span> = () =&gt; { state.price = <span class="n">405</span>; <span class="f">render</span>(state); };</pre>
+        </figure>
+
+        <p>Этот приём записывают формулой <code>UI = f(state)</code>: интерфейс есть функция от состояния. Разработчик описывает, как должен выглядеть экран при любом состоянии; шаги перехода от одного вида к другому выполняет код фреймворка. Такой способ называют <span class="term">декларативным</span>: описывается результат. Способ слева называют <span class="term">императивным</span>: описываются шаги.</p>
+
+        <hr class="sep">
+
+        <p>У функции <code>render</code> из примера есть недостаток: она переписывает все три места при каждом нажатии, даже если поменялось одно. На витрине из трёх строк это незаметно, а на странице с таблицей из тысячи строк полная перерисовка займёт заметное время. Поэтому фреймворк выполняет ещё одну работу: сравнивает новое описание экрана с предыдущим и меняет в браузере только те элементы, которые отличаются. React для этого сравнивает два дерева описаний элементов, Angular с сигналами отслеживает, какие места страницы зависят от какого значения. Способы разные, результат одинаковый: разработчик пишет как в правой витрине, а страница обновляется так же экономно, как в левой.</p>
+
+        <p class="bridge">Одна функция <code>render</code> на всю страницу быстро становится слишком большой. Следующий шаг — разделить страницу на части, у каждой из которых своё описание и своё состояние.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Компоненты</h2>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Кухонный гарнитур собирают из модулей: шкаф под мойку, шкаф с ящиками, навесной шкаф. Каждый модуль изготовлен по своему чертежу, а один и тот же модуль можно поставить несколько раз. Чтобы заменить ящик, не нужно разбирать весь гарнитур.</p>
+          <p class="miss">Модули мебели не передают друг другу ничего, а компоненты получают данные от родителя и сообщают ему о событиях.</p>
+        </div></div>
+
+        <p><span class="term">Компонент</span> — часть интерфейса, у которой есть своё описание вида, своё поведение и, при необходимости, своё состояние. Кнопка, карточка товара, шапка сайта, вся страница каталога — всё это компоненты. Компонент можно использовать несколько раз: карточка товара одна, а на странице каталога их двадцать, у каждой свои данные.</p>
+
+        <p>Компоненты вкладываются друг в друга и образуют дерево. В корне — приложение целиком, в нём — шапка, каталог и корзина, в каталоге — карточки товаров. Данные идут по дереву сверху вниз: каталог передаёт каждой карточке её товар. События идут снизу вверх: карточка сообщает наверх, что на ней нажали «В корзину», и состояние корзины меняется в общем родителе.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Дерево компонентов страницы магазина</p>
+          <div class="scheme__body">
+            <svg class="tree" viewBox="0 0 760 270" role="img" aria-label="Дерево: App содержит Header, Catalog и Cart; Catalog содержит три ProductCard; Header содержит CartBadge">
+              <path d="M380 54 V 78 H 120 V 100"/><path d="M380 78 V 100"/><path d="M380 78 H 640 V 100"/>
+              <path d="M120 140 V 182"/>
+              <path d="M380 140 V 160 H 270 V 182"/><path d="M380 160 V 182"/><path d="M380 160 H 490 V 182"/>
+              <rect class="box box--root" x="320" y="14" width="120" height="40"/><text x="362" y="39">App</text>
+              <rect class="box" x="60" y="100" width="120" height="40"/><text x="94" y="125">Header</text>
+              <rect class="box" x="320" y="100" width="120" height="40"/><text x="349" y="125">Catalog</text>
+              <rect class="box box--hit" x="580" y="100" width="120" height="40"/><text x="623" y="125">Cart</text>
+              <rect class="box box--hit" x="50" y="182" width="140" height="40"/><text x="78" y="207">CartBadge</text>
+              <rect class="box" x="205" y="182" width="130" height="40"/><text x="216" y="207">ProductCard</text>
+              <rect class="box" x="345" y="182" width="130" height="40"/><text x="356" y="207">ProductCard</text>
+              <rect class="box" x="485" y="182" width="130" height="40"/><text x="496" y="207">ProductCard</text>
+              <text class="small" x="210" y="250">данные идут вниз: каждой карточке — её товар</text>
+              <text class="small" x="452" y="66">состояние корзины хранится в App</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Голубым отмечены компоненты, которые показывают корзину. Состояние корзины хранится в общем родителе <code>App</code>, оба компонента получают его сверху. Когда карточка сообщает о покупке, <code>App</code> меняет состояние, и обе голубые части перерисовываются. Это та же модель, что в правой витрине из §3, разложенная по частям.</p>
+        </figure>
+
+        <p>В React и в Angular компонент устроен по-разному, но содержит одни и те же части: описание того, как он выглядит, данные, которые он получает от родителя, и собственное состояние. Ниже один и тот же компонент — значок корзины из дерева — записан двумя способами. Переключатель в шапке страницы выбирает фреймворк; выбор запоминается и действует на всю книгу.</p>
+
+        <figure class="code" data-fw="react" data-run="no">
+          <figcaption><span>React · CartBadge.tsx</span></figcaption>
+          <pre><span class="k">type</span> <span class="f">Props</span> = { count: <span class="k">number</span> };
+
+<span class="k">export function</span> <span class="f">CartBadge</span>({ count }: Props) {
+  <span class="k">return</span> &lt;<span class="t">span</span> <span class="a">className</span>=<span class="s">"badge"</span>&gt;{count}&lt;/<span class="t">span</span>&gt;;
+}</pre>
+        </figure>
+        <figure class="code" data-fw="angular" data-run="no">
+          <figcaption><span>Angular · cart-badge.ts</span></figcaption>
+          <pre><span class="k">import</span> { Component, input } <span class="k">from</span> <span class="s">'@angular/core'</span>;
+
+@<span class="f">Component</span>({
+  selector: <span class="s">'app-cart-badge'</span>,
+  template: <span class="s">`&lt;span class="badge"&gt;{{ count() }}&lt;/span&gt;`</span>,
+})
+<span class="k">export class</span> <span class="f">CartBadge</span> {
+  count = <span class="f">input</span>.<span class="f">required</span>&lt;<span class="k">number</span>&gt;();
+}</pre>
+        </figure>
+
+        <p data-fw="react">В React компонент — функция. Она получает данные от родителя в объекте <code>props</code> (здесь из него сразу взято поле <code>count</code>) и возвращает описание разметки. Запись <code>&lt;span&gt;{count}&lt;/span&gt;</code> внутри JavaScript называется JSX: это разметка, в которую в фигурных скобках подставляются значения. Тип <code>Props</code> написан на TypeScript и указывает, что <code>count</code> — число.</p>
+        <p data-fw="angular">В Angular компонент — класс с декоратором <code>@Component</code>. В декораторе указаны имя тега, под которым компонент вставляется в разметку родителя (<code>app-cart-badge</code>), и шаблон. Данные от родителя объявлены полем <code>count</code> через функцию <code>input</code>; в шаблоне значение читается вызовом <code>count()</code>, потому что <code>input</code> возвращает сигнал — обёртку, по которой Angular отслеживает изменения.</p>
+
+        <p>Синтаксис у двух записей разный, а смысл один: компонент получает число от родителя и показывает его. Подробно оба способа разбираются в модулях 2 и 4; здесь достаточно увидеть, что у фреймворков общий предмет.</p>
+
+        <p class="bridge">Компоненты и обновление из состояния — ядро обоих фреймворков. Вокруг ядра есть ещё несколько задач, которые в любом приложении решаются одинаково часто.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Что берёт на себя фреймворк</h2>
+
+        <p>Кроме отрисовки из состояния, приложению нужны ещё пять вещей. Переход между страницами без перезагрузки — <span class="term">маршрутизация</span>: адрес в строке браузера меняется, сервер новую страницу не присылает, а фронтенд показывает другой компонент. Запросы к серверу и показ состояния загрузки. Формы с проверкой ввода. Общие данные, которые нужны многим компонентам сразу, например вошедший пользователь. И сборка — превращение исходного кода на TypeScript в файлы, которые исполняет браузер.</p>
+
+        <p>React и Angular по-разному отвечают на вопрос, кто решает эти задачи. Angular включает решения для всех пяти в сам фреймворк: маршрутизатор, клиент HTTP, формы, внедрение зависимостей и сборку выпускает одна команда в Google, и они согласованы между собой. React отвечает только за отрисовку и компоненты, а маршрутизацию, запросы и формы берут из отдельных библиотек или из надстроек вроде Next.js. Поэтому React называют библиотекой, а Angular — платформой. Что из этого следует для проекта и для разработчика, разобрано в главе 0.2.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Задача</th><th>React</th><th>Angular</th></tr></thead>
+            <tbody>
+              <tr><td>Компоненты и отрисовка из состояния</td><td>сам React</td><td>сам Angular</td></tr>
+              <tr><td>Переходы между страницами</td><td>отдельная библиотека: React Router или надстройка Next.js</td><td>встроенный <code>@angular/router</code></td></tr>
+              <tr><td>Запросы к серверу</td><td><code>fetch</code> браузера или библиотеки, например TanStack Query</td><td>встроенный <code>HttpClient</code></td></tr>
+              <tr><td>Формы и проверка ввода</td><td>библиотеки, например React Hook Form</td><td>встроенные формы, с версии 22 — Signal Forms</td></tr>
+              <tr><td>Сборка проекта</td><td>Vite или сборщик надстройки</td><td>Angular CLI: команда <code>ng</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Таблица показывает основную разницу, с которой студент сталкивается в первый же день. В проекте на Angular состав инструментов одинаков почти везде, и, перейдя в другую команду, разработчик узнаёт знакомую структуру папок. В проекте на React набор библиотек выбирает команда, и два проекта на React могут отличаться сильнее, чем проект на React и проект на Vue.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Кнопка «Удалить заказ» скрыта у пользователей без прав. Достаточно ли этого, чтобы они не могли удалить заказ?</summary>
+          <p>Нет. Код фронтенда выполняется в браузере пользователя, и запрос на удаление можно отправить без кнопки — из инструментов разработчика или любой программой. Право на удаление проверяет сервер при каждом запросе. Скрытая кнопка относится к удобству интерфейса; защитой она не является.</p>
+        </details>
+        <details>
+          <summary>Что такое состояние интерфейса? Приведите три примера для страницы интернет-магазина.</summary>
+          <p>Состояние — данные, по которым видно, что сейчас происходит в интерфейсе. Примеры: список товаров в корзине, текст в поле поиска, открыт ли фильтр «Цена», номер страницы каталога, идёт ли сейчас загрузка.</p>
+        </details>
+        <details>
+          <summary>Почему ошибка в левой витрине из §3 появилась именно в обработчике скидки?</summary>
+          <p>При ручном обновлении каждый обработчик должен помнить все места экрана, которые зависят от изменённых данных. Обработчик скидки менял цену, а цена показана в двух местах; он обновил «Итого» и пропустил строку товара. Чем больше событий и мест, тем больше таких связей, и каждую можно пропустить. В правой витрине обработчик меняет только данные, а места обновляет одна функция.</p>
+        </details>
+        <details>
+          <summary>Что означает запись UI = f(state)?</summary>
+          <p>Интерфейс вычисляется из состояния: при одном и том же состоянии экран выглядит одинаково. Разработчик описывает, как выглядит экран при любом состоянии, а фреймворк приводит страницу в браузере к этому описанию.</p>
+        </details>
+        <details>
+          <summary>Чем React как библиотека отличается от Angular как платформы с точки зрения нового проекта?</summary>
+          <p>В Angular маршрутизация, запросы, формы и сборка входят в сам фреймворк, и проекты устроены похоже. В React фреймворк отвечает за компоненты и отрисовку, а остальные задачи решаются библиотеками, которые команда выбирает сама. Поэтому в начале проекта на React нужно принять больше решений.</p>
+        </details>
+
+        <h3>Итог главы</h3>
+        <p>Фронтенд — часть приложения, которая выполняется в браузере пользователя и отвечает за интерфейс; правила и данные остаются на сервере. С появлением Ajax на странице появилось меняющееся состояние, и задача держать интерфейс согласованным с ним стала основной. React и Angular решают её одинаково по смыслу: интерфейс описывается как функция от состояния и собирается из компонентов, а фреймворк обновляет в браузере только изменившиеся места. Различаются они тем, сколько задач кроме отрисовки фреймворк берёт на себя.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://react.dev/learn/thinking-in-react" target="_blank" rel="noreferrer">react.dev — Thinking in React</a></li>
+          <li><a href="https://angular.dev/essentials/components" target="_blank" rel="noreferrer">angular.dev — Components</a></li>
+          <li><a href="https://angular.dev/guide/signals" target="_blank" rel="noreferrer">angular.dev — Signals</a></li>
+          <li><a href="https://legacy.reactjs.org/blog/2019/02/06/react-v16.8.0.html" target="_blank" rel="noreferrer">React Blog — React v16.8: The One With Hooks (6 февраля 2019)</a></li>
+          <li><a href="https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-react-foundation" target="_blank" rel="noreferrer">Linux Foundation — Announces the Formation of the React Foundation (24 февраля 2026)</a></li>
+          <li><a href="https://blog.ninja-squad.com/2026/06/03/what-is-new-angular-22.0" target="_blank" rel="noreferrer">Ninja Squad — What's new in Angular 22.0 (3 июня 2026)</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../../index.html">← Оглавление</a>
+          <a href="../02-react-i-angular/index.html">0.2 React и Angular в 2026 году →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+  <script>
+    /* Демонстрация «корзина». Левая витрина обновляет места вручную и в обработчике
+       скидки пропускает значок и кнопку; правая рисует всё из одного состояния. */
+    (() => {
+      const root = document.getElementById('cart-demo');
+      const pick = (side, name) => root.querySelector(`[data-${side}="${name}"]`);
+      const log = (side, text, cls) => {
+        const box = pick(side, 'log');
+        const line = document.createElement('span');
+        if (cls) line.className = cls;
+        line.textContent = text + '\n';
+        box.appendChild(line);
+        box.scrollTop = box.scrollHeight;
+      };
+
+      // Левая витрина: каждый обработчик сам меняет нужные места.
+      let count = 0, price = 450;
+      const totalText = (c, p) => `Итого: ${c} шт. · ${c * p} ₽`;
+      pick('a', 'add').addEventListener('click', () => {
+        count += 1;
+        pick('a', 'badge').textContent = count; log('a', 'badge ← ' + count);
+        pick('a', 'btn').textContent = count; log('a', 'кнопка ← ' + count);
+        pick('a', 'total').textContent = totalText(count, price); log('a', 'итого ← ' + count * price + ' ₽');
+      });
+      pick('a', 'sale').addEventListener('click', () => {
+        price = 405;
+        pick('a', 'total').textContent = totalText(count, price) + ' (скидка)';
+        log('a', 'итого ← ' + count * price + ' ₽');
+        log('a', 'цена у товара: осталось 450 ₽', 'bad');
+        root.querySelector('#shop-a').classList.add('shop--broken');
+      });
+
+      // Правая витрина: состояние и одна функция отрисовки.
+      const state = { count: 0, price: 450 };
+      const render = () => {
+        pick('b', 'badge').textContent = state.count;
+        pick('b', 'btn').textContent = state.count;
+        pick('b', 'total').textContent = totalText(state.count, state.price) + (state.price < 450 ? ' (скидка)' : '');
+        root.querySelector('#shop-b .shop__item span').textContent = `Кружка «Код без ошибок», ${state.price} ₽`;
+        log('b', `render(count=${state.count}, price=${state.price}) — 4 места`, 'ok');
+      };
+      pick('b', 'add').addEventListener('click', () => { state.count += 1; render(); });
+      pick('b', 'sale').addEventListener('click', () => { state.price = 405; render(); });
+
+      document.getElementById('cart-reset').addEventListener('click', () => {
+        count = 0; price = 450; state.count = 0; state.price = 450;
+        ['badge', 'btn'].forEach(n => { pick('a', n).textContent = 0; pick('b', n).textContent = 0; });
+        pick('a', 'total').textContent = pick('b', 'total').textContent = totalText(0, 450);
+        root.querySelectorAll('.shop__item span').forEach(s => { s.textContent = 'Кружка «Код без ошибок», 450 ₽'; });
+        pick('a', 'log').textContent = pick('b', 'log').textContent = '';
+        root.querySelector('#shop-a').classList.remove('shop--broken');
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>0.2 React и Angular в 2026 году · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .rel text { font: 600 12px var(--mono); fill: var(--ink); }
+    .rel .lab { font: 600 13px var(--body); }
+    .rel .soft { fill: var(--ink-soft); font-weight: 400; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 0 · Фронтенд в эпоху ИИ</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 0 · фронтенд в эпоху ИИ</p>
+          <p class="running__folio">0.2</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">0.2</span>
+          <h1>React и Angular<br>в 2026 году</h1>
+          <p class="lead">В этой главе разобрано, кто разрабатывает React и Angular, как часто выходят их версии и сколько разработчиков ими пользуется. Одна и та же небольшая задача — поиск по списку — записана на обоих фреймворках, и по ней видны основные различия в работе. Отдельный раздел объясняет, почему инструменты ИИ по-разному относятся к двум фреймворкам и как это влияет на выбор.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>Основы</dd></div>
+          <div><dt>Уровень</dt><dd>Вводный</dd></div>
+          <div><dt>Связанные темы</dt><dd>Состояние и компоненты (глава 0.1)</dd></div>
+          <div><dt>Зачем это знать</dt><dd>Понимать, где и почему выбирают каждый фреймворк, и читать код обоих</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Кто разрабатывает и как выходят версии</a></li>
+            <li><a href="#s2">Сколько разработчиков ими пользуется</a></li>
+            <li><a href="#s3">Одна задача на двух фреймворках</a></li>
+            <li><a href="#s4">Различия в работе</a></li>
+            <li><a href="#s5">Фреймворки и инструменты ИИ</a></li>
+            <li><a href="#s6">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Кто разрабатывает и как выходят версии</h2>
+
+        <p>Фреймворк — программа, от которой зависит работа тысяч приложений, поэтому от ответа на вопрос «кто его поддерживает» зависит, можно ли строить на нём продукт на пять–десять лет. Для компании важно, что фреймворк не бросят, что о несовместимых изменениях предупредят заранее и что исправления уязвимостей будут выходить.</p>
+
+        <h3>React</h3>
+        <p>React создан в Facebook и открыт в 2013 году. Тринадцать лет его разрабатывала компания Meta. 24 февраля 2026 года Linux Foundation объявила о создании React Foundation: Meta передала фонду React, React Native и связанные проекты. В числе первых участников фонда — Amazon, Meta, Microsoft, Vercel, Expo, Huawei, Callstack и Software Mansion. Фонд отвечает за инфраструктуру проекта и конференцию React Conf; техническое направление по-прежнему задают разработчики ядра.</p>
+        <p>Для пользователя React это означает, что проект больше не зависит от решений одной компании. Схема знакома по другим крупным открытым проектам: ядро Linux и Node.js тоже развиваются под управлением фондов, куда входят компании, которые на них зарабатывают.</p>
+
+        <h3>Angular</h3>
+        <p>Angular разрабатывает команда в Google. У фреймворка опубликован график выпусков: до версии 21 крупная версия выходила раз в полгода, с версии 22 — раз в год. Каждая крупная версия поддерживается 24 месяца: 12 месяцев активной разработки и 12 месяцев долгосрочной поддержки, когда выходят только исправления критических ошибок и уязвимостей. Angular 22 вышел 3 июня 2026 года, следующая версия ожидается в июне 2027 года.</p>
+        <p>Предсказуемый график — одна из причин, по которым Angular выбирают банки и крупные компании: срок, до которого нужно обновить проект, известен заранее. В объявлении о переходе на годовой цикл команда Angular назвала ещё одну причину: стабильный интерфейс фреймворка нужен инструментам ИИ, которые пишут код по документации и примерам. Чем реже меняется способ записи, тем реже инструмент предлагает устаревший код.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Версии с 2024 по 2027 год</p>
+          <div class="scheme__body">
+            <svg class="rel" viewBox="0 0 760 170" role="img" aria-label="Шкала времени: React 19.0 декабрь 2024, 19.1 март 2025, 19.2 октябрь 2025, 19.3 сентябрь 2026; Angular 20 май 2025, 21 ноябрь 2025, 22 июнь 2026, 23 ожидается июнь 2027">
+              <line x1="20" y1="85" x2="740" y2="85" stroke="#161A2E" stroke-width="2"/>
+              <g class="soft"><text x="40" y="104" class="soft">2025</text><text x="268" y="104" class="soft">2026</text><text x="496" y="104" class="soft">2027</text></g>
+              <line x1="40" y1="78" x2="40" y2="92" stroke="#161A2E"/><line x1="268" y1="78" x2="268" y2="92" stroke="#161A2E"/><line x1="496" y1="78" x2="496" y2="92" stroke="#161A2E"/>
+              <!-- React: выше оси -->
+              <g fill="#0A7EA4">
+                <rect x="21" y="50" width="12" height="12"/><rect x="95" y="50" width="12" height="12"/><rect x="211" y="50" width="12" height="12"/><rect x="425" y="50" width="12" height="12"/>
+              </g>
+              <text x="8" y="40">19.0</text><text x="86" y="40">19.1</text><text x="200" y="40">19.2</text><text x="414" y="40">19.3</text>
+              <text class="lab" x="560" y="40" fill="#0A7EA4">React</text>
+              <text class="soft" x="560" y="58">дек 2024 · мар 2025 ·</text>
+              <text class="soft" x="560" y="72">окт 2025 · сен 2026</text>
+              <!-- Angular: ниже оси -->
+              <g fill="#C2185B">
+                <rect x="132" y="112" width="12" height="12"/><rect x="243" y="112" width="12" height="12"/><rect x="346" y="112" width="12" height="12"/>
+              </g>
+              <rect x="574" y="112" width="12" height="12" fill="none" stroke="#C2185B" stroke-width="2" stroke-dasharray="3 2"/>
+              <text x="126" y="145">v20</text><text x="237" y="145">v21</text><text x="340" y="145">v22</text><text x="566" y="145">v23</text>
+              <text class="lab" x="620" y="125" fill="#C2185B">Angular</text>
+              <text class="soft" x="620" y="143">v23 — ожидается</text>
+              <text class="soft" x="620" y="157">в июне 2027</text>
+            </svg>
+          </div>
+          <p class="scheme__note">У React крупная версия 19 действует с декабря 2024 года, новые возможности приходят в дополнительных версиях 19.x. У Angular крупная версия выходит по графику и несёт основные изменения; после версии 22 интервал удлинён до года.</p>
+        </figure>
+
+        <p class="bridge">Поддержка производителя — одна сторона устойчивости. Вторая — сколько разработчиков знают фреймворк: от этого зависит, сможет ли компания найти людей, а разработчик — работу.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Сколько разработчиков ими пользуется</h2>
+
+        <p>Самый крупный открытый опрос разработчиков проводит Stack Overflow. В опросе 2025 года участники отмечали веб-фреймворки, с которыми много работали за последний год. React отметили 44,7% всех участников, Angular — 18,2%. Среди тех, кто программирует профессионально, доли чуть выше: 46,9% и 19,8%. Один участник мог отметить несколько фреймворков, поэтому доли не складываются в 100%.</p>
+
+        <div class="bars">
+          <p class="bars__title">Веб-фреймворки в опросе Stack Overflow 2025</p>
+          <p class="bars__sub">Доля участников, которые много работали с фреймворком за год. Шкала от 0 до 50%.</p>
+          <div class="bars__row"><span>React · все участники</span><span class="bars__track"><span class="bars__fill" style="width:89.4%"></span></span><span class="bars__val">44,7%</span></div>
+          <div class="bars__row"><span>React · профессионалы</span><span class="bars__track"><span class="bars__fill" style="width:93.8%"></span></span><span class="bars__val">46,9%</span></div>
+          <div class="bars__row"><span>Angular · все участники</span><span class="bars__track"><span class="bars__fill bars__fill--ng" style="width:36.4%"></span></span><span class="bars__val">18,2%</span></div>
+          <div class="bars__row"><span>Angular · профессионалы</span><span class="bars__track"><span class="bars__fill bars__fill--ng" style="width:39.6%"></span></span><span class="bars__val">19,8%</span></div>
+          <p class="bars__src">Источник: Stack Overflow Developer Survey 2025, раздел Technology → Web frameworks.</p>
+        </div>
+
+        <p>Из опроса следуют два вывода. React используют примерно в два с половиной раза чаще, чем Angular, и он остаётся самым распространённым фреймворком для веба. При этом Angular пользуется каждый пятый профессиональный разработчик — это миллионы людей и большой рынок работы. Доля Angular у профессионалов выше, чем у всех участников: его чаще встречают в компаниях, чем в личных проектах и при обучении.</p>
+
+        <div class="margin-note margin-note--warn">
+          <b>Как читать такие опросы</b>
+          <p>В опросе Stack Overflow участвуют те, кто сам решил ответить, — в основном читатели сайта. Это не перепись всех разработчиков. Доли показывают, что распространено среди активных разработчиков, но не дают точного числа проектов или вакансий в конкретной стране.</p>
+        </div>
+
+        <h3>Российский рынок</h3>
+        <p>Отдельного открытого опроса по России такого масштаба нет, поэтому соотношение проверяют по сайтам вакансий в тот день, когда нужны цифры: доли меняются каждый месяц. Как это сделать, описано в задании главы 0.5. Пример российской компании, которая работает на Angular, — Т-Банк: он нанимает фронтенд-разработчиков именно на Angular и развивает в открытом доступе Taiga UI — библиотеку из более чем 130 компонентов для Angular, которую используют и за пределами банка (на 14 октября 2026 года у репозитория на GitHub около 4 тысяч звёзд).</p>
+
+        <p class="bridge">Цифры показывают, что оба фреймворка востребованы. Чем они отличаются в работе, лучше видно на коде, чем в таблице характеристик.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Одна задача на двух фреймворках</h2>
+
+        <p>Задача: поле поиска и список городов под ним. Пользователь вводит текст, и в списке остаются города, в названии которых этот текст встречается. Под списком — сколько городов найдено. В задаче есть всё, о чём говорилось в главе 0.1: состояние (текст в поле), значение, которое из него вычисляется (отфильтрованный список), и разметка, которая показывает и то, и другое.</p>
+
+        <div class="versus">
+          <div class="vs-react">
+            <b>React · CitySearch.tsx</b>
+            <figure class="code" data-fw="react" data-run="no">
+              <pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>;
+
+<span class="k">const</span> CITIES = [<span class="s">'Москва'</span>, <span class="s">'Казань'</span>,
+  <span class="s">'Самара'</span>, <span class="s">'Саратов'</span>];
+
+<span class="k">export function</span> <span class="f">CitySearch</span>() {
+  <span class="k">const</span> [query, setQuery] = <span class="f">useState</span>(<span class="s">''</span>);
+  <span class="k">const</span> found = CITIES.<span class="f">filter</span>(c =&gt;
+    c.<span class="f">toLowerCase</span>().<span class="f">includes</span>(query.<span class="f">toLowerCase</span>()));
+
+  <span class="k">return</span> (
+    &lt;<span class="t">section</span>&gt;
+      &lt;<span class="t">input</span> <span class="a">value</span>={query}
+        <span class="a">onChange</span>={e =&gt; <span class="f">setQuery</span>(e.target.value)} /&gt;
+      &lt;<span class="t">ul</span>&gt;
+        {found.<span class="f">map</span>(c =&gt; &lt;<span class="t">li</span> <span class="a">key</span>={c}&gt;{c}&lt;/<span class="t">li</span>&gt;)}
+      &lt;/<span class="t">ul</span>&gt;
+      &lt;<span class="t">p</span>&gt;Найдено: {found.length}&lt;/<span class="t">p</span>&gt;
+    &lt;/<span class="t">section</span>&gt;
+  );
+}</pre>
+            </figure>
+          </div>
+          <div class="vs-ng">
+            <b>Angular · city-search.ts</b>
+            <figure class="code" data-fw="angular" data-run="no">
+              <pre><span class="k">import</span> { Component, signal, computed }
+  <span class="k">from</span> <span class="s">'@angular/core'</span>;
+
+<span class="k">const</span> CITIES = [<span class="s">'Москва'</span>, <span class="s">'Казань'</span>,
+  <span class="s">'Самара'</span>, <span class="s">'Саратов'</span>];
+
+@<span class="f">Component</span>({
+  selector: <span class="s">'app-city-search'</span>,
+  template: <span class="s">`
+    &lt;section&gt;
+      &lt;input [value]="query()"
+        (input)="query.set(
+          $any($event.target).value)" /&gt;
+      &lt;ul&gt;
+        @for (c of found(); track c) {
+          &lt;li&gt;{{ c }}&lt;/li&gt;
+        }
+      &lt;/ul&gt;
+      &lt;p&gt;Найдено: {{ found().length }}&lt;/p&gt;
+    &lt;/section&gt;`</span>,
+})
+<span class="k">export class</span> <span class="f">CitySearch</span> {
+  query = <span class="f">signal</span>(<span class="s">''</span>);
+  found = <span class="f">computed</span>(() =&gt; CITIES.<span class="f">filter</span>(c =&gt;
+    c.<span class="f">toLowerCase</span>()
+      .<span class="f">includes</span>(<span class="k">this</span>.<span class="f">query</span>().<span class="f">toLowerCase</span>())));
+}</pre>
+            </figure>
+          </div>
+        </div>
+
+        <p>Обе записи делают одно и то же, и части в них находятся одна напротив другой. Ниже они разобраны по порядку.</p>
+
+        <h3>Состояние</h3>
+        <p>В React состояние создаёт функция <code>useState('')</code>. Она возвращает пару: текущее значение <code>query</code> и функцию <code>setQuery</code>, которой значение меняют. Когда вызывается <code>setQuery</code>, React вызывает функцию компонента заново и получает новое описание разметки. Функции, имена которых начинаются с <code>use</code>, называются <span class="term">хуками</span>; их вызывают только в начале функции компонента.</p>
+        <p>В Angular состояние хранится в <span class="term">сигнале</span>: <code>signal('')</code> создаёт контейнер со значением. Значение читают вызовом <code>query()</code>, меняют методом <code>query.set(...)</code>. Angular запоминает, какие места шаблона читали сигнал, и при изменении обновляет только их.</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Хук в React похож на повторное составление списка покупок: при каждом изменении список пишут заново целиком, а потом сверяют с предыдущим и докупают только разницу. Сигнал в Angular похож на подписку на рассылку: каждое место страницы подписано на те значения, которые показывает, и получает уведомление только о них.</p>
+          <p class="miss">React не перерисовывает всю страницу: функция вызывается заново только у компонента, где изменилось состояние, и у его потомков.</p>
+        </div></div>
+
+        <h3>Вычисляемое значение</h3>
+        <p>Список найденных городов не хранится отдельно: он вычисляется из текста поиска. В React это обычная переменная <code>found</code>, которая заново считается при каждом вызове функции компонента. В Angular для этого есть <code>computed</code>: значение пересчитывается только тогда, когда изменился сигнал, который в нём прочитан. Правило общее для обоих фреймворков: то, что можно вычислить из состояния, в состояние не записывают. Иначе появятся два источника одних и тех же данных, и они разойдутся, как витрина слева в главе 0.1.</p>
+
+        <h3>Разметка</h3>
+        <p>В React разметка записана прямо в коде на JavaScript (JSX). Список строится обычным методом массива <code>map</code>, а значение подставляется в фигурных скобках. В Angular разметка — отдельный шаблон со своими правилами: квадратные скобки <code>[value]</code> передают значение в свойство элемента, круглые <code>(input)</code> подписываются на событие, блок <code>@for</code> повторяет элемент для каждого города, двойные фигурные скобки выводят значение. Отсюда частая формулировка: в React «всё — JavaScript», в Angular у шаблона свой язык.</p>
+        <p>В обоих случаях у элемента списка есть ключ: <code>key={c}</code> в React и <code>track c</code> в Angular. По ключу фреймворк узнаёт, какой элемент списка какой, когда список меняется, и не пересоздаёт элементы, которые остались.</p>
+
+        <p class="bridge">По одной задаче различия кажутся мелкими. На проекте из сотен компонентов они складываются в разный способ работы.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Различия в работе</h2>
+
+        <p>Таблица собирает различия, которые заметны в первые недели работы с каждым фреймворком. Ни одно из них не делает фреймворк лучше вообще; каждое делает его удобнее для определённых проектов и команд.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Вопрос</th><th>React</th><th>Angular</th></tr></thead>
+            <tbody>
+              <tr><td>Что это</td><td>библиотека для интерфейса; остальное — из экосистемы</td><td>платформа: маршрутизация, HTTP, формы, тесты, сборка</td></tr>
+              <tr><td>Компонент</td><td>функция, разметка в JSX</td><td>класс с декоратором, шаблон со своим синтаксисом</td></tr>
+              <tr><td>Состояние</td><td>хуки: <code>useState</code>, <code>useReducer</code></td><td>сигналы: <code>signal</code>, <code>computed</code></td></tr>
+              <tr><td>Язык</td><td>JavaScript или TypeScript</td><td>TypeScript</td></tr>
+              <tr><td>Общие данные и службы</td><td>контекст или библиотеки состояния</td><td>внедрение зависимостей — встроенный механизм</td></tr>
+              <tr><td>Новый проект</td><td>Vite или Next.js; набор библиотек выбирает команда</td><td><code>ng new</code>; структура задана фреймворком</td></tr>
+              <tr><td>Мобильные приложения</td><td>React Native на том же подходе</td><td>отдельные решения, например Ionic</td></tr>
+              <tr><td>Где встречается чаще</td><td>продуктовые компании, стартапы, сайты</td><td>банки, корпоративные системы, внутренние панели</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Строки таблицы связаны между собой. Angular задаёт структуру проекта и требует TypeScript, поэтому код в большой команде получается однородным: разработчик, перешедший из одного отдела банка в другой, видит знакомые папки, службы и формы. Цена этой однородности — больше понятий на старте: декораторы, внедрение зависимостей, синтаксис шаблонов. React на старте проще: компонент — это функция, разметка — это JavaScript. Цена этой простоты проявляется позже, когда команде нужно выбрать маршрутизатор, библиотеку запросов, способ хранить общие данные и договориться, как писать компоненты.</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Angular похож на квартиру с ремонтом от застройщика: планировка, розетки и кухня уже есть, въехать можно сразу, но перенести стену сложно. React похож на квартиру в бетоне: можно сделать что угодно, но каждую комнату приходится планировать и покупать для неё отдельно.</p>
+          <p class="miss">В React-проектах сложились общепринятые наборы библиотек, и большинство команд не выбирает с нуля, а берёт готовую надстройку вроде Next.js.</p>
+        </div></div>
+
+        <p class="bridge">До 2023 года на этом сравнение обычно заканчивалось. С появлением инструментов, которые пишут код, у выбора фреймворка появилась ещё одна сторона.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Фреймворки и инструменты ИИ</h2>
+
+        <p>Модели, которые пишут код, обучены на открытом коде из интернета. Кода на React в открытом доступе больше, чем кода на Angular, поэтому модели чаще и увереннее предлагают React. Генераторы приложений, которые создают сайт по описанию, используют React по умолчанию: Lovable создаёт проекты на React, TypeScript, Vite и Tailwind, v0 от Vercel — на React и Next.js. Для начинающего разработчика из этого следует практический вывод: код на React, написанный ИИ, ему придётся читать и проверять чаще всего, даже если сам он работает на Angular.</p>
+
+        <p>У Angular с ИИ есть своя трудность. За 2023–2026 годы фреймворк сильно поменялся: появились сигналы, новый синтаксис шаблонов <code>@if</code> и <code>@for</code>, работа без библиотеки Zone.js, Signal Forms. В обучающих данных моделей старого кода на Angular гораздо больше, чем нового, и модели часто предлагают устаревшие приёмы: модули <code>NgModule</code>, директивы <code>*ngFor</code>, подписки RxJS там, где теперь пишут сигналы. Такой код работает, но в новом проекте его не пишут.</p>
+
+        <p>Для этой трудности команда Angular выпустила отдельные инструменты. На сайте angular.dev есть раздел для работы с ИИ: файлы с правилами для моделей, сервер MCP, через который ИИ-агент в редакторе получает актуальную документацию и примеры, и с версии 22 — стабильные инструменты, позволяющие агенту запустить сборку проекта и прочитать ошибки. В той же версии выпущены готовые наборы инструкций для агентов, которые описывают, как писать на современном Angular. В Google AI Studio можно создать приложение на Angular по описанию так же, как на React в других генераторах.</p>
+
+        <div class="margin-note">
+          <b>Что такое MCP</b>
+          <p>Model Context Protocol — открытый протокол, по которому ИИ-инструмент подключается к внешним источникам: документации, файлам проекта, командам сборки. Сервер MCP Angular запускается командой из Angular CLI и даёт агенту доступ к документации той версии фреймворка, на которой написан проект. Подробно работа с агентами разбирается в модуле 5.</p>
+        </div>
+
+        <p>Из этого раздела следует, почему в дисциплине изучаются оба фреймворка. Принципы, разобранные в главе 0.1, у них общие, и тот, кто понимает их на одном фреймворке, читает код на другом. Инструменты ИИ пишут код на обоих, но с разными типичными ошибками, и замечать эти ошибки можно, только зная, как должно быть написано.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Что изменилось для React после 24 февраля 2026 года?</summary>
+          <p>Meta передала React, React Native и связанные проекты фонду React Foundation в составе Linux Foundation. Проект управляется фондом, в который входят несколько компаний, и больше не зависит от решений одной Meta.</p>
+        </details>
+        <details>
+          <summary>Сколько поддерживается крупная версия Angular начиная с версии 22, и почему это важно для компании?</summary>
+          <p>24 месяца: 12 месяцев активной разработки и 12 месяцев долгосрочной поддержки с исправлениями критических ошибок и уязвимостей. Компания заранее знает, до какого срока нужно перевести проект на новую версию, и может спланировать работу.</p>
+        </details>
+        <details>
+          <summary>В опросе Stack Overflow 2025 React отметили 44,7%, Angular — 18,2%. Почему нельзя сказать, что остальные 37,1% пользуются другими фреймворками?</summary>
+          <p>Участник мог отметить несколько фреймворков сразу, поэтому доли пересекаются и не складываются в 100%. Кроме того, в опросе участвуют не только фронтенд-разработчики.</p>
+        </details>
+        <details>
+          <summary>Почему в обоих примерах из §3 список найденных городов не хранится в отдельном состоянии?</summary>
+          <p>Он полностью вычисляется из текста поиска. Если хранить его отдельно, появятся два источника одних данных, и при изменении одного второй можно забыть обновить. В React список считается при каждом вызове функции компонента, в Angular — через <code>computed</code>.</p>
+        </details>
+        <details>
+          <summary>ИИ-помощник предложил для нового проекта на Angular 22 компонент с <code>NgModule</code> и <code>*ngFor</code>. Что с этим кодом не так?</summary>
+          <p>Он написан устаревшими приёмами: в новых версиях компоненты автономные, без <code>NgModule</code>, а списки выводятся блоком <code>@for</code>. Код будет работать, но не соответствует тому, как пишут на текущей версии. Модель предложила его, потому что старого кода на Angular в её обучающих данных больше. Помогают сервер MCP и правила для моделей с angular.dev.</p>
+        </details>
+
+        <h3>Итог главы</h3>
+        <p>React с 2026 года развивается под управлением React Foundation, Angular — командой Google по годовому графику с поддержкой каждой версии 24 месяца. По опросу Stack Overflow 2025 React используют 44,7% разработчиков, Angular — 18,2%; Angular чаще встречается в банках и корпоративных системах. На одной задаче видно, что модели у фреймворков общие — состояние, вычисляемые значения, разметка, ключи списка, — а запись разная: хуки и JSX в React, сигналы и шаблоны в Angular. Инструменты ИИ по умолчанию пишут React, а для Angular часто предлагают устаревший код; команда Angular отвечает на это инструментами для агентов.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://survey.stackoverflow.co/2025/technology" target="_blank" rel="noreferrer">Stack Overflow Developer Survey 2025 — Technology</a></li>
+          <li><a href="https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-react-foundation" target="_blank" rel="noreferrer">Linux Foundation — Announces the Formation of the React Foundation (24 февраля 2026)</a></li>
+          <li><a href="https://react.dev/versions" target="_blank" rel="noreferrer">react.dev — React Versions</a></li>
+          <li><a href="https://angular.dev/reference/releases" target="_blank" rel="noreferrer">angular.dev — Versioning and releases</a></li>
+          <li><a href="https://www.infoq.com/news/2026/08/angular-v22-released/" target="_blank" rel="noreferrer">InfoQ — Google Releases Angular v22 with Stable Signal Forms, OnPush by Default and Experimental WebMCP</a></li>
+          <li><a href="https://www.heise.de/en/news/Angular-22-focuses-on-AI-coding-11322889.html" target="_blank" rel="noreferrer">heise — Angular 22 focuses on AI coding</a></li>
+          <li><a href="https://angular.dev/ai" target="_blank" rel="noreferrer">angular.dev — Build with AI</a></li>
+          <li><a href="https://lovable.dev/faq/capabilities/tech-stack/lovable-tech-stack" target="_blank" rel="noreferrer">Lovable — Tech Stack &amp; Exports</a></li>
+          <li><a href="https://career.habr.com/vacancies/1000159502" target="_blank" rel="noreferrer">Хабр Карьера — вакансия Т-Банка «Frontend-разработчик Angular»</a></li>
+          <li><a href="https://github.com/taiga-family/taiga-ui" target="_blank" rel="noreferrer">GitHub — Taiga UI</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../01-frontend-i-freymvorki/index.html">← 0.1 Фронтенд и фреймворки</a>
+          <a href="../03-ii-vo-frontende/index.html">0.3 ИИ во фронтенде: инструменты и измерения →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

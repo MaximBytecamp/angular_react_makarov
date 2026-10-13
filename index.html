@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>Справочник по Angular и React · Макаров Максим Николаевич</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .cover { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(260px, .8fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
+    .cover h1 { margin: 12px 0 10px; font-family: var(--display); font-size: clamp(36px, 5.6vw, 74px); line-height: 1.02; letter-spacing: -.5px; }
+    .cover h1 .r { color: var(--acc); }
+    .cover h1 .g { color: var(--ng); }
+    .cover__sub { margin: 0 0 22px; font-family: var(--display); font-size: clamp(17px, 1.8vw, 26px); color: var(--ink-soft); }
+    .cover__meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 0; }
+    .cover__meta span { padding: 8px 12px; border: 2px solid var(--ink); background: #fff; font: 600 11px/1 var(--mono); letter-spacing: .5px; }
+    @media (max-width: 820px) { .cover { grid-template-columns: 1fr; } }
+
+    /* Карточка на обложке: формула UI = f(state) двумя записями. */
+    .card-f { border: 3px solid var(--ink); background: var(--page); box-shadow: 7px 7px 0 var(--ink); transform: rotate(-.7deg); }
+    .card-f__tag { margin: 0; padding: 8px 14px; background: var(--ink); color: var(--acc-bright); font: 600 10.5px/1.4 var(--pixel); letter-spacing: 1.3px; text-transform: uppercase; }
+    .card-f__formula { margin: 0; padding: 18px 16px 8px; font: 700 clamp(26px, 3vw, 36px)/1 var(--mono); text-align: center; }
+    .card-f__formula span { color: var(--acc); }
+    .card-f pre { margin: 0; padding: 10px 14px; border-top: 2px solid var(--rule); font: 400 12.5px/1.55 var(--mono); overflow-x: auto; }
+    .card-f pre b { display: block; font: 600 10px/1.6 var(--pixel); letter-spacing: 1px; text-transform: uppercase; }
+    .card-f pre.r b { color: var(--acc); }
+    .card-f pre.g b { color: var(--ng); }
+
+    .modules { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); gap: 16px; margin-top: 22px; }
+    .module { display: grid; grid-template-columns: 40px minmax(0, 1fr); border: 3px solid var(--ink); background: var(--page); box-shadow: 6px 6px 0 var(--ink); }
+    .module--react { box-shadow: 6px 6px 0 var(--acc); }
+    .module--ng { box-shadow: 6px 6px 0 var(--ng); }
+    .module__spine { background: var(--ink); color: var(--acc-bright); display: flex; align-items: center; justify-content: center; }
+    .module--ng .module__spine { color: var(--ng-bright); }
+    .module__spine b { writing-mode: vertical-rl; transform: rotate(180deg); font: 700 12px/1 var(--mono); letter-spacing: 2px; }
+    .module__body { padding: 18px 20px 16px; }
+    .module h3 { margin: 0 0 6px; font-family: var(--display); font-size: 19px; }
+    .module__body > p { margin: 0 0 12px; font-size: 14.5px; line-height: 1.45; color: var(--ink-soft); }
+    .module__tag { display: inline-block; margin-bottom: 12px; padding: 3px 9px; border: 2px solid var(--ink-soft); font: 600 11px/1.5 var(--mono); color: var(--ink-soft); }
+    .toc { margin: 0; padding: 0; list-style: none; border-top: 2px solid var(--rule); }
+    .toc li { margin: 0; border-bottom: 2px solid var(--rule); }
+    .toc li:last-child { border-bottom: 0; }
+    .toc a, .toc s { display: flex; align-items: baseline; gap: 10px; padding: 9px 0; text-decoration: none; font-size: 15px; }
+    .toc a { color: var(--ink); font-weight: 600; }
+    .toc a:hover { color: var(--acc); }
+    .toc s { color: var(--ink-faint); }
+    .toc a > span, .toc s > span { flex: 1 1 auto; min-width: 0; line-height: 1.35; }
+    .toc b { flex: 0 0 auto; font: 600 12px/1.4 var(--mono); color: var(--ink-faint); }
+    .toc em { flex: 0 0 auto; margin-left: auto; font: 600 10px/1 var(--pixel); letter-spacing: 1px; text-transform: uppercase; font-style: normal; color: var(--acc); }
+    .toc s em { color: var(--ink-faint); }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Справочник по Angular и React · Макаров М. Н.</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow">Издание для старших курсов</p>
+          <p class="running__folio">Макаров Максим Николаевич</p>
+        </div>
+
+        <section class="cover">
+          <div>
+            <h1>Справочник<br>по <span class="g">Angular</span><br>и <span class="r">React</span></h1>
+            <p class="cover__sub">Фронтенд-разработка в 2026 году:<br>механизмы фреймворков и работа с ИИ</p>
+            <p>Книга начинается с вопроса, который в 2026 году задаёт каждый, кто приходит во фронтенд: зачем учить фреймворки, если код пишут инструменты ИИ. Модуль 0 отвечает на него по данным исследований, отчётов компаний и опросов разработчиков, со ссылками на источники.</p>
+            <p>Дальше React и Angular изучаются по очереди и в одном порядке: сначала механизм и код без ИИ, затем та же задача с ИИ-агентом и проверка того, что он написал. Одна и та же задача показывается на обоих фреймворках; переключатель в шапке главы выбирает, какой код показывать, и запоминает выбор.</p>
+            <div class="cover__meta">
+              <span>React 19</span><span>Angular 22</span><span>TypeScript</span><span>ИИ-агенты</span>
+            </div>
+          </div>
+
+          <aside class="card-f" aria-label="Интерфейс как функция от состояния">
+            <p class="card-f__tag">Общая модель двух фреймворков</p>
+            <p class="card-f__formula">UI = f(<span>state</span>)</p>
+            <pre class="r"><b>React</b>const [q, setQ] = useState('');</pre>
+            <pre class="g"><b>Angular</b>q = signal('');</pre>
+          </aside>
+        </section>
+
+        <h2><span class="sec">План</span>Модули и главы</h2>
+        <p>Дисциплина рассчитана на 4–6 недель по пять пар. Распределение пар по модулям и правила работы с ИИ — в главе <a href="temy/05-kak-ustroena-disciplina/index.html">0.5</a>.</p>
+
+        <div class="modules">
+          <article class="module">
+            <div class="module__spine"><b>МОДУЛЬ 0</b></div>
+            <div class="module__body">
+              <h3>Фронтенд в эпоху ИИ</h3>
+              <span class="module__tag">2 пары</span>
+              <p>Что делает фронтенд, чем различаются React и Angular, какие инструменты ИИ используются во фронтенде и как с ними работать в дисциплине.</p>
+              <ul class="toc">
+                <li><a href="temy/01-frontend-i-freymvorki/index.html"><b>0.1</b><span>Фронтенд и фреймворки</span><em>читать</em></a></li>
+                <li><a href="temy/02-react-i-angular/index.html"><b>0.2</b><span>React и Angular в 2026 году</span><em>читать</em></a></li>
+                <li><a href="temy/03-ii-vo-frontende/index.html"><b>0.3</b><span>ИИ во фронтенде: инструменты и измерения</span><em>читать</em></a></li>
+                <li><s><b>0.4</b><span>Заменил ли ИИ фронтенд-разработчика</span><em>готовится</em></s></li>
+                <li><a href="temy/05-kak-ustroena-disciplina/index.html"><b>0.5</b><span>Как устроена дисциплина</span><em>читать</em></a></li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="module">
+            <div class="module__spine"><b>МОДУЛЬ 1</b></div>
+            <div class="module__body">
+              <h3>Рабочее место и TypeScript</h3>
+              <span class="module__tag">3 пары</span>
+              <p>Node.js и npm, создание проектов на Vite и Angular CLI, типы TypeScript для компонентов, инструменты разработчика в браузере.</p>
+              <ul class="toc">
+                <li><s><b>1.1</b><span>Node.js, npm и первый проект</span><em>готовится</em></s></li>
+                <li><s><b>1.2</b><span>TypeScript для компонентов</span><em>готовится</em></s></li>
+                <li><s><b>1.3</b><span>Инструменты разработчика в браузере</span><em>готовится</em></s></li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="module module--react">
+            <div class="module__spine"><b>МОДУЛЬ 2</b></div>
+            <div class="module__body">
+              <h3>React: компоненты и состояние</h3>
+              <span class="module__tag">5 пар</span>
+              <p>Компонент как функция, JSX, props, состояние и события, списки и ключи, эффекты и случаи, когда они не нужны.</p>
+              <ul class="toc">
+                <li><s><b>2.1</b><span>Компонент и JSX</span><em>готовится</em></s></li>
+                <li><s><b>2.2</b><span>Props: данные от родителя</span><em>готовится</em></s></li>
+                <li><s><b>2.3</b><span>useState и события</span><em>готовится</em></s></li>
+                <li><s><b>2.4</b><span>Списки, ключи, условный вывод</span><em>готовится</em></s></li>
+                <li><s><b>2.5</b><span>useEffect и вычисляемые значения</span><em>готовится</em></s></li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="module module--react">
+            <div class="module__spine"><b>МОДУЛЬ 3</b></div>
+            <div class="module__body">
+              <h3>React: приложение целиком</h3>
+              <span class="module__tag">5 пар</span>
+              <p>Маршруты, запросы к серверу, формы, общие данные и тесты; первая работа с ИИ-агентом на React.</p>
+              <ul class="toc">
+                <li><s><b>3.1</b><span>Маршрутизация</span><em>готовится</em></s></li>
+                <li><s><b>3.2</b><span>Запросы к серверу и загрузка</span><em>готовится</em></s></li>
+                <li><s><b>3.3</b><span>Формы и проверка ввода</span><em>готовится</em></s></li>
+                <li><s><b>3.4</b><span>Тесты компонентов</span><em>готовится</em></s></li>
+                <li><s><b>3.5</b><span>Агент пишет, вы проверяете</span><em>готовится</em></s></li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="module module--ng">
+            <div class="module__spine"><b>МОДУЛЬ 4</b></div>
+            <div class="module__body">
+              <h3>Angular: компоненты и сигналы</h3>
+              <span class="module__tag">5 пар</span>
+              <p>Автономные компоненты, шаблоны с блоками @if и @for, сигналы и computed, input и output, службы и внедрение зависимостей.</p>
+              <ul class="toc">
+                <li><s><b>4.1</b><span>Компонент и шаблон</span><em>готовится</em></s></li>
+                <li><s><b>4.2</b><span>Сигналы и computed</span><em>готовится</em></s></li>
+                <li><s><b>4.3</b><span>input и output</span><em>готовится</em></s></li>
+                <li><s><b>4.4</b><span>@if, @for и ключи списка</span><em>готовится</em></s></li>
+                <li><s><b>4.5</b><span>Службы и внедрение зависимостей</span><em>готовится</em></s></li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="module module--ng">
+            <div class="module__spine"><b>МОДУЛЬ 5</b></div>
+            <div class="module__body">
+              <h3>Angular: приложение целиком</h3>
+              <span class="module__tag">5 пар</span>
+              <p>Маршрутизатор, HttpClient, Signal Forms, тесты; работа с агентом через сервер MCP Angular.</p>
+              <ul class="toc">
+                <li><s><b>5.1</b><span>Маршрутизатор</span><em>готовится</em></s></li>
+                <li><s><b>5.2</b><span>HttpClient и данные с сервера</span><em>готовится</em></s></li>
+                <li><s><b>5.3</b><span>Signal Forms</span><em>готовится</em></s></li>
+                <li><s><b>5.4</b><span>Тесты</span><em>готовится</em></s></li>
+                <li><s><b>5.5</b><span>Агент и сервер MCP Angular</span><em>готовится</em></s></li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="module">
+            <div class="module__spine"><b>МОДУЛЬ 6</b></div>
+            <div class="module__body">
+              <h3>Итоговый проект с ИИ-агентом</h3>
+              <span class="module__tag">5 пар</span>
+              <p>Одно приложение от технического задания до защиты: постановка задачи агенту, проверка по списку, журнал работы с ИИ.</p>
+              <ul class="toc">
+                <li><s><b>6.1</b><span>Техническое задание и критерии готовности</span><em>готовится</em></s></li>
+                <li><s><b>6.2</b><span>Проверка и защита проекта</span><em>готовится</em></s></li>
+              </ul>
+            </div>
+          </article>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
