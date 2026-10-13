@@ -128,8 +128,10 @@
 
         <ol class="steps" data-os="win">
           <li><b>Скачайте установщик</b><p>Нажмите <strong>Windows Installer (.msi)</strong> и откройте скачанный файл.</p></li>
-          <li><b>Пройдите окна установщика</b><p>Нажмите <strong>Next</strong>, примите лицензию, оставьте папку <code>C:\Program Files\nodejs\</code>. В окне Custom Setup ничего не меняйте: компоненты npm и <strong>Add to PATH</strong> включены по умолчанию. Последний пункт добавляет Node.js в список папок, где терминал ищет программы.</p></li>
-          <li><b>Пропустите дополнительные инструменты</b><p>Флажок <strong>Automatically install the necessary tools</strong> (Tools for Native Modules) оставьте пустым: для проектов дисциплины он не нужен и ставит несколько гигабайт программ.</p></li>
+          <li><b>Пройдите окна установщика</b><p>Нажмите <strong>Next</strong>, примите лицензию, оставьте папку <code>C:\Program Files\nodejs\</code>. В окне Custom Setup ничего не меняйте: компоненты npm и <strong>Add to PATH</strong> включены по умолчанию. Последний пункт добавляет Node.js в список папок, где терминал ищет программы.</p>
+            <div class="shot-todo"><b>Место под кадр с компьютера в классе</b><p>Окно установщика Node.js на Windows, шаг Custom Setup: в списке компонентов отмечены Node.js runtime, npm package manager и Add to PATH.</p></div></li>
+          <li><b>Пропустите дополнительные инструменты</b><p>Флажок <strong>Automatically install the necessary tools</strong> (Tools for Native Modules) оставьте пустым: для проектов дисциплины он не нужен и ставит несколько гигабайт программ.</p>
+            <div class="shot-todo"><b>Место под кадр с компьютера в классе</b><p>Окно установщика Node.js на Windows, шаг Tools for Native Modules: флажок «Automatically install the necessary tools» снят.</p></div></li>
           <li><b>Завершите установку и перезапустите VS Code</b><p>Нажмите <strong>Install</strong>, затем <strong>Finish</strong>. Если VS Code был открыт, закройте и откройте его заново: в уже открытом терминале остался прежний список папок с программами (PATH), и новая программа в нём не находится.</p></li>
         </ol>
         <ol class="steps" data-os="mac">
@@ -145,20 +147,32 @@
         </ol>
 
         <h3>Проверка установки</h3>
-        <p>Проверка выполняется в терминале VS Code. Создайте папку для проектов дисциплины, например <code>react-kurs</code>, откройте её в VS Code (<strong>File → Open Folder</strong>) и откройте терминал: меню <strong>Terminal → New Terminal</strong> или сочетание <kbd>Ctrl</kbd>+<kbd>`</kbd>. Введите две команды:</p>
+        <p>Проверка выполняется в терминале VS Code. Заодно создаётся папка, в которой будут лежать все проекты дисциплины.</p>
 
-        <figure class="code">
-          <figcaption><span>Терминал</span></figcaption>
-          <pre>node -v
-npm -v</pre>
-        </figure>
+        <ol class="steps">
+          <li><b>Создайте папку для проектов</b><p>Имя — латиницей, без пробелов: <code>react-kurs</code>. Это имя будет видно в терминале и в командах.</p>
+            <p data-os="win">В Проводнике откройте <strong>Документы</strong>, щёлкните правой кнопкой по пустому месту → <strong>Создать → Папку</strong> и назовите её <code>react-kurs</code>. Путь получится <code>C:\Users\&lt;ваше имя&gt;\Documents\react-kurs</code>.</p>
+            <p data-os="mac">В Finder откройте папку <strong>Документы</strong>, нажмите <kbd>⇧</kbd>+<kbd>⌘</kbd>+<kbd>N</kbd> и назовите новую папку <code>react-kurs</code>.</p>
+            <p data-os="linux">В домашней папке создайте папку <code>react-kurs</code>: в файловом менеджере или командой <code>mkdir ~/react-kurs</code>.</p></li>
+          <li><b>Откройте папку в VS Code</b><p>Меню <strong>File → Open Folder…</strong>, выберите <code>react-kurs</code> и нажмите <strong>Выбрать папку</strong> (Select Folder). Если VS Code спросит «Do you trust the authors of the files in this folder?», нажмите <strong>Yes, I trust the authors</strong>: папка ваша, и без доверия часть функций редактора отключится. Слева в проводнике появится заголовок <strong>REACT-KURS</strong>.</p></li>
+          <li><b>Откройте терминал</b><p>Меню <strong>Terminal → New Terminal</strong> или сочетание <kbd>Ctrl</kbd>+<kbd>`</kbd> (клавиша с буквой Ё). Внизу окна появится панель с вкладкой <strong>TERMINAL</strong>. Строка слева от курсора заканчивается именем папки: <code>react-kurs $</code> на macOS и Linux, <code>PS C:\Users\…\react-kurs&gt;</code> на Windows.</p></li>
+          <li><b>Введите две команды</b><p>Наберите первую команду, нажмите <kbd>Enter</kbd>, затем вторую и снова <kbd>Enter</kbd>:</p>
+            <figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>node -v
+npm -v</pre></figure></li>
+          <li><b>Сверьте результат с кадром</b><p>После каждой команды терминал печатает номер версии. Числа должны начинаться с <code>v24</code> и <code>11</code>: последние цифры у вас могут быть больше, если вышли исправления.</p>
+            <figure class="shot" style="max-width: 556px">
+              <img src="img/01-node-npm-versii.png" width="550" height="161" alt="Терминал VS Code: node -v выводит v24.21.0, npm -v выводит 11.19.0" loading="lazy">
+              <figcaption>Так должен выглядеть терминал: Node.js 24.21.0 и npm 11.19.0</figcaption>
+            </figure></li>
+        </ol>
 
-        <figure class="shot" style="max-width: 556px">
-          <img src="img/01-node-npm-versii.png" width="550" height="161" alt="Терминал VS Code: node -v выводит v24.21.0, npm -v выводит 11.19.0" loading="lazy">
-          <figcaption>Терминал VS Code в папке react-kurs: Node.js 24.21.0 и npm 11.19.0</figcaption>
-        </figure>
+        <div class="margin-note margin-note--warn" data-os="win">
+          <b>Windows: npm -v выдал красную ошибку про npm.ps1</b>
+          <p>Если вместо номера версии появилось «Невозможно загрузить файл C:\Program Files\nodejs\npm.ps1, так как выполнение сценариев отключено в этой системе», PowerShell запрещает запуск сценариев, а npm запускается сценарием. Выполните в том же терминале команду ниже, ответьте <code>Y</code> и повторите <code>npm -v</code>.</p>
+          <figure class="code"><figcaption><span>Терминал PowerShell</span></figcaption><pre>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</pre></figure>
+        </div>
 
-        <p>Ключ <code>-v</code> (от слова version) просит программу назвать свою версию и завершиться. Слева от каждой команды терминал показывает имя текущей папки — <code>react-kurs</code>, справа от знака <code>$</code> — набранную команду. Первая команда вывела <code>v24.21.0</code>: Node.js установлен и терминал его находит. Вторая вывела <code>11.19.0</code>: вместе с Node.js установился npm. На Windows в терминале по умолчанию открывается PowerShell, и строка слева выглядит как <code>PS C:\Users\…\react-kurs&gt;</code>; ответы команд те же.</p>
+        <p>Ключ <code>-v</code> (от слова version) просит программу назвать свою версию и завершиться. Слева от каждой команды терминал показывает имя текущей папки — <code>react-kurs</code>, справа от знака <code>$</code> — набранную команду. Первая команда вывела <code>v24.21.0</code>: Node.js установлен и терминал его находит. Вторая вывела <code>11.19.0</code>: вместе с Node.js установился npm. На Windows в PowerShell строка слева выглядит иначе, а ответы команд те же.</p>
 
         <p class="bridge">Node.js установлен. Следующая программа — npm — установилась вместе с ним, и с ней студент работает на каждом занятии.</p>
 
@@ -172,7 +186,7 @@ npm -v</pre>
 
         <p><span class="term">Пакет</span> — библиотека или программа, опубликованная в общем хранилище, чтобы ею могли пользоваться другие. React — пакет, Vite — пакет, TypeScript — тоже пакет. Общее хранилище называется реестром npm (npmjs.com), в нём миллионы пакетов. <span class="term">npm</span> (Node Package Manager) — программа, которая скачивает пакеты из реестра в проект и запускает команды проекта.</p>
 
-        <p>Список пакетов, которые нужны проекту, хранится в файле <code>package.json</code> в корне проекта — это рецепт из сравнения. Скачанные пакеты npm складывает в папку <code>node_modules</code> — это кладовая. Точные версии всех скачанных пакетов записываются в файл <code>package-lock.json</code> — это чек. Ниже файл <code>package.json</code> проекта, который будет создан в §4:</p>
+        <p>Список пакетов, которые нужны проекту, хранится в файле <code>package.json</code> в корне проекта — это рецепт из сравнения. Скачанные пакеты npm складывает в папку <code>node_modules</code> — это кладовая. Точные версии всех скачанных пакетов записываются в файл <code>package-lock.json</code> — это чек. Ниже файл <code>package.json</code> проекта, который будет создан в §4. Создавать его вручную не нужно: его запишет генератор. Здесь он показан заранее, чтобы при создании проекта было понятно, что появилось в папке.</p>
 
         <figure class="code" data-run="no">
           <figcaption><span>zayavki/package.json</span></figcaption>
@@ -223,7 +237,7 @@ npm -v</pre>
 
         <p><span class="term">Vite</span> (читается «вит», от французского «быстро») — инструмент, который делает две вещи. Во время разработки он работает как сервер: раздаёт файлы проекта браузеру, на лету переводит TypeScript и JSX в JavaScript и обновляет страницу при сохранении файла. Перед публикацией он собирает проект в несколько готовых файлов, которые можно положить на любой хостинг. Документация React называет Vite первым среди инструментов для создания приложения без готовой надстройки вроде Next.js и приводит ту же команду создания проекта, что и эта глава.</p>
 
-        <p>Проект создаётся одной командой. Наберите её в терминале VS Code в папке <code>react-kurs</code>:</p>
+        <p>Проект создаётся одной командой в терминале VS Code. Перед вводом проверьте, что терминал открыт в папке <code>react-kurs</code>: слева от курсора написано <code>react-kurs $</code> (на Windows строка заканчивается на <code>\react-kurs&gt;</code>). Наберите команду и нажмите <kbd>Enter</kbd>:</p>
 
         <figure class="code">
           <figcaption><span>Терминал · папка react-kurs</span></figcaption>
@@ -251,7 +265,7 @@ npm -v</pre>
             <p>Ответ на первый вопрос записан серым под ним: <code>Oxlint</code>. Второй вопрос — <code>Install with npm and start now?</code>: установить пакеты и сразу запустить проект. По умолчанию выбрано <strong>Yes</strong>. В этой главе выберите <strong>No</strong> стрелкой <kbd>→</kbd> и нажмите <kbd>Enter</kbd>: установка и запуск будут выполнены отдельными командами, чтобы было видно, что делает каждая. В следующих проектах можно отвечать Yes.</p></li>
           <li><b>Прочитайте итог</b>
             <figure class="shot" style="max-width: 832px"><img src="img/05-create-done.png" width="826" height="509" alt="Терминал: Scaffolding project in /private/tmp/student/react-kurs/zayavki... Done. Now run: cd zayavki, npm install, npm run dev" loading="lazy"><figcaption>Проект создан: генератор подсказывает три следующие команды</figcaption></figure>
-            <p>Строка <code>Scaffolding project in …/react-kurs/zayavki...</code> сообщает, где создана папка (scaffolding — «возведение лесов», то есть создание каркаса). Ниже генератор перечисляет три команды, которые нужно выполнить дальше: перейти в папку проекта, установить пакеты, запустить сервер. Им посвящён следующий раздел.</p></li>
+            <p>Строка <code>Scaffolding project in …/react-kurs/zayavki...</code> сообщает, где создана папка (scaffolding — «возведение лесов», то есть создание каркаса). Ниже генератор перечисляет три команды, которые нужно выполнить дальше: перейти в папку проекта, установить пакеты, запустить сервер. Им посвящён следующий раздел. В проводнике VS Code под заголовком <strong>REACT-KURS</strong> появилась папка <code>zayavki</code>.</p></li>
         </ol>
 
         <h2 id="s5"><span class="sec">§5</span>Установка зависимостей и запуск</h2>
@@ -418,30 +432,29 @@ npm install</pre>
 
         <p><span class="term">HMR</span> (Hot Module Replacement — горячая замена модулей) — способ обновить изменённый файл на открытой странице без её перезагрузки. Когда файл сохранён, Vite замечает изменение, переводит только этот файл и отправляет его в браузер. React заменяет старую версию компонента новой и сохраняет его состояние. Поэтому, если на странице что-то было введено или нажато, после правки это остаётся на месте.</p>
 
-        <p>Проверить HMR можно на счётчике шаблона. Нажмите кнопку <strong>Count is 0</strong> три раза — на ней появится <strong>Count is 3</strong>.</p>
+        <p>Проверить HMR можно на счётчике шаблона. Сервер должен быть запущен (§5), а страница <code>localhost:5173</code> — открыта в браузере.</p>
 
-        <figure class="shot" style="max-width: 1106px">
-          <img src="img/08b-schetchik-3.png" width="1100" height="434" alt="Стартовая страница шаблона: заголовок Get started, кнопка Count is 3" loading="lazy">
-          <figcaption>До правки: заголовок Get started, на счётчике 3 после трёх нажатий</figcaption>
-        </figure>
-
-        <p>Затем в файле <code>src/App.tsx</code> замените текст заголовка в строке 19 и сохраните файл (<kbd>Ctrl</kbd>+<kbd>S</kbd>, на macOS <kbd>⌘</kbd>+<kbd>S</kbd>):</p>
-
-        <figure class="code" data-run="no">
-          <figcaption><span>src/App.tsx · строка 19</span></figcaption>
-          <pre><span class="c">было:</span>  &lt;<span class="t">h1</span>&gt;Get started&lt;/<span class="t">h1</span>&gt;
-<span class="c">стало:</span> &lt;<span class="t">h1</span>&gt;Доска заявок&lt;/<span class="t">h1</span>&gt;</pre>
-        </figure>
-
-        <figure class="shot" style="max-width: 1246px">
-          <img src="img/11-app-pravka.png" width="1240" height="780" alt="VS Code: в файле App.tsx в строке 19 заголовок h1 изменён на Доска заявок" loading="lazy">
-          <figcaption>Строка 19 после правки: в заголовке h1 текст «Доска заявок»</figcaption>
-        </figure>
-
-        <figure class="shot" style="max-width: 1106px">
-          <img src="img/12-stranica-hmr.png" width="1100" height="434" alt="Страница после сохранения: заголовок Доска заявок, кнопка по-прежнему показывает Count is 3" loading="lazy">
-          <figcaption>Страница после сохранения файла: заголовок сменился, на счётчике осталось 3</figcaption>
-        </figure>
+        <ol class="steps">
+          <li><b>Нажмите счётчик три раза</b><p>На странице нажмите кнопку <strong>Count is 0</strong> три раза. На ней появится <strong>Count is 3</strong>.</p>
+            <figure class="shot" style="max-width: 1106px">
+              <img src="img/08b-schetchik-3.png" width="1100" height="434" alt="Стартовая страница шаблона: заголовок Get started, кнопка Count is 3" loading="lazy">
+              <figcaption>До правки: заголовок Get started, на счётчике 3 после трёх нажатий</figcaption>
+            </figure></li>
+          <li><b>Откройте файл App.tsx</b><p>В проводнике VS Code раскройте <code>zayavki</code> → <code>src</code> и щёлкните по <code>App.tsx</code>. Файл откроется справа, слева от кода — номера строк.</p></li>
+          <li><b>Измените строку 19</b><p>Найдите строку 19 по номеру слева или перейдите к ней сочетанием <kbd>Ctrl</kbd>+<kbd>G</kbd> (на macOS <kbd>⌃</kbd>+<kbd>G</kbd>), введите <code>19</code> и <kbd>Enter</kbd>. Замените текст между тегами <code>&lt;h1&gt;</code> и <code>&lt;/h1&gt;</code>; сами теги не трогайте:</p>
+            <figure class="code" data-run="no"><figcaption><span>src/App.tsx · строка 19</span></figcaption><pre><span class="c">было:</span>  &lt;<span class="t">h1</span>&gt;Get started&lt;/<span class="t">h1</span>&gt;
+<span class="c">стало:</span> &lt;<span class="t">h1</span>&gt;Доска заявок&lt;/<span class="t">h1</span>&gt;</pre></figure></li>
+          <li><b>Сохраните файл</b><p>Нажмите <kbd>Ctrl</kbd>+<kbd>S</kbd> (на macOS <kbd>⌘</kbd>+<kbd>S</kbd>). Пока файл не сохранён, на его вкладке вместо крестика стоит белая точка; после сохранения точка исчезает.</p>
+            <figure class="shot" style="max-width: 1246px">
+              <img src="img/11-app-pravka.png" width="1240" height="780" alt="VS Code: в файле App.tsx в строке 19 заголовок h1 изменён на Доска заявок" loading="lazy">
+              <figcaption>Так должен выглядеть файл после правки: в строке 19 текст «Доска заявок»</figcaption>
+            </figure></li>
+          <li><b>Посмотрите на страницу, не обновляя её</b><p>Вернитесь в браузер. Обновлять страницу не нужно.</p>
+            <figure class="shot" style="max-width: 1106px">
+              <img src="img/12-stranica-hmr.png" width="1100" height="434" alt="Страница после сохранения: заголовок Доска заявок, кнопка по-прежнему показывает Count is 3" loading="lazy">
+              <figcaption>Так должна выглядеть страница: заголовок сменился, на счётчике осталось 3</figcaption>
+            </figure></li>
+        </ol>
 
         <p>Заголовок на странице сменился через мгновение после сохранения, и кнопка по-прежнему показывает <strong>Count is 3</strong>. Если бы страница перезагрузилась, счётчик начал бы с нуля: состояние хранится в памяти браузера и при перезагрузке теряется. Сохранённое число — признак того, что сработала горячая замена. В работе это экономит время: если форма заявки заполнена и на ней проверяется ошибка, после правки кода её не нужно заполнять заново.</p>
 
@@ -452,11 +465,10 @@ npm install</pre>
 
         <h2 id="s8"><span class="sec">§8</span>Заготовка проекта «Доска заявок»</h2>
 
-        <p>Стартовая страница шаблона нужна только для проверки, что всё работает. Для проекта модуля 1 из шаблона убирается всё лишнее, и остаётся пустая страница с заголовком. Порядок такой:</p>
+        <p>Стартовая страница шаблона нужна только для проверки, что всё работает. Для проекта модуля 1 из шаблона убирается всё лишнее, и остаётся пустая страница с заголовком. Сервер можно не останавливать: изменения будут видны сразу. Порядок шагов важен: сначала заменяется <code>App.tsx</code>, и только потом удаляются файлы, которые он подключал.</p>
 
         <ol class="steps">
-          <li><b>Удалите лишние файлы</b><p>В проводнике удалите файл <code>src/App.css</code> и папку <code>src/assets</code> (щелчок правой кнопкой → <strong>Delete</strong>). Стили и картинки шаблона для доски заявок не нужны.</p></li>
-          <li><b>Замените содержимое App.tsx</b>
+          <li><b>Замените содержимое App.tsx</b><p>Откройте <code>src/App.tsx</code>, выделите весь текст (<kbd>Ctrl</kbd>+<kbd>A</kbd>, на macOS <kbd>⌘</kbd>+<kbd>A</kbd>) и удалите его. Скопируйте код ниже кнопкой «копировать» в шапке блока, вставьте в пустой файл (<kbd>Ctrl</kbd>+<kbd>V</kbd>) и сохраните (<kbd>Ctrl</kbd>+<kbd>S</kbd>). В файле должно получиться 10 строк.</p>
             <figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">function</span> <span class="f">App</span>() {
   <span class="k">return</span> (
     &lt;<span class="t">main</span>&gt;
@@ -467,7 +479,7 @@ npm install</pre>
 }
 
 <span class="k">export default</span> App</pre></figure></li>
-          <li><b>Замените содержимое index.css</b>
+          <li><b>Замените содержимое index.css</b><p>Так же откройте <code>src/index.css</code>, выделите и удалите весь текст, вставьте код ниже и сохраните.</p>
             <figure class="code"><figcaption><span>zayavki/src/index.css</span></figcaption><pre>:root {
   <span class="a">font-family</span>: system-ui, <span class="s">'Segoe UI'</span>, Roboto, sans-serif;
   <span class="a">color</span>: <span class="n">#1f2430</span>;
@@ -483,24 +495,39 @@ main {
   <span class="a">margin</span>: <span class="n">0</span> auto;
   <span class="a">padding</span>: <span class="n">32px</span> <span class="n">20px</span>;
 }</pre></figure></li>
-          <li><b>Сохраните файлы и посмотрите на страницу</b><p>Если страница не обновилась сама (после удаления файлов, которые она использовала, это бывает), обновите её в браузере.</p></li>
+          <li><b>Удалите лишние файлы</b><p>В проводнике щёлкните правой кнопкой по файлу <code>src/App.css</code> → <strong>Delete</strong> и подтвердите. Так же удалите папку <code>src/assets</code>. Новый <code>App.tsx</code> эти файлы уже не подключает, поэтому их удаление ничего не ломает.</p></li>
+          <li><b>Проверьте результат</b><p>В папке <code>src</code> должны остаться три файла: <code>App.tsx</code>, <code>index.css</code>, <code>main.tsx</code> (первый кадр ниже). В браузере — заголовок «Доска заявок» и строка под ним; если страница не обновилась сама, нажмите <kbd>F5</kbd>. В терминале не должно быть красных строк.</p>
+
+            <figure class="shot" style="max-width: 1246px">
+              <img src="img/13-app-karkas.png" width="1240" height="405" alt="VS Code: новый App.tsx из 10 строк, в проводнике остались App.tsx, index.css, main.tsx" loading="lazy">
+              <figcaption>Заготовка: в папке src остались три файла, App.tsx сокращён до десяти строк</figcaption>
+            </figure>
+
+            <figure class="shot" style="max-width: 1106px">
+              <img src="img/14-stranica-karkas.png" width="1100" height="252" alt="Страница localhost:5173: заголовок Доска заявок и строка Здесь появятся форма заявки и список карточек" loading="lazy">
+              <figcaption>Страница заготовки по адресу localhost:5173</figcaption>
+            </figure></li>
         </ol>
+
+        <div class="margin-note margin-note--warn">
+          <b>Если файлы удалены раньше, чем заменён App.tsx</b>
+          <p>Старый <code>App.tsx</code> подключает <code>./App.css</code> и картинки из <code>assets</code>. Если удалить их первыми, в терминале и на странице появится ошибка <code>Failed to resolve import "./App.css" from "src/App.tsx". Does the file exist?</code> — «не удалось найти подключаемый файл». Ошибка исчезнет, как только будет сохранён новый <code>App.tsx</code> из шага 1.</p>
+        </div>
 
         <p>В новом <code>App.tsx</code> осталось только то, что нужно любому компоненту. <code>function App() { … }</code> объявляет функцию с именем <code>App</code>; имя компонента всегда пишется с заглавной буквы, иначе React примет <code>&lt;app /&gt;</code> за обычный тег HTML. Внутри функции <code>return ( … )</code> возвращает разметку: тег <code>&lt;main&gt;</code> — основная часть страницы, в нём заголовок и абзац. Круглые скобки вокруг разметки позволяют записать её на нескольких строках. Последняя строка <code>export default App</code> отдаёт компонент наружу — его берёт <code>import App from './App.tsx'</code> в <code>main.tsx</code>.</p>
 
         <p>В <code>index.css</code> три правила. Правило <code>:root</code> задаёт для всей страницы шрифт (первый доступный из списка: системный, Segoe UI на Windows, Roboto на Android), цвет текста и цвет фона. Правило <code>body</code> убирает отступ, который браузер по умолчанию ставит вокруг страницы. Правило <code>main</code> ограничивает ширину содержимого 960 пикселями, ставит его по центру (<code>margin: 0 auto</code>) и даёт внутренние отступы: 32 пикселя сверху и снизу, 20 — слева и справа.</p>
 
-        <figure class="shot" style="max-width: 1246px">
-          <img src="img/13-app-karkas.png" width="1240" height="405" alt="VS Code: новый App.tsx из 10 строк, в проводнике остались App.tsx, index.css, main.tsx" loading="lazy">
-          <figcaption>Заготовка: в папке src остались три файла, App.tsx сокращён до десяти строк</figcaption>
-        </figure>
+        <p>С этой заготовки начинается глава 1.2: в ней доска заявок разбивается на компоненты — шапку, форму и карточку.</p>
 
-        <figure class="shot" style="max-width: 1106px">
-          <img src="img/14-stranica-karkas.png" width="1100" height="252" alt="Страница localhost:5173: заголовок Доска заявок и строка Здесь появятся форма заявки и список карточек" loading="lazy">
-          <figcaption>Страница заготовки по адресу localhost:5173</figcaption>
-        </figure>
-
-        <p>В проводнике в папке <code>src</code> остались три файла: <code>App.tsx</code>, <code>index.css</code> и <code>main.tsx</code>. На странице — заголовок «Доска заявок» и строка под ним на светлом фоне. С этой заготовки начинается глава 1.2: в ней доска заявок разбивается на компоненты — шапку, форму и карточку.</p>
+        <h3>Как вернуться к проекту на следующем занятии</h3>
+        <p>Сервер разработки работает, только пока открыт терминал. На следующем занятии проект запускается так:</p>
+        <ol class="steps">
+          <li><b>Откройте папку react-kurs в VS Code</b><p>Меню <strong>File → Open Recent</strong> → <code>react-kurs</code>, или <strong>File → Open Folder…</strong>, как в §2.</p></li>
+          <li><b>Откройте терминал и перейдите в папку проекта</b><figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>cd zayavki</pre></figure></li>
+          <li><b>Запустите сервер</b><figure class="code"><figcaption><span>Терминал · папка zayavki</span></figcaption><pre>npm run dev</pre></figure><p>Команду <code>npm install</code> повторять не нужно: пакеты уже лежат в <code>node_modules</code>. Её выполняют заново, только если проект скачан на другой компьютер или в <code>package.json</code> добавлен пакет.</p></li>
+          <li><b>Откройте адрес из терминала</b><p><code>http://localhost:5173/</code> — на странице должна быть заготовка доски заявок.</p></li>
+        </ol>
 
         <h2 id="s9"><span class="sec">§9</span>Частые ошибки</h2>
 
