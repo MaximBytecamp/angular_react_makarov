@@ -92,6 +92,49 @@
     });
   }
 
+  /* ---- Переключатель операционной системы ---------------------- */
+  /* Блоки помечены data-os="win|mac|linux" (можно несколько через пробел).
+     Пока читатель не выбрал систему кнопкой, она определяется по браузеру. */
+  const OS_KEY = 'ar-book-os';
+  const OS_ITEMS = [['win', 'Windows'], ['mac', 'macOS'], ['linux', 'Linux']];
+  const detectOs = () => {
+    const p = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
+    if (/win/i.test(p)) return 'win';
+    if (/mac|iphone|ipad/i.test(p)) return 'mac';
+    return 'linux';
+  };
+  if (document.querySelector('.book [data-os]') && running) {
+    const readOs = () => {
+      try {
+        const saved = localStorage.getItem(OS_KEY);
+        return OS_ITEMS.some(([id]) => id === saved) ? saved : detectOs();
+      } catch (_) {
+        return detectOs();
+      }
+    };
+    const bar = document.createElement('div');
+    bar.className = 'langbar';
+    bar.innerHTML = '<span class="langbar__label">система</span>';
+    const buttons = OS_ITEMS.map(([id, title]) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = title;
+      button.dataset.value = id;
+      bar.appendChild(button);
+      return button;
+    });
+    const applyOs = (value, save) => {
+      document.documentElement.setAttribute('data-os', value);
+      buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.value === value)));
+      if (save) {
+        try { localStorage.setItem(OS_KEY, value); } catch (_) { /* приватный режим */ }
+      }
+    };
+    buttons.forEach(button => button.addEventListener('click', () => applyOs(button.dataset.value, true)));
+    running.insertBefore(bar, running.querySelector('.running__folio'));
+    applyOs(readOs(), false);
+  }
+
   /* ---- Копирование кода ---------------------------------------- */
   document.querySelectorAll('figure.code > figcaption').forEach(caption => {
     const block = caption.parentElement.querySelector('pre');
