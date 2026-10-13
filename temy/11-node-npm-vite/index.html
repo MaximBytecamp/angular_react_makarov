@@ -153,7 +153,8 @@
           <li><b>Создайте папку для проектов</b><p>Имя — латиницей, без пробелов: <code>react-kurs</code>. Это имя будет видно в терминале и в командах.</p>
             <p data-os="win">В Проводнике откройте <strong>Документы</strong>, щёлкните правой кнопкой по пустому месту → <strong>Создать → Папку</strong> и назовите её <code>react-kurs</code>. Путь получится <code>C:\Users\&lt;ваше имя&gt;\Documents\react-kurs</code>.</p>
             <p data-os="mac">В Finder откройте папку <strong>Документы</strong>, нажмите <kbd>⇧</kbd>+<kbd>⌘</kbd>+<kbd>N</kbd> и назовите новую папку <code>react-kurs</code>.</p>
-            <p data-os="linux">В домашней папке создайте папку <code>react-kurs</code>: в файловом менеджере или командой <code>mkdir ~/react-kurs</code>.</p></li>
+            <p data-os="linux">В домашней папке создайте папку <code>react-kurs</code> в файловом менеджере или командой в терминале:</p>
+            <figure class="code" data-os="linux"><figcaption><span>Терминал</span></figcaption><pre>mkdir ~/react-kurs</pre></figure></li>
           <li><b>Откройте папку в VS Code</b><p>Меню <strong>File → Open Folder…</strong>, выберите <code>react-kurs</code> и нажмите <strong>Выбрать папку</strong> (Select Folder). Если VS Code спросит «Do you trust the authors of the files in this folder?», нажмите <strong>Yes, I trust the authors</strong>. Без этого VS Code откроет папку в ограниченном режиме, где часть функций отключена. Слева в проводнике появится заголовок <strong>REACT-KURS</strong>.</p></li>
           <li><b>Откройте терминал</b><p>Меню <strong>Terminal → New Terminal</strong> или сочетание <kbd>Ctrl</kbd>+<kbd>`</kbd> (клавиша с буквой Ё). Внизу окна появится панель с вкладкой <strong>TERMINAL</strong>. Строка слева от курсора заканчивается именем папки: <code>react-kurs $</code> на macOS и Linux, <code>PS C:\Users\…\react-kurs&gt;</code> на Windows.</p></li>
           <li><b>Введите две команды</b><p>Наберите первую команду, нажмите <kbd>Enter</kbd>, затем вторую и снова <kbd>Enter</kbd>:</p>
@@ -188,7 +189,7 @@ npm -v</pre></figure></li>
 
         <p>Список пакетов, которые нужны проекту, хранится в файле <code>package.json</code> в корне проекта — это рецепт из сравнения. Скачанные пакеты npm складывает в папку <code>node_modules</code> — это кладовая. Точные версии всех скачанных пакетов записываются в файл <code>package-lock.json</code> — это чек. Ниже файл <code>package.json</code> проекта, который будет создан в §4. Создавать его вручную не нужно: его запишет генератор. Здесь он показан заранее, чтобы при создании проекта было понятно, что появилось в папке.</p>
 
-        <figure class="code" data-run="no">
+        <figure class="code" data-read>
           <figcaption><span>zayavki/package.json</span></figcaption>
           <pre>{
   <span class="a">"name"</span>: <span class="s">"zayavki"</span>,
@@ -304,7 +305,9 @@ npm install</pre>
           <p>Пока Vite запущен, терминал занят и новые команды в нём не выполняются. Остановить сервер — <kbd>Ctrl</kbd>+<kbd>C</kbd> в этом терминале. Для других команд откройте второй терминал кнопкой <strong>+</strong> на панели терминала.</p>
         </div>
 
-        <p>Откройте адрес <code>http://localhost:5173/</code> в браузере: щелчок по ссылке в терминале с зажатой клавишей <kbd>Ctrl</kbd> (на macOS — <kbd>⌘</kbd>) или ввод адреса вручную.</p>
+        <p>Откройте адрес в браузере: щёлкните по ссылке в терминале с зажатой клавишей <kbd>Ctrl</kbd> (на macOS — <kbd>⌘</kbd>) или скопируйте адрес из блока ниже в адресную строку браузера.</p>
+
+        <figure class="code"><figcaption><span>Адрес в браузере</span></figcaption><pre>http://localhost:5173/</pre></figure>
 
         <figure class="shot" style="max-width: 1106px">
           <img src="img/08-stranica-vite.png" width="1100" height="434" alt="Стартовая страница шаблона Vite и React: логотипы, заголовок Get started, подсказка Edit src/App.tsx and save to test HMR, кнопка Count is 0, блоки Documentation и Connect with us" loading="lazy">
@@ -347,7 +350,7 @@ npm install</pre>
 
         <h3>Звено 1: index.html</h3>
 
-        <figure class="code" data-run="no">
+        <figure class="code" data-read>
           <figcaption><span>zayavki/index.html</span></figcaption>
           <pre>&lt;!doctype html&gt;
 &lt;<span class="t">html</span> <span class="a">lang</span>=<span class="s">"en"</span>&gt;
@@ -368,7 +371,7 @@ npm install</pre>
 
         <h3>Звено 2: main.tsx</h3>
 
-        <figure class="code" data-run="no">
+        <figure class="code" data-read>
           <figcaption><span>zayavki/src/main.tsx</span></figcaption>
           <pre><span class="k">import</span> { StrictMode } <span class="k">from</span> <span class="s">'react'</span>
 <span class="k">import</span> { createRoot } <span class="k">from</span> <span class="s">'react-dom/client'</span>
@@ -442,8 +445,10 @@ npm install</pre>
             </figure></li>
           <li><b>Откройте файл App.tsx</b><p>В проводнике VS Code раскройте <code>zayavki</code> → <code>src</code> и щёлкните по <code>App.tsx</code>. Файл откроется справа, слева от кода — номера строк.</p></li>
           <li><b>Измените строку 19</b><p>Найдите строку 19 по номеру слева или перейдите к ней сочетанием <kbd>Ctrl</kbd>+<kbd>G</kbd> (на macOS <kbd>⌃</kbd>+<kbd>G</kbd>), введите <code>19</code> и <kbd>Enter</kbd>. Замените текст между тегами <code>&lt;h1&gt;</code> и <code>&lt;/h1&gt;</code>; сами теги не трогайте:</p>
-            <figure class="code" data-run="no"><figcaption><span>src/App.tsx · строка 19</span></figcaption><pre><span class="c">было:</span>  &lt;<span class="t">h1</span>&gt;Get started&lt;/<span class="t">h1</span>&gt;
-<span class="c">стало:</span> &lt;<span class="t">h1</span>&gt;Доска заявок&lt;/<span class="t">h1</span>&gt;</pre></figure></li>
+            <figure class="code" data-read><figcaption><span>src/App.tsx · строка 19 · было и стало</span></figcaption><pre><span class="c">было:</span>  &lt;<span class="t">h1</span>&gt;Get started&lt;/<span class="t">h1</span>&gt;
+<span class="c">стало:</span> &lt;<span class="t">h1</span>&gt;Доска заявок&lt;/<span class="t">h1</span>&gt;</pre></figure>
+            <p>Можно выделить строку 19 целиком и вставить вместо неё готовую строку из блока ниже — отступ в начале строки сохраняется:</p>
+            <figure class="code"><figcaption><span>src/App.tsx · новая строка 19</span></figcaption><pre>          &lt;<span class="t">h1</span>&gt;Доска заявок&lt;/<span class="t">h1</span>&gt;</pre></figure></li>
           <li><b>Сохраните файл</b><p>Нажмите <kbd>Ctrl</kbd>+<kbd>S</kbd> (на macOS <kbd>⌘</kbd>+<kbd>S</kbd>). Пока файл не сохранён, на его вкладке вместо крестика стоит белая точка; после сохранения точка исчезает.</p>
             <figure class="shot" style="max-width: 1246px">
               <img src="img/11-app-pravka.png" width="1240" height="780" alt="VS Code: в файле App.tsx в строке 19 заголовок h1 изменён на Доска заявок" loading="lazy">
@@ -526,7 +531,7 @@ main {
           <li><b>Откройте папку react-kurs в VS Code</b><p>Меню <strong>File → Open Recent</strong> → <code>react-kurs</code>, или <strong>File → Open Folder…</strong>, как в §2.</p></li>
           <li><b>Откройте терминал и перейдите в папку проекта</b><figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>cd zayavki</pre></figure></li>
           <li><b>Запустите сервер</b><figure class="code"><figcaption><span>Терминал · папка zayavki</span></figcaption><pre>npm run dev</pre></figure><p>Команду <code>npm install</code> повторять не нужно: пакеты уже лежат в <code>node_modules</code>. Её выполняют заново, только если проект скачан на другой компьютер или в <code>package.json</code> добавлен пакет.</p></li>
-          <li><b>Откройте адрес из терминала</b><p><code>http://localhost:5173/</code> — на странице должна быть заготовка доски заявок.</p></li>
+          <li><b>Откройте адрес из терминала</b><figure class="code"><figcaption><span>Адрес в браузере</span></figcaption><pre>http://localhost:5173/</pre></figure><p>На странице должна быть заготовка доски заявок.</p></li>
         </ol>
 
         <h2 id="s9"><span class="sec">§9</span>Частые ошибки</h2>
@@ -536,9 +541,9 @@ main {
             <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
             <tbody>
               <tr><td><code>node: command not found</code> или «"node" не является внутренней или внешней командой»</td><td>Node.js не установлен, или терминал открыт до установки и не видит новую программу</td><td>Закрыть VS Code полностью и открыть снова. Если не помогло — переустановить Node.js, не снимая флажок Add to PATH</td></tr>
-              <tr><td>В PowerShell: «Невозможно загрузить файл C:\Program Files\nodejs\npm.ps1, так как выполнение сценариев отключено в этой системе»</td><td>В Windows по умолчанию запрещено выполнять сценарии PowerShell, а npm запускается через такой сценарий</td><td>Выполнить один раз <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code> и ответить <code>Y</code>, либо выбрать в терминале VS Code профиль Command Prompt</td></tr>
-              <tr><td><code>npm error enoent Could not read package.json</code></td><td>Команда выполнена не в папке проекта: в текущей папке нет <code>package.json</code></td><td>Перейти в папку проекта: <code>cd zayavki</code>. Имя слева от <code>$</code> должно быть <code>zayavki</code></td></tr>
-              <tr><td><code>sh: vite: command not found</code> или «"vite" не является внутренней или внешней командой»</td><td>Пакеты не установлены: нет папки <code>node_modules</code></td><td>Выполнить <code>npm install</code> в папке проекта, затем <code>npm run dev</code></td></tr>
+              <tr><td>В PowerShell: «Невозможно загрузить файл C:\Program Files\nodejs\npm.ps1, так как выполнение сценариев отключено в этой системе»</td><td>В Windows по умолчанию запрещено выполнять сценарии PowerShell, а npm запускается через такой сценарий</td><td>Выполнить один раз команду из блока «Windows: npm -v выдал красную ошибку» в §2 и ответить <code>Y</code>, либо выбрать в терминале VS Code профиль Command Prompt</td></tr>
+              <tr><td><code>npm error enoent Could not read package.json</code></td><td>Команда выполнена не в папке проекта: в текущей папке нет <code>package.json</code></td><td>Перейти в папку проекта командой <code>cd zayavki</code> (блок в §5). Имя слева от <code>$</code> должно стать <code>zayavki</code></td></tr>
+              <tr><td><code>sh: vite: command not found</code> или «"vite" не является внутренней или внешней командой»</td><td>Пакеты не установлены: нет папки <code>node_modules</code></td><td>Выполнить в папке проекта <code>npm install</code>, затем <code>npm run dev</code> (блоки в §5)</td></tr>
               <tr><td><code>Port 5173 is in use, trying another one...</code></td><td>Порт занят другим запущенным сервером, чаще всего забытым Vite во втором терминале</td><td>Открыть адрес, который Vite напечатал ниже (например, <code>localhost:5174</code>), или остановить старый сервер <kbd>Ctrl</kbd>+<kbd>C</kbd></td></tr>
               <tr><td><code>You are using Node.js 18.x. Vite requires Node.js version 20.19+ or 22.12+</code></td><td>Установлена старая версия Node.js</td><td>Установить LTS-версию 24 по §2 и проверить <code>node -v</code></td></tr>
               <tr><td>Страница не меняется после правки</td><td>Файл не сохранён (на вкладке редактора точка вместо крестика) или сервер остановлен</td><td>Сохранить файл <kbd>Ctrl</kbd>+<kbd>S</kbd>; проверить, что в терминале работает <code>npm run dev</code></td></tr>

@@ -139,6 +139,14 @@
   document.querySelectorAll('figure.code > figcaption').forEach(caption => {
     const block = caption.parentElement.querySelector('pre');
     if (!block || caption.parentElement.classList.contains('code--out')) return;
+    // Блок для чтения (data-read): код показан для разбора, вставлять его не нужно.
+    if (caption.parentElement.hasAttribute('data-read')) {
+      const mark = document.createElement('span');
+      mark.className = 'read-mark';
+      mark.textContent = 'для чтения';
+      caption.appendChild(mark);
+      return;
+    }
 
     const button = document.createElement('button');
     button.type = 'button';

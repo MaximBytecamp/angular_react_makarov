@@ -184,7 +184,7 @@
 
         <p>В левой витрине ошибка устроена так же, как в настоящих проектах. Пока событий два — «добавить» и «скидка» — и мест на экране три, разработчик помнит, что где обновлять. Когда событий двадцать, а мест, где показана корзина, десять (шапка, боковая панель, страница оформления, всплывающее окно), число связей «событие → место» растёт как произведение: двести строк, каждую из которых нужно не забыть. Код слева выглядит так:</p>
 
-        <figure class="code" data-run="no">
+        <figure class="code" data-read>
           <figcaption><span>Ручное обновление · каждый обработчик обновляет места сам</span></figcaption>
           <pre><span class="k">let</span> count = <span class="n">0</span>;
 <span class="k">let</span> price = <span class="n">450</span>;
@@ -205,7 +205,7 @@ saleButton.<span class="f">onclick</span> = () =&gt; {
 
         <p>Справа код разделён на две части. Первая — функция <code>render</code>: она получает состояние и выставляет по нему все четыре места. Вторая — обработчики событий: они меняют только состояние и вызывают <code>render</code>. В обработчике скидки нет ни одного места экрана, поэтому пропустить место в нём нельзя: все места перечислены один раз, в <code>render</code>.</p>
 
-        <figure class="code" data-run="no">
+        <figure class="code" data-read>
           <figcaption><span>Обновление из состояния · функция render обновляет все места</span></figcaption>
           <pre><span class="k">const</span> state = { count: <span class="n">0</span>, price: <span class="n">450</span> };
 
@@ -264,7 +264,7 @@ saleButton.<span class="f">onclick</span> = () =&gt; { state.price = <span class
 
         <p>В React и в Angular компонент устроен по-разному, но содержит одни и те же части: описание того, как он выглядит, данные, которые он получает от родителя, и собственное состояние. Ниже один и тот же компонент — значок корзины из дерева — записан двумя способами. Переключатель в шапке страницы выбирает фреймворк; выбор запоминается и действует на всю книгу.</p>
 
-        <figure class="code" data-fw="react" data-run="no">
+        <figure class="code" data-fw="react" data-read>
           <figcaption><span>React · CartBadge.tsx</span></figcaption>
           <pre><span class="k">type</span> <span class="f">Props</span> = { count: <span class="k">number</span> };
 
@@ -272,7 +272,7 @@ saleButton.<span class="f">onclick</span> = () =&gt; { state.price = <span class
   <span class="k">return</span> &lt;<span class="t">span</span> <span class="a">className</span>=<span class="s">"badge"</span>&gt;{count}&lt;/<span class="t">span</span>&gt;;
 }</pre>
         </figure>
-        <figure class="code" data-fw="angular" data-run="no">
+        <figure class="code" data-fw="angular" data-read>
           <figcaption><span>Angular · cart-badge.ts</span></figcaption>
           <pre><span class="k">import</span> { Component, input } <span class="k">from</span> <span class="s">'@angular/core'</span>;
 
