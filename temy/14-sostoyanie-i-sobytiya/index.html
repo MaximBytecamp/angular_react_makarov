@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>1.4 Состояние и события · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch .num-dark { font: 700 12px var(--mono); fill: #ffffff; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .up { stroke: #C2185B; stroke-dasharray: 6 4; }
+    .sch .up-text { fill: #C2185B; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 1 · React: первый проект и первый бот</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 1 · первый проект и первый бот</p>
+          <p class="running__folio">1.4</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">1.4</span>
+          <h1>Состояние<br>и события</h1>
+          <p class="lead">В этой главе разобрано, как страница на React отвечает на действия пользователя. У карточки заявки появляется кнопка «Взять в работу», и по нажатию статус меняется на экране. Сначала показано, как подключить к кнопке функцию-обработчик и проверить её в консоли браузера. Затем — опыт с обычной переменной, которая меняется, а страница остаётся прежней, и хук <code>useState</code>, с которым новый статус появляется на экране. В конце состояние переносится из карточки в <code>App</code>, чтобы шапка доски показывала число новых заявок.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>React</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после главы 1.3, запущенный <code>npm run dev</code>, браузер Chrome, Edge или Яндекс Браузер</dd></div>
+          <div><dt>Результат</dt><dd>Кнопка в карточке переводит заявку из «Новая» в «В работе» и «Готово», шапка показывает число новых заявок</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Событие и обработчик</a></li>
+            <li><a href="#s2">Опыт с обычной переменной</a></li>
+            <li><a href="#s3">Состояние: хук useState</a></li>
+            <li><a href="#s4">Как React обновляет страницу</a></li>
+            <li><a href="#s5">Состояние в родителе</a></li>
+            <li><a href="#s6">Частые ошибки</a></li>
+            <li><a href="#s7">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Событие и обработчик</h2>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В лифте нажатие кнопки этажа — событие. Что после этого произойдёт, заложено заранее в схему лифта: закрыть двери и ехать на нужный этаж. Пассажир только нажимает кнопку, а действие выполняет механизм, подключённый к ней.</p>
+          <p class="miss">В лифте реакция на кнопку заложена при сборке. В React функцию, которая выполнится при нажатии, пишет разработчик.</p>
+        </div></div>
+
+        <p><span class="term">Событие</span> — то, что происходит на странице и о чём браузер может сообщить программе: щелчок мышью, нажатие клавиши, ввод текста в поле, отправка формы. <span class="term">Обработчик события</span> — функция, которую браузер вызывает, когда событие произошло. В React обработчик подключают к тегу атрибутом, имя которого начинается с <code>on</code>: <code>onClick</code> — щелчок, <code>onChange</code> — изменение поля, <code>onSubmit</code> — отправка формы. Значение атрибута — сама функция в фигурных скобках: <code>&lt;button onClick={handleClick}&gt;</code>.</p>
+
+        <p>Функцию-обработчик обычно объявляют внутри компонента, перед <code>return</code>. По договорённости её имя начинается с <code>handle</code> («обработать») и продолжается названием события: <code>handleClick</code>, <code>handleSubmit</code>. Так по имени видно, что функция вызывается браузером в ответ на действие пользователя.</p>
+
+        <h3>Кнопка в карточке</h3>
+
+        <p>Первая версия кнопки ничего не меняет на странице: обработчик только печатает сообщение в консоль браузера. Это проверка того, что щелчок доходит до функции.</p>
+
+        <ol class="steps">
+          <li><b>Добавьте стили кнопки</b><p>Откройте <code>src/index.css</code>, вставьте в самый конец файла правила ниже и сохраните.</p>
+            <!--CODE tools/code14/index-knopka.css | zayavki/src/index.css · в конец файла | lines=118-134--><figure class="code"><figcaption><span>zayavki/src/index.css · в конец файла</span></figcaption><pre>.card button {
+  <span class="a">margin-top</span>: <span class="n">12px</span>;
+  <span class="a">padding</span>: <span class="n">6px</span> <span class="n">12px</span>;
+  <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#2f6fde</span>;
+  <span class="a">border-radius</span>: <span class="n">6px</span>;
+  <span class="a">background</span>: <span class="n">#ffffff</span>;
+  <span class="a">color</span>: <span class="n">#2f6fde</span>;
+  <span class="a">font</span>: inherit;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+  <span class="a">cursor</span>: pointer;
+}
+
+.card <span class="a">button</span>:disabled {
+  <span class="a">border-color</span>: <span class="n">#c4cad8</span>;
+  <span class="a">color</span>: <span class="n">#8a93a6</span>;
+  <span class="a">cursor</span>: default;
+}</pre></figure><!--/CODE-->
+            <p>Первое правило оформляет кнопку внутри карточки: синяя рамка, белый фон, отступ сверху. Второе, с <code>:disabled</code>, задаёт серый вид выключенной кнопки; выключенная кнопка понадобится в §3.</p></li>
+          <li><b>Замените содержимое RequestCard.tsx</b><p>Откройте <code>src/components/RequestCard.tsx</code>, замените весь текст кодом ниже и сохраните.</p>
+            <!--CODE tools/code14/RequestCard-click.tsx | zayavki/src/components/RequestCard.tsx--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx</span></figcaption><pre><span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>
+
+<span class="k">type</span> RequestCardProps = {
+  title: string
+  room: string
+  details: string
+  status?: Status
+}
+
+<span class="k">function</span> <span class="f">RequestCard</span>({ title, room, details, status = <span class="s">'Новая'</span> }: RequestCardProps) {
+  <span class="k">function</span> <span class="f">handleClick</span>() {
+    console.<span class="f">log</span>(<span class="s">'Нажата кнопка в заявке:'</span>, title)
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {room}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{status}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;h3</span><span class="t">&gt;</span>{title}<span class="t">&lt;/h3</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>{details}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;button</span> <span class="a">onClick</span>={handleClick}<span class="t">&gt;</span>Взять в работу<span class="t">&lt;/button</span><span class="t">&gt;</span>
+    <span class="t">&lt;/article</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-knopka-obrabotchik.png" width="1240" height="780" alt="VS Code: RequestCard.tsx с функцией handleClick в строках 11–13 и кнопкой onClick в строке 23" loading="lazy"><figcaption>Так должен выглядеть RequestCard.tsx: функция handleClick перед return, кнопка в конце карточки</figcaption></figure></li>
+          <li><b>Откройте консоль браузера</b><p>В браузере с доской заявок нажмите <kbd>F12</kbd> (на macOS — <kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>J</kbd>) и выберите вкладку <strong>Console</strong>. Нажмите кнопку «Взять в работу» в каждой из трёх карточек.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/02-konsol-nazhatiya.png" width="1100" height="677" alt="Доска заявок с кнопками Взять в работу, внизу консоль браузера с тремя сообщениями Нажата кнопка в заявке" loading="lazy"><figcaption>Так должен выглядеть результат: под каждой заявкой кнопка, в консоли три сообщения — по одному на нажатие</figcaption></figure></li>
+        </ol>
+
+        <p>В функции <code>handleClick</code> одна команда — <code>console.log</code>. Она печатает в консоль браузера свои аргументы через пробел: строку <code>'Нажата кнопка в заявке:'</code> и значение <code>title</code>. Консоль — панель инструментов разработчика, куда попадают сообщения программы и ошибки; на странице эти сообщения не видны. Справа от каждого сообщения указан файл и строка, где оно напечатано: <code>RequestCard.tsx:12</code>.</p>
+
+        <p>У каждой карточки свой обработчик с её собственным <code>title</code>: функция <code>RequestCard</code> вызывается три раза, и при каждом вызове создаётся отдельная <code>handleClick</code>. Поэтому в консоли три разных названия заявок. При открытии страницы в консоли может быть и сообщение React с предложением установить расширение React DevTools; для работы в этой главе оно не требуется.</p>
+
+        <div class="margin-note margin-note--warn">
+          <b>Функция без скобок</b>
+          <p>В <code>onClick={handleClick}</code> после имени функции нет круглых скобок. Запись без скобок передаёт кнопке саму функцию, и браузер вызовет её при щелчке. Запись <code>onClick={handleClick()}</code> вызывает функцию сразу, при отрисовке карточки, и передаёт кнопке её результат. Что из этого получается, показано в §3.</p>
+        </div>
+
+        <p class="bridge">Щелчок доходит до обработчика. Следующий шаг — чтобы обработчик менял статус заявки на экране.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Опыт с обычной переменной</h2>
+
+        <p>Изменяемые данные в JavaScript хранят в переменной, объявленной словом <code>let</code>. Опыт проверяет, можно ли так хранить статус: переменная выводится в разметке и меняется в обработчике. Замените содержимое <code>RequestCard.tsx</code> кодом ниже и сохраните.</p>
+
+        <!--CODE tools/code14/RequestCard-let.tsx | zayavki/src/components/RequestCard.tsx · опыт--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx · опыт</span></figcaption><pre><span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>
+
+<span class="k">type</span> RequestCardProps = {
+  title: string
+  room: string
+  details: string
+  status?: Status
+}
+
+<span class="k">function</span> <span class="f">RequestCard</span>({ title, room, details, status = <span class="s">'Новая'</span> }: RequestCardProps) {
+  <span class="k">let</span> current = status
+
+  <span class="k">function</span> <span class="f">handleClick</span>() {
+    current = <span class="s">'В работе'</span>
+    console.<span class="f">log</span>(<span class="s">'current ='</span>, current)
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {room}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{current}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;h3</span><span class="t">&gt;</span>{title}<span class="t">&lt;/h3</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>{details}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;button</span> <span class="a">onClick</span>={handleClick}<span class="t">&gt;</span>Взять в работу<span class="t">&lt;/button</span><span class="t">&gt;</span>
+    <span class="t">&lt;/article</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
+
+        <p>Изменились три места. В строке 11 объявлена переменная <code>current</code> («текущий статус») с начальным значением из props. В обработчике ей присваивается <code>'В работе'</code>, и новое значение печатается в консоль. В разметке на месте статуса стоит <code>{current}</code>. Нажмите дважды «Взять в работу» в первой карточке.</p>
+
+        <figure class="shot" style="max-width: 1106px"><img src="img/03-peremennaya-let.png" width="1100" height="662" alt="Доска заявок: у первой карточки статус по-прежнему Новая, в консоли сообщение current = В работе с отметкой 2" loading="lazy"><figcaption>Опыт с переменной: в консоли current = В работе, на карточке по-прежнему «Новая»</figcaption></figure>
+
+        <p>В консоли сообщение <code>current = В работе</code>; кружок с цифрой 2 слева означает, что одинаковое сообщение напечатано два раза подряд. Значит, обработчик выполнился и переменная изменилась. А на карточке статус остался «Новая».</p>
+
+        <p>Причина в том, как React строит страницу. Разметку карточки возвращает функция <code>RequestCard</code>, и React вызывает её, когда отрисовывает компонент. Вызов функции компонента называется <span class="term">отрисовкой</span> (в документации — render). После отрисовки React переносит полученную разметку в страницу и больше функцию не вызывает, пока не получит сигнал, что данные изменились. Присваивание <code>current = 'В работе'</code> такого сигнала не даёт: переменная поменялась, но функция <code>RequestCard</code> не вызвана заново, и разметка на странице осталась от первой отрисовки.</p>
+
+        <p>Если бы React и вызвал функцию заново, статус всё равно вернулся бы к «Новая»: строка <code>let current = status</code> выполняется при каждом вызове и создаёт переменную с начальным значением. Обычная переменная существует только внутри одного вызова функции.</p>
+
+        <h3>Что показывает линтер</h3>
+
+        <p>Эту ошибку находит линтер Oxlint, установленный в проект в главе 1.1. Откройте второй терминал (<strong>Terminal → New Terminal</strong>; первый занят сервером разработки) и выполните команду:</p>
+
+        <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>npm run lint</pre></figure>
+
+        <figure class="shot" style="max-width: 1246px"><img src="img/04-lint-let.png" width="1240" height="312" alt="Терминал VS Code: npm run lint выводит два предупреждения react(immutability) для строки 14 RequestCard.tsx" loading="lazy"><figcaption>Линтер выводит два предупреждения для строки 14 — присваивания в обработчике</figcaption></figure>
+
+        <p>Оба предупреждения относятся к строке 14, символ 5 — к присваиванию <code>current = 'В работе'</code>. Первое переводится так: «нельзя присваивать переменной новое значение после завершения отрисовки; это может привести к несогласованному поведению при следующих отрисовках». В конце обоих сообщений подсказка: <code>Consider using state instead</code> — «используйте вместо этого состояние». Состояние разобрано в следующем разделе.</p>
+
+        <p class="bridge">Нужна переменная, которая сохраняет значение между вызовами функции и при изменении вызывает отрисовку заново. В React это состояние.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Состояние: хук useState</h2>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В поликлинике над кабинетом висит табло с номером талона. Если врач запишет номер следующего пациента на листке у себя на столе, в коридоре номер не изменится. Чтобы номер поменялся для всех, врач нажимает кнопку пульта, и табло показывает новое значение.</p>
+          <p class="miss">Обычная переменная в §2 — листок на столе. Функция из <code>useState</code> — кнопка пульта: она записывает новое значение и обновляет то, что видно на экране.</p>
+        </div></div>
+
+        <p><span class="term">Состояние</span> (state) — данные компонента, которые React хранит между отрисовками и при изменении которых отрисовывает компонент заново. Состояние создаётся функцией <code>useState</code> из библиотеки React. Функции React, имена которых начинаются с <code>use</code>, называются <span class="term">хуками</span> (от англ. hook — крючок): через них компонент подключается к возможностям React.</p>
+
+        <!--CODE tools/code14/RequestCard-state.tsx | Создание состояния | read lines=13-13--><figure class="code" data-read><figcaption><span>Создание состояния</span></figcaption><pre>  <span class="k">const</span> [current, setCurrent] = <span class="f">useState</span>(status)</pre></figure><!--/CODE-->
+
+        <p><code>useState(status)</code> получает начальное значение — здесь статус из props — и возвращает пару: текущее значение и функцию для его изменения. Квадратные скобки слева раскладывают пару по двум переменным, так же как фигурные скобки в главе 1.3 распаковывали объект props. Имена выбирает разработчик; по договорённости вторая переменная называется как первая с приставкой <code>set</code>: <code>current</code> и <code>setCurrent</code>. Слово <code>const</code> означает, что переменной нельзя присвоить другое значение: значение меняется только через <code>setCurrent</code>.</p>
+
+        <p>Вызов <code>setCurrent('В работе')</code> делает две вещи. Он сохраняет новое значение в React и сообщает React, что компонент нужно отрисовать заново. При следующем вызове функции <code>RequestCard</code> строка с <code>useState</code> вернёт уже <code>'В работе'</code>; начальное значение используется только при первой отрисовке.</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое RequestCard.tsx</b>
+            <!--CODE tools/code14/RequestCard-state.tsx | zayavki/src/components/RequestCard.tsx--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+
+<span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>
+
+<span class="k">type</span> RequestCardProps = {
+  title: string
+  room: string
+  details: string
+  status?: Status
+}
+
+<span class="k">function</span> <span class="f">RequestCard</span>({ title, room, details, status = <span class="s">'Новая'</span> }: RequestCardProps) {
+  <span class="k">const</span> [current, setCurrent] = <span class="f">useState</span>(status)
+
+  <span class="k">function</span> <span class="f">handleClick</span>() {
+    <span class="k">if</span> (current === <span class="s">'Новая'</span>) {
+      <span class="f">setCurrent</span>(<span class="s">'В работе'</span>)
+    } <span class="k">else</span> {
+      <span class="f">setCurrent</span>(<span class="s">'Готово'</span>)
+    }
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {room}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{current}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;h3</span><span class="t">&gt;</span>{title}<span class="t">&lt;/h3</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>{details}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;button</span> <span class="a">onClick</span>={handleClick} <span class="a">disabled</span>={current === <span class="s">'Готово'</span>}<span class="t">&gt;</span>
+        {current === <span class="s">'Новая'</span> ? <span class="s">'Взять в работу'</span> : <span class="s">'Завершить'</span>}
+      <span class="t">&lt;/button</span><span class="t">&gt;</span>
+    <span class="t">&lt;/article</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-usestate.png" width="1240" height="780" alt="VS Code: RequestCard.tsx с импортом useState в строке 1, const current setCurrent = useState(status) в строке 13 и обработчиком с if и else" loading="lazy"><figcaption>Так должен выглядеть RequestCard.tsx: импорт useState в первой строке, состояние в строке 13</figcaption></figure></li>
+          <li><b>Проверьте кнопки</b><p>Нажмите «Взять в работу» в первой карточке и «Взять в работу», затем «Завершить» во второй.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/06-sostoyanie-kartochek.png" width="1100" height="651" alt="Доска заявок: первая карточка В работе с кнопкой Завершить, вторая и третья Готово с серыми выключенными кнопками" loading="lazy"><figcaption>Так должна выглядеть страница: первая заявка «В работе», вторая и третья «Готово», их кнопки выключены</figcaption></figure></li>
+        </ol>
+
+        <p>Первая строка <code>import { useState } from 'react'</code> подключает хук из библиотеки React. Фигурные скобки в импорте означают, что берётся функция с именем <code>useState</code>: библиотека React содержит много функций, и в файл подключают только нужные.</p>
+
+        <p>В обработчике стоит условие <code>if … else</code>. Знак <code>===</code> сравнивает два значения и даёт <code>true</code>, если они равны. Если текущий статус «Новая», он становится «В работе», иначе — «Готово». Так одна кнопка проводит заявку по двум шагам.</p>
+
+        <p>У кнопки появился второй атрибут: <code>disabled={current === 'Готово'}</code>. Атрибут <code>disabled</code> выключает кнопку, если его значение <code>true</code>: выключенная кнопка не нажимается, и правило <code>.card button:disabled</code> из первого шага красит её в серый цвет. У заявки в статусе «Готово» нажимать больше нечего.</p>
+
+        <p>Текст кнопки задан выражением <code>{current === 'Новая' ? 'Взять в работу' : 'Завершить'}</code>. Это <span class="term">тернарный оператор</span> — условие в одну строку: <code>условие ? значение_если_да : значение_если_нет</code>. Пока заявка новая, на кнопке «Взять в работу», после этого — «Завершить». Условие с <code>if</code> внутри JSX записать нельзя, потому что в фигурных скобках JSX допускается только выражение, дающее значение; тернарный оператор — выражение.</p>
+
+        <div class="margin-note">
+          <b>Значение меняется к следующей отрисовке</b>
+          <p>Если сразу после <code>setCurrent('В работе')</code> в том же обработчике напечатать <code>console.log(current)</code>, в консоли будет прежнее значение, «Новая». Вызов <code>setCurrent</code> не меняет переменную <code>current</code> в текущем вызове функции: новое значение она получит при следующей отрисовке. Поэтому в обработчике решение принимается по значению, которое было на экране в момент щелчка.</p>
+        </div>
+
+        <h3>Вызов обработчика вместо передачи</h3>
+
+        <p>В §1 говорилось, что после имени обработчика в <code>onClick</code> скобки не ставятся. Если в этой версии карточки написать <code>onClick={handleClick()}</code> и сохранить файл, страница станет пустой, а в консоли появится ошибка.</p>
+
+        <figure class="shot" style="max-width: 1106px"><img src="img/07-vyzov-vmesto-peredachi.png" width="1100" height="302" alt="Пустая страница, в консоли ошибка Uncaught Error: Too many re-renders и предупреждение An error occurred in the RequestCard component" loading="lazy"><figcaption>При onClick={handleClick()} страница пустая, в консоли — Too many re-renders</figcaption></figure>
+
+        <p>Ошибка <code>Too many re-renders. React limits the number of renders to prevent an infinite loop</code> переводится как «слишком много повторных отрисовок; React ограничивает их число, чтобы не допустить бесконечного цикла». Со скобками <code>handleClick</code> выполняется во время отрисовки и вызывает <code>setCurrent</code>. Вызов <code>setCurrent</code> требует новой отрисовки, в ней снова выполняется <code>handleClick</code>, и цикл не заканчивается. Строка ниже, <code>An error occurred in the &lt;RequestCard&gt; component</code>, указывает компонент, в котором произошла ошибка. Ту же ошибку до запуска показывает редактор: <code>Type 'void' is not assignable to type 'MouseEventHandler&lt;HTMLButtonElement&gt; | undefined'</code> — «результат функции нельзя передать туда, где ожидается обработчик щелчка». Уберите скобки и сохраните.</p>
+
+        <p class="bridge">Кнопки работают. Следующий раздел показывает шаги между щелчком и новым статусом на экране.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Как React обновляет страницу</h2>
+
+        <p>Между щелчком и новым статусом на экране проходит пять шагов. Схема ниже показывает их на первой карточке.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Шаги от щелчка до нового статуса на экране</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 250" role="img" aria-label="Щелчок, handleClick, setCurrent, повторный вызов RequestCard, обновление страницы">
+              <rect x="20" y="20" width="200" height="56" fill="#161A2E"/><text class="num-dark" x="34" y="42">1</text><text class="mono on-dark" x="52" y="42">щелчок</text><text class="soft" x="52" y="62" style="fill:#c8d0e0">по кнопке</text>
+              <rect x="280" y="20" width="200" height="56" fill="#D6F0F9"/><text class="mono" x="294" y="42">2 handleClick()</text><text class="soft" x="294" y="62">браузер вызывает</text>
+              <rect x="540" y="20" width="200" height="56" fill="#D6F0F9"/><text class="mono" x="554" y="42">3 setCurrent(</text><text class="soft" x="554" y="62">'В работе')</text>
+              <path d="M220 48 H 272"/><path d="M264 42 L 272 48 L 264 54"/>
+              <path d="M480 48 H 532"/><path d="M524 42 L 532 48 L 524 54"/>
+              <path d="M640 76 V 120 H 380 V 150"/><path d="M374 142 L 380 150 L 386 142"/>
+              <rect x="230" y="150" width="300" height="56" fill="#D6F0F9"/><text class="mono" x="244" y="172">4 RequestCard() заново</text><text class="soft" x="244" y="192">current = 'В работе'</text>
+              <rect x="20" y="150" width="160" height="56" fill="#ffffff"/><text class="mono" x="34" y="172">5 страница</text><text class="soft" x="34" y="192">новый текст статуса</text>
+              <path d="M230 178 H 188"/><path d="M196 172 L 188 178 L 196 184"/>
+              <text class="soft" x="20" y="236">React сравнивает новую разметку с прежней и меняет на странице только текст статуса и кнопки</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Шаги 1–3 выполняет код обработчика. На шаге 4 React вызывает функцию компонента заново, и <code>useState</code> возвращает новое значение. На шаге 5 изменения попадают на страницу.</p>
+        </figure>
+
+        <p>На шаге 5 React не перестраивает всю страницу. Он сравнивает разметку, которую функция вернула сейчас, с разметкой прошлой отрисовки и меняет в браузере только отличия — здесь текст статуса и текст кнопки. Повторный вызов функции компонента React выполняет при каждом изменении состояния. Это та же формула из главы 0.1: интерфейс — функция от состояния, UI = f(state). Разработчик описывает, как выглядит карточка при данном статусе, а перенос изменений на страницу выполняет React.</p>
+
+        <h3>У каждой карточки своё состояние</h3>
+
+        <p>На снимке в §3 первая карточка перешла в «В работе», вторая — в «Готово», и друг на друга они не повлияли. Состояние принадлежит не функции <code>RequestCard</code>, а каждому её вызову на странице. React хранит отдельную пару «значение и функция изменения» для каждой из трёх карточек и при отрисовке выдаёт каждой её собственное значение. Тот же компонент, вызванный в другом месте, начнёт со своего начального значения.</p>
+
+        <p class="bridge">Каждая карточка хранит свой статус. Следующая задача — вывести в шапке число новых заявок, а для этого статусы нужны в одном месте.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Состояние в родителе</h2>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В ИТ-отделе три мастера, и каждый отмечает свои заявки в личном блокноте. Начальник отдела хочет знать, сколько заявок ещё никто не взял, и ему приходится обходить всех мастеров. Если журнал заявок лежит на столе у диспетчера, ответ виден сразу, а мастер, взяв заявку, звонит диспетчеру, и тот делает отметку в журнале.</p>
+          <p class="miss">Мастер звонит и сообщает, что взял заявку, — так карточка вызывает функцию, переданную ей от <code>App</code>.</p>
+        </div></div>
+
+        <p>Шапка доски должна показывать «Новых заявок: 1». Для этого числа нужны статусы всех трёх заявок, а сейчас каждый статус хранится внутри своей карточки, и ни <code>App</code>, ни <code>Header</code> к нему доступа не имеют: данные в React передаются только от родителя к ребёнку (глава 1.3, §6). Решение — хранить состояние в ближайшем общем родителе тех компонентов, которым оно нужно. Для карточек и шапки это <code>App</code>. Перенос состояния из дочерних компонентов в родителя называется <span class="term">подъёмом состояния</span> (lifting state up).</p>
+
+        <p>После подъёма карточка снова получает статус через props, как в главе 1.3. Но менять его она не может: props только для чтения. Поэтому вместе со статусом родитель передаёт карточке функцию — prop <code>onNext</code>. Карточка вызывает её при щелчке, а функция в <code>App</code> меняет состояние. Prop с функцией, через который ребёнок сообщает родителю о событии, по договорённости называют с приставкой <code>on</code>: <code>onNext</code>, <code>onDelete</code>, <code>onSave</code>.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Передача данных и событий между App, шапкой и карточками</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 270" role="img" aria-label="App хранит status1, status2, status3 и передаёт Header число newCount, а каждой карточке status и onNext; карточка вызывает onNext">
+              <rect x="230" y="14" width="300" height="70" fill="#161A2E"/><text class="mono on-dark" x="248" y="38">App</text><text class="soft" x="248" y="58" style="fill:#c8d0e0">status1, status2, status3</text><text class="soft" x="248" y="76" style="fill:#c8d0e0">newCount = число «Новая»</text>
+              <rect x="20" y="20" width="130" height="56" fill="#ffffff"/><text class="mono" x="34" y="44">Header</text><text class="soft" x="34" y="64">Новых: 1</text>
+              <path d="M230 48 H 158"/><path d="M166 42 L 158 48 L 166 54"/><text class="soft" x="158" y="38">newCount</text>
+              <path d="M330 84 V 130"/><path d="M135 130 H 625"/>
+              <path d="M135 130 V 166"/><path d="M129 158 L 135 166 L 141 158"/>
+              <path d="M380 130 V 166"/><path d="M374 158 L 380 166 L 386 158"/>
+              <path d="M625 130 V 166"/><path d="M619 158 L 625 166 L 631 158"/>
+              <text class="soft" x="140" y="122">status, onNext</text>
+              <rect x="40" y="170" width="190" height="50" fill="#D6F0F9"/><text class="mono" x="56" y="200">RequestCard</text>
+              <rect x="285" y="170" width="190" height="50" fill="#D6F0F9"/><text class="mono" x="301" y="200">RequestCard</text>
+              <rect x="530" y="170" width="190" height="50" fill="#D6F0F9"/><text class="mono" x="546" y="200">RequestCard</text>
+              <path class="up" d="M455 166 V 88"/><path class="up" d="M449 96 L 455 88 L 461 96" style="stroke-dasharray:none"/>
+              <text class="soft up-text" x="466" y="104">onNext()</text><text class="soft up-text" x="466" y="120">при щелчке</text>
+              <text class="soft" x="40" y="252">сплошная линия — props от родителя; пунктир — вызов функции, переданной родителем</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Статусы хранятся в <code>App</code>. Шапка получает готовое число, карточки — статус и функцию <code>onNext</code>. Щелчок в карточке вызывает <code>onNext</code>, <code>App</code> меняет состояние и отрисовывается заново вместе с шапкой и карточками.</p>
+        </figure>
+
+        <ol class="steps">
+          <li><b>Добавьте стиль счётчика</b><p>В конец <code>src/index.css</code> добавьте правило и сохраните.</p>
+            <!--CODE tools/code14/index.css | zayavki/src/index.css · в конец файла | lines=136-143--><figure class="code"><figcaption><span>zayavki/src/index.css · в конец файла</span></figcaption><pre>.header__count {
+  <span class="a">display</span>: inline-block;
+  <span class="a">margin-top</span>: <span class="n">12px</span>;
+  <span class="a">padding</span>: <span class="n">3px</span> <span class="n">12px</span>;
+  <span class="a">border-radius</span>: <span class="n">12px</span>;
+  <span class="a">background</span>: <span class="n">#2f6fde</span>;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+}</pre></figure><!--/CODE--></li>
+          <li><b>Шапка получает число</b><p>Замените содержимое <code>src/components/Header.tsx</code> и сохраните.</p>
+            <!--CODE tools/code14/Header.tsx | zayavki/src/components/Header.tsx--><figure class="code"><figcaption><span>zayavki/src/components/Header.tsx</span></figcaption><pre><span class="k">type</span> HeaderProps = {
+  newCount: number
+}
+
+<span class="k">function</span> <span class="f">Header</span>({ newCount }: HeaderProps) {
+  <span class="k">return</span> (
+    <span class="t">&lt;header</span> <span class="a">className</span>=<span class="s">"header"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h1</span><span class="t">&gt;</span>Доска заявок<span class="t">&lt;/h1</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>ИТ-отдел колледжа · заявки студентов и преподавателей<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"header__count"</span><span class="t">&gt;</span>Новых заявок: {newCount}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+    <span class="t">&lt;/header</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> Header</pre></figure><!--/CODE-->
+            <p>После сохранения VS Code подчеркнёт <code>&lt;Header /&gt;</code> в <code>App.tsx</code>: шапке не передан обязательный prop <code>newCount</code>. Это исправит шаг 4.</p></li>
+          <li><b>Карточка получает статус и функцию</b><p>Замените содержимое <code>src/components/RequestCard.tsx</code> и сохраните.</p>
+            <!--CODE tools/code14/RequestCard.tsx | zayavki/src/components/RequestCard.tsx--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx</span></figcaption><pre><span class="k">export</span> <span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>
+
+<span class="k">type</span> RequestCardProps = {
+  title: string
+  room: string
+  details: string
+  status: Status
+  onNext: () =<span class="t">&gt;</span> void
+}
+
+<span class="k">function</span> <span class="f">RequestCard</span>({ title, room, details, status, onNext }: RequestCardProps) {
+  <span class="k">return</span> (
+    <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {room}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{status}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;h3</span><span class="t">&gt;</span>{title}<span class="t">&lt;/h3</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>{details}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;button</span> <span class="a">onClick</span>={onNext} <span class="a">disabled</span>={status === <span class="s">'Готово'</span>}<span class="t">&gt;</span>
+        {status === <span class="s">'Новая'</span> ? <span class="s">'Взять в работу'</span> : <span class="s">'Завершить'</span>}
+      <span class="t">&lt;/button</span><span class="t">&gt;</span>
+    <span class="t">&lt;/article</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
+            <p>В <code>App.tsx</code> подчеркнутся три вызова карточки: им не передан <code>onNext</code>. Их тоже исправит шаг 4.</p></li>
+          <li><b>Состояние в App</b><p>Замените содержимое <code>src/App.tsx</code> и сохраните.</p>
+            <!--CODE tools/code14/App.tsx | zayavki/src/App.tsx--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard, { <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+
+<span class="k">function</span> <span class="f">nextStatus</span>(status: Status): Status {
+  <span class="k">if</span> (status === <span class="s">'Новая'</span>) {
+    <span class="k">return</span> <span class="s">'В работе'</span>
+  }
+  <span class="k">return</span> <span class="s">'Готово'</span>
+}
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [status1, setStatus1] = useState&lt;Status&gt;(<span class="s">'Новая'</span>)
+  <span class="k">const</span> [status2, setStatus2] = useState&lt;Status&gt;(<span class="s">'В работе'</span>)
+  <span class="k">const</span> [status3, setStatus3] = useState&lt;Status&gt;(<span class="s">'Готово'</span>)
+
+  <span class="k">const</span> newCount = [status1, status2, status3].<span class="f">filter</span>((s) =<span class="t">&gt;</span> s === <span class="s">'Новая'</span>).length
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          <span class="t">&lt;RequestCard</span>
+            <span class="a">title</span>=<span class="s">"Не работает проектор"</span>
+            <span class="a">room</span>=<span class="s">"214"</span>
+            <span class="a">details</span>=<span class="s">"Проектор включается, но изображения на экране нет."</span>
+            <span class="a">status</span>={status1}
+            <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">setStatus1</span>(<span class="f">nextStatus</span>(status1))}
+          <span class="t">/&gt;</span>
+          <span class="t">&lt;RequestCard</span>
+            <span class="a">title</span>=<span class="s">"Нет интернета"</span>
+            <span class="a">room</span>=<span class="s">"305"</span>
+            <span class="a">details</span>=<span class="s">"На всех компьютерах в кабинете не открываются сайты."</span>
+            <span class="a">status</span>={status2}
+            <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">setStatus2</span>(<span class="f">nextStatus</span>(status2))}
+          <span class="t">/&gt;</span>
+          <span class="t">&lt;RequestCard</span>
+            <span class="a">title</span>=<span class="s">"Замятие бумаги в принтере"</span>
+            <span class="a">room</span>=<span class="s">"112"</span>
+            <span class="a">details</span>=<span class="s">"Принтер пишет «замятие бумаги», лоток пустой."</span>
+            <span class="a">status</span>={status3}
+            <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">setStatus3</span>(<span class="f">nextStatus</span>(status3))}
+          <span class="t">/&gt;</span>
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/08-app-sostoyanie.png" width="1240" height="780" alt="VS Code: App.tsx с функцией nextStatus, тремя useState и newCount, счётчик ошибок в строке состояния 0" loading="lazy"><figcaption>Так должен выглядеть App.tsx: функция nextStatus, три состояния, подсчёт newCount; счётчик ошибок внизу — 0</figcaption></figure></li>
+          <li><b>Проверьте счётчик</b><p>Обновите страницу в браузере. В шапке — «Новых заявок: 1». Нажмите «Взять в работу» в первой карточке.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/09-schetchik-1.png" width="1100" height="679" alt="Доска заявок: в шапке Новых заявок: 1, первая карточка Новая" loading="lazy"><figcaption>До щелчка: одна новая заявка</figcaption></figure>
+            <figure class="shot" style="max-width: 1106px"><img src="img/10-schetchik-0.png" width="1100" height="679" alt="Доска заявок: в шапке Новых заявок: 0, первая карточка В работе с кнопкой Завершить" loading="lazy"><figcaption>После щелчка: первая заявка «В работе», в шапке «Новых заявок: 0»</figcaption></figure></li>
+        </ol>
+
+        <h3>Разбор RequestCard.tsx</h3>
+
+        <p>Из карточки ушли <code>useState</code> и <code>handleClick</code>: своего состояния у неё больше нет. В типе props два изменения. <code>status: Status</code> снова обязательный, без <code>?</code> и без значения по умолчанию, потому что статус теперь всегда приходит из <code>App</code>. Новое поле <code>onNext: () =&gt; void</code> описывает функцию: пустые скобки — функция без параметров, <code>void</code> после стрелки — функция ничего не возвращает. Кнопка получает эту функцию напрямую: <code>onClick={onNext}</code>. Перед <code>type Status</code> появилось слово <code>export</code>: тип нужен в <code>App.tsx</code>, и его нужно сделать доступным из других файлов.</p>
+
+        <h3>Разбор App.tsx</h3>
+
+        <p>Четвёртая строка импортирует из одного файла два объекта: <code>RequestCard</code> — экспорт по умолчанию, без скобок, и <code>Status</code> — именованный экспорт, в фигурных скобках. Слово <code>type</code> перед <code>Status</code> отмечает, что подключается только тип. Описания типов удаляются при переводе TypeScript в JavaScript, и настройки проекта Vite требуют отмечать такие импорты явно; без слова <code>type</code> редактор покажет ошибку TS1484.</p>
+
+        <p>Функция <code>nextStatus</code> записана вне <code>App</code>: состояние и props в ней не используются, она вычисляет следующий статус по текущему. Запись <code>(status: Status): Status</code> означает «принимает статус и возвращает статус». Логика та же, что была в <code>handleClick</code> карточки: из «Новая» — «В работе», из остальных — «Готово».</p>
+
+        <p>Три строки с <code>useState</code> создают три состояния — по одному на заявку. В угловых скобках <code>useState&lt;Status&gt;</code> указан тип значения. Без него TypeScript решил бы по начальному значению <code>'Новая'</code>, что в состоянии хранится любая строка, и не дал бы передать её в prop <code>status</code> типа <code>Status</code>. В карточке в §3 угловые скобки не требовались: начальным значением был prop, у которого тип <code>Status</code> уже указан.</p>
+
+        <p>Строка с <code>newCount</code> считает новые заявки. <code>[status1, status2, status3]</code> собирает три статуса в массив — список значений в квадратных скобках. Метод <code>filter</code> оставляет в массиве только элементы, для которых условие <code>s === 'Новая'</code> истинно, а <code>.length</code> даёт их количество. Работа с массивами подробно разобрана в главе 1.5. Число <code>newCount</code> не хранится в состоянии: оно вычисляется из состояния при каждой отрисовке <code>App</code>. Данные, которые можно вычислить из уже имеющихся, в отдельное состояние не записывают, иначе два значения пришлось бы обновлять вместе и они могли бы разойтись.</p>
+
+        <p>Каждой карточке передаются <code>status={status1}</code> и <code>onNext={() =&gt; setStatus1(nextStatus(status1))}</code>. Запись <code>() =&gt; …</code> — <span class="term">стрелочная функция</span>: короткая функция без имени, у которой после стрелки записано, что она делает. Здесь она нужна, потому что <code>onNext</code> должен получить функцию, которую карточка вызовет позже. Запись без стрелки, <code>onNext={setStatus1(nextStatus(status1))}</code>, вызвала бы <code>setStatus1</code> сразу при отрисовке — та же ошибка, что с <code>handleClick()</code> в §3.</p>
+
+        <p>Цепочка при щелчке в первой карточке такая. Кнопка вызывает <code>onNext</code>, то есть стрелочную функцию из <code>App</code>. Та вычисляет <code>nextStatus('Новая')</code>, получает «В работе» и вызывает <code>setStatus1</code>. React отрисовывает <code>App</code> заново: <code>status1</code> равен «В работе», <code>newCount</code> пересчитывается и становится 0, шапка и карточки получают новые props.</p>
+
+        <div class="margin-note">
+          <b>Одно место хранения статуса</b>
+          <p>Начальное значение <code>useState(status)</code> используется только при первой отрисовке. Если бы карточка хранила статус у себя, а <code>App</code> потом передал бы ей другой <code>status</code>, карточка продолжала бы показывать своё значение. У одного статуса было бы два места хранения, и они могли бы разойтись — та же ошибка, что в витрине с ручным обновлением из главы 0.1. Поэтому каждое значение хранится в одном компоненте, а остальные получают его через props.</p>
+        </div>
+
+        <p>В <code>App.tsx</code> остался повтор: три состояния и три почти одинаковых вызова карточки. Для доски с десятками заявок статусы хранят одним списком и выводят карточки из него циклом. Это тема главы 1.5.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Частые ошибки</h2>
+
+        <p>Сообщения ниже получены в проекте <code>zayavki</code>: ошибки типов — командой <code>tsc -b</code>, предупреждения — командой <code>npm run lint</code>, ошибка «Too many re-renders» — в консоли браузера.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>Пустая страница, в консоли <code>Too many re-renders. React limits the number of renders to prevent an infinite loop.</code></td><td>Обработчик вызван при отрисовке: <code>onClick={handleClick()}</code></td><td>Передать функцию без скобок: <code>onClick={handleClick}</code> или <code>onClick={() =&gt; …}</code></td></tr>
+              <tr><td><code>Type 'void' is not assignable to type 'MouseEventHandler&lt;HTMLButtonElement&gt; | undefined'</code></td><td>Та же ошибка, найденная редактором до запуска</td><td>Убрать скобки после имени обработчика</td></tr>
+              <tr><td><code>Type 'void' is not assignable to type '() =&gt; void'</code></td><td>В prop-функцию передан результат вызова: <code>onNext={setStatus1(…)}</code></td><td>Обернуть вызов в стрелочную функцию: <code>onNext={() =&gt; setStatus1(…)}</code></td></tr>
+              <tr><td><code>Cannot find name 'useState'</code></td><td>Нет импорта хука</td><td>Добавить первой строкой <code>import { useState } from 'react'</code></td></tr>
+              <tr><td>Линтер: <code>react(immutability): Cannot reassign variable after render completes</code></td><td>Обработчик присваивает новое значение обычной переменной или prop</td><td>Хранить значение в состоянии и менять через функцию из <code>useState</code></td></tr>
+              <tr><td>Линтер: <code>react-hooks(rules-of-hooks): React Hook "useState" is called conditionally</code></td><td><code>useState</code> вызван внутри <code>if</code>. React различает состояния компонента по порядку вызовов хуков, и этот порядок должен быть одинаковым при каждой отрисовке</td><td>Вызывать хуки в начале функции компонента, вне условий и циклов</td></tr>
+              <tr><td><code>'Status' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled</code></td><td>Тип импортирован без слова <code>type</code></td><td>Записать <code>import RequestCard, { type Status } from …</code></td></tr>
+              <tr><td><code>Property 'onNext' is missing in type '{ … }' but required in type 'RequestCardProps'</code></td><td>Карточке не передана функция <code>onNext</code></td><td>Добавить атрибут <code>onNext={() =&gt; …}</code></td></tr>
+              <tr><td>Кнопка нажимается, в консоли сообщение, на странице ничего не меняется</td><td>Значение хранится в обычной переменной</td><td>Перенести значение в состояние (§3)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s7"><span class="sec">§7</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Что такое обработчик события и как подключить его к кнопке?</summary>
+          <p>Функция, которую браузер вызывает, когда произошло событие. К кнопке её подключают атрибутом <code>onClick</code>, передавая саму функцию без скобок: <code>&lt;button onClick={handleClick}&gt;</code>.</p>
+        </details>
+        <details>
+          <summary>Почему присваивание обычной переменной в обработчике не меняет страницу?</summary>
+          <p>Страница меняется, когда React вызывает функцию компонента заново, а присваивание переменной такого вызова не вызывает. Кроме того, обычная переменная создаётся заново при каждом вызове функции, и при следующей отрисовке значение вернулось бы к начальному.</p>
+        </details>
+        <details>
+          <summary>Что возвращает <code>useState('Новая')</code> и что делает функция изменения?</summary>
+          <p>Пару: текущее значение и функцию для его изменения. Функция изменения сохраняет новое значение в React и запускает повторную отрисовку компонента; при ней <code>useState</code> вернёт новое значение.</p>
+        </details>
+        <details>
+          <summary>Чем отличаются <code>onClick={handleClick}</code> и <code>onClick={handleClick()}</code>?</summary>
+          <p>Первая запись передаёт кнопке функцию, и браузер вызовет её при щелчке. Вторая вызывает функцию сразу при отрисовке и передаёт кнопке результат. Если функция меняет состояние, вторая запись даёт бесконечный цикл отрисовок и ошибку «Too many re-renders».</p>
+        </details>
+        <details>
+          <summary>Шапке нужно число новых заявок, а статусы хранятся в карточках. Что сделать?</summary>
+          <p>Поднять состояние в ближайшего общего родителя — <code>App</code>. <code>App</code> хранит статусы, считает число новых и передаёт его шапке, а карточкам — статус и функцию <code>onNext</code>, которую карточка вызывает при щелчке.</p>
+        </details>
+        <details>
+          <summary>Почему <code>newCount</code> не хранится в отдельном состоянии?</summary>
+          <p>Его можно вычислить из статусов, которые уже хранятся в состоянии. Вычисление выполняется при каждой отрисовке <code>App</code>, и число всегда соответствует статусам. Отдельное состояние пришлось бы обновлять вместе со статусами, и значения могли бы разойтись.</p>
+        </details>
+        <details>
+          <summary>Добавьте в карточку кнопку «Вернуть», которая переводит заявку обратно в «Новая». Что нужно изменить?</summary>
+          <p>Четыре изменения:</p><ol><li>в тип props карточки добавить <code>onReset: () =&gt; void</code> и принять <code>onReset</code> в параметре;</li><li>добавить в карточку <code>&lt;button onClick={onReset}&gt;Вернуть&lt;/button&gt;</code>;</li><li>в <code>App</code> передать каждой карточке функцию: <code>onReset={() =&gt; setStatus1('Новая')}</code>, для второй — <code>setStatus2</code>, для третьей — <code>setStatus3</code>;</li><li>проверить, что счётчик в шапке увеличивается после нажатия.</li></ol>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Обработчик</b><code>&lt;button onClick={handleClick}&gt;</code></div>
+          <div><b>Состояние</b><code>const [value, setValue] = useState(0)</code></div>
+          <div><b>Импорт хука</b><code>import { useState } from 'react'</code></div>
+          <div><b>Тип состояния</b><code>useState&lt;Status&gt;('Новая')</code></div>
+          <div><b>Функция в props</b><code>onNext: () =&gt; void</code></div>
+          <div><b>Передача функции</b><code>onNext={() =&gt; setStatus1('Готово')}</code></div>
+          <div><b>Условие в JSX</b><code>{ok ? 'Да' : 'Нет'}</code></div>
+          <div><b>Выключить кнопку</b><code>disabled={status === 'Готово'}</code></div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>Событие — действие пользователя, о котором сообщает браузер; обработчик — функция, подключённая к тегу атрибутом <code>onClick</code>, <code>onChange</code> или другим с приставкой <code>on</code>. Функция передаётся без скобок, иначе она выполнится при отрисовке. Изменение обычной переменной не меняет страницу: React обновляет разметку, только когда вызывает функцию компонента заново. Повторный вызов запускает изменение состояния — значения из хука <code>useState</code>, которое React хранит между отрисовками; меняется оно функцией вида <code>setValue</code>. После изменения React вызывает компонент, сравнивает новую разметку с прежней и меняет на странице только отличия. Если состояние нужно нескольким компонентам, его хранят в их общем родителе: родитель передаёт детям данные через props, а дети сообщают о событиях, вызывая переданные функции. Доска заявок переводит заявки по статусам кнопкой в карточке и показывает в шапке число новых.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">react.dev — Responding to Events</a></li>
+          <li><a href="https://react.dev/learn/state-a-components-memory" target="_blank" rel="noreferrer">react.dev — State: A Component's Memory</a></li>
+          <li><a href="https://react.dev/learn/render-and-commit" target="_blank" rel="noreferrer">react.dev — Render and Commit</a></li>
+          <li><a href="https://react.dev/learn/state-as-a-snapshot" target="_blank" rel="noreferrer">react.dev — State as a Snapshot</a></li>
+          <li><a href="https://react.dev/learn/sharing-state-between-components" target="_blank" rel="noreferrer">react.dev — Sharing State Between Components</a></li>
+          <li><a href="https://react.dev/reference/rules/rules-of-hooks" target="_blank" rel="noreferrer">react.dev — Rules of Hooks</a></li>
+          <li><a href="https://developer.chrome.com/docs/devtools/console" target="_blank" rel="noreferrer">developer.chrome.com — Console overview</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../13-props/index.html">← 1.3 Props: данные от родителя</a>
+          <a href="../../index.html">Оглавление →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

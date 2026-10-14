@@ -23,6 +23,7 @@ KW = {"import", "from", "export", "default", "function", "return", "const", "let
 TSX = re.compile(r"""
     (?P<c>//[^\n]*|/\*.*?\*/)
   | (?P<s>'[^'\n]*'|"[^"\n]*"|`[^`]*`)
+  | (?P<g>(?<=\w)<[A-Z]\w*>(?=\())
   | (?P<t></?[A-Za-z][\w.]*|/?>|<>|</>)
   | (?P<a>\b[a-zA-Z-]+(?==))
   | (?P<n>\b\d+(?:\.\d+)?\b)
@@ -43,7 +44,9 @@ def highlight(src: str, lang: str) -> str:
     for m in rx.finditer(src):
         out.append(html.escape(src[pos:m.start()], quote=False))
         kind, text = m.lastgroup, html.escape(m.group(), quote=False)
-        if kind == "w":
+        if kind == "g":
+            out.append(text)
+        elif kind == "w":
             out.append(f'<span class="k">{text}</span>' if m.group() in KW
                        else (f'<span class="f">{text}</span>' if src[m.end():m.end() + 1] == "(" else text))
         else:
