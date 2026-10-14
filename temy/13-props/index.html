@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>1.3 Props · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 1 · React: первый проект и первый бот</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 1 · первый проект и первый бот</p>
+          <p class="running__folio">1.3</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">1.3</span>
+          <h1>Props: данные<br>от родителя</h1>
+          <p class="lead">В этой главе разобрано, как передать данные в компонент при его вызове. Карточка заявки из главы 1.2 получает тему, кабинет, подробности и статус, и три одинаковые карточки становятся тремя разными заявками. Показано, как TypeScript описывает props и что он находит в редакторе: забытое свойство, опечатку в имени, недопустимый статус. Отдельно разобрано, почему страница при такой ошибке всё равно открывается и где ошибку нужно искать.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>React</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после главы 1.2 и запущенный <code>npm run dev</code></dd></div>
+          <div><dt>Результат</dt><dd>Карточка RequestCard получает данные через props, на доске три разные заявки</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Что такое props</a></li>
+            <li><a href="#s2">Тип props и распаковка</a></li>
+            <li><a href="#s3">Карточка получает данные</a></li>
+            <li><a href="#s4">Что будет, если забыть свойство</a></li>
+            <li><a href="#s5">Статус из трёх значений</a></li>
+            <li><a href="#s6">Данные идут сверху вниз</a></li>
+            <li><a href="#s7">Частые ошибки</a></li>
+            <li><a href="#s8">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Что такое props</h2>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В главе 1.2 компонент сравнивался с бланком заявления: постоянный текст и пустые поля. Бланк печатают один раз, а заполняет его каждый, кто подаёт заявление: один пишет «проектор, кабинет 214», другой — «интернет, кабинет 305». Бланк один, заявления разные.</p>
+          <p class="miss">Бланк заполняет сам заявитель, а компонент заполняет тот, кто его вызывает, — родительский компонент.</p>
+        </div></div>
+
+        <p><span class="term">Props</span> (от properties — свойства) — данные, которые компонент получает от родителя при вызове. Родитель записывает их как атрибуты тега: <code>&lt;RequestCard title="Нет интернета" room="305" /&gt;</code>. React собирает все атрибуты в один объект и передаёт его функции компонента первым параметром. Компонент берёт значения из этого объекта и подставляет в свою разметку в фигурных скобках.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Один компонент, три вызова с разными props</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 220" role="img" aria-label="App вызывает RequestCard три раза с разными title, room и status">
+              <rect x="300" y="12" width="160" height="40" fill="#161A2E"/><text class="mono on-dark" x="365" y="37">App</text>
+              <path d="M380 52 V 70 H 125 V 90"/><path d="M380 70 V 90"/><path d="M380 70 H 635 V 90"/>
+              <rect x="40" y="90" width="170" height="40" fill="#D6F0F9"/><text class="mono" x="66" y="115">RequestCard</text>
+              <rect x="295" y="90" width="170" height="40" fill="#D6F0F9"/><text class="mono" x="321" y="115">RequestCard</text>
+              <rect x="550" y="90" width="170" height="40" fill="#D6F0F9"/><text class="mono" x="576" y="115">RequestCard</text>
+              <text class="soft" x="20" y="154">title="Не работает проектор"</text>
+              <text class="soft" x="296" y="154">title="Нет интернета"</text>
+              <text class="soft" x="540" y="154">title="Замятие бумаги…"</text>
+              <text class="soft" x="60" y="176">каб. 214 · Новая</text>
+              <text class="soft" x="315" y="176">каб. 305 · В работе</text>
+              <text class="soft" x="570" y="176">каб. 112 · Готово</text>
+              <text class="soft" x="170" y="208">функция одна, данные приходят сверху при каждом вызове</text>
+            </svg>
+          </div>
+          <p class="scheme__note">App вызывает одну и ту же функцию RequestCard три раза и каждый раз передаёт свои title, room, details и status. Поэтому на доске появятся три разные карточки.</p>
+        </figure>
+
+        <p>Props уже встречались в главе 1.2, только не назывались так: атрибуты <code>className</code>, <code>htmlFor</code>, <code>rows</code> — это props, которые React передаёт тегам HTML. Разница в том, что для своих компонентов имена props придумывает разработчик.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Тип props и распаковка</h2>
+
+        <p>TypeScript должен знать, какие props ожидает компонент и какого они вида. Для этого описывается <span class="term">тип</span> — перечень полей объекта с видом значения у каждого. Тип записывается словом <code>type</code>:</p>
+
+        <!--CODE tools/code13/RequestCard-props.tsx | Тип props карточки | read lines=1-6--><figure class="code" data-read><figcaption><span>Тип props карточки</span></figcaption><pre><span class="k">type</span> RequestCardProps = {
+  title: string
+  room: string
+  details: string
+  status: string
+}</pre></figure><!--/CODE-->
+
+        <p><code>RequestCardProps</code> — имя типа; по договорённости его составляют из имени компонента и слова Props. В фигурных скобках перечислены поля: слева имя, после двоеточия вид значения. <code>string</code> означает строку — любой текст в кавычках. Все четыре поля обязательные: компонент нельзя вызвать, не передав каждое из них. По этому описанию VS Code подсказывает имена props при вызове компонента и подчёркивает красным пропущенные или лишние.</p>
+
+        <h3>Распаковка объекта props</h3>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Посылку можно держать закрытой и каждый раз доставать из неё нужный предмет. А можно сразу распаковать и разложить предметы на столе: дальше берёшь каждый по названию.</p>
+          <p class="miss">Предметы из посылки уходят, а в коде объект props остаётся целым: распаковка только создаёт короткие имена для его полей.</p>
+        </div></div>
+
+        <p>Функция компонента получает props одним объектом. Обращаться к его полям можно через точку — <code>props.title</code>, <code>props.room</code>. Удобнее сразу <span class="term">распаковать</span> объект в параметре функции: перечислить нужные поля в фигурных скобках. Ниже одна и та же карточка записана двумя способами, результат у них одинаковый.</p>
+
+        <figure class="code" data-read><figcaption><span>Без распаковки: обращение через props.</span></figcaption><pre><span class="k">function</span> <span class="f">RequestCard</span>(props: RequestCardProps) {
+  <span class="k">return</span> &lt;<span class="t">h3</span>&gt;{props.title}&lt;/<span class="t">h3</span>&gt;
+}</pre></figure>
+
+        <figure class="code" data-read><figcaption><span>С распаковкой: поля сразу доступны по именам</span></figcaption><pre><span class="k">function</span> <span class="f">RequestCard</span>({ title }: RequestCardProps) {
+  <span class="k">return</span> &lt;<span class="t">h3</span>&gt;{title}&lt;/<span class="t">h3</span>&gt;
+}</pre></figure>
+
+        <p>В обоих вариантах после двоеточия стоит <code>RequestCardProps</code>: так параметру назначается тип. Во втором варианте фигурные скобки в параметре означают «взять из полученного объекта поле <code>title</code> и положить в переменную с тем же именем». В проектах на React почти всегда используют второй вариант: по первой строке функции сразу видно, какие props компонент использует.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Карточка получает данные</h2>
+
+        <p>Работа идёт в проекте <code>zayavki</code>, сервер разработки запущен, доска заявок из главы 1.2 открыта в браузере.</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое RequestCard.tsx</b><p>Откройте <code>src/components/RequestCard.tsx</code>, выделите весь текст (<kbd>Ctrl</kbd>+<kbd>A</kbd>), вставьте код ниже и сохраните.</p>
+            <!--CODE tools/code13/RequestCard-props.tsx | zayavki/src/components/RequestCard.tsx--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx</span></figcaption><pre><span class="k">type</span> RequestCardProps = {
+  title: string
+  room: string
+  details: string
+  status: string
+}
+
+<span class="k">function</span> <span class="f">RequestCard</span>({ title, room, details, status }: RequestCardProps) {
+  <span class="k">return</span> (
+    <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {room}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{status}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;h3</span><span class="t">&gt;</span>{title}<span class="t">&lt;/h3</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>{details}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+    <span class="t">&lt;/article</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-requestcard-props.png" width="1240" height="569" alt="VS Code: RequestCard.tsx с типом RequestCardProps и распаковкой title, room, details, status" loading="lazy"><figcaption>Так должен выглядеть RequestCard.tsx: тип props в начале, распаковка в параметре функции</figcaption></figure>
+            <p>После сохранения карточки на странице опустеют: в них останутся только «каб.» и рамка. Причина в том, что <code>App</code> пока вызывает карточку без props. В <code>App.tsx</code> появятся три красные ошибки; их исправляет следующий шаг.</p></li>
+          <li><b>Передайте данные из App</b><p>Откройте <code>src/App.tsx</code>, замените содержимое кодом ниже и сохраните.</p>
+            <!--CODE tools/code13/App-props.tsx | zayavki/src/App.tsx--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          <span class="t">&lt;RequestCard</span>
+            <span class="a">title</span>=<span class="s">"Не работает проектор"</span>
+            <span class="a">room</span>=<span class="s">"214"</span>
+            <span class="a">details</span>=<span class="s">"Проектор включается, но изображения на экране нет."</span>
+            <span class="a">status</span>=<span class="s">"Новая"</span>
+          <span class="t">/&gt;</span>
+          <span class="t">&lt;RequestCard</span>
+            <span class="a">title</span>=<span class="s">"Нет интернета"</span>
+            <span class="a">room</span>=<span class="s">"305"</span>
+            <span class="a">details</span>=<span class="s">"На всех компьютерах в кабинете не открываются сайты."</span>
+            <span class="a">status</span>=<span class="s">"В работе"</span>
+          <span class="t">/&gt;</span>
+          <span class="t">&lt;RequestCard</span>
+            <span class="a">title</span>=<span class="s">"Замятие бумаги в принтере"</span>
+            <span class="a">room</span>=<span class="s">"112"</span>
+            <span class="a">details</span>=<span class="s">"Принтер пишет «замятие бумаги», лоток пустой."</span>
+            <span class="a">status</span>=<span class="s">"Готово"</span>
+          <span class="t">/&gt;</span>
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1106px"><img src="img/02-tri-zayavki.png" width="1100" height="518" alt="Доска заявок: три разные карточки — проектор каб. 214 Новая, интернет каб. 305 В работе, принтер каб. 112 Готово" loading="lazy"><figcaption>Так должна выглядеть страница: три разные заявки с разными статусами</figcaption></figure></li>
+        </ol>
+
+        <p>В новой карточке каждое место, где раньше стоял постоянный текст, заменено значением из props. В строке кабинета <code>каб. {room}</code>: слово «каб.» постоянное, номер подставляется. В статусе — <code>{status}</code>, в заголовке — <code>{title}</code>, в описании — <code>{details}</code>. Сама разметка и классы не изменились, поэтому стили из главы 1.2 действуют как раньше.</p>
+
+        <p>В <code>App.tsx</code> каждый вызов <code>&lt;RequestCard&gt;</code> теперь занимает несколько строк: по одному атрибуту на строку, закрывающая косая черта <code>/&gt;</code> — на отдельной строке. Так записывают теги с тремя и больше атрибутами, чтобы их было удобно читать. Значения записаны в кавычках, потому что все они строки. Номер кабинета тоже строка (<code>room="214"</code>): в типе <code>room</code> объявлен как <code>string</code>, ведь кабинет может называться и словом, например «актовый зал».</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Что будет, если забыть свойство</h2>
+
+        <p>Все четыре props в типе обязательные. Чтобы увидеть, что происходит при пропущенном свойстве, в <code>App.tsx</code> у второй карточки удалите строку <code>room="305"</code> и сохраните файл. Вызов карточки станет таким:</p>
+
+        <!--CODE tools/code13/App-bez-room.tsx | App.tsx · вторая карточка без room | read lines=19-23--><figure class="code" data-read><figcaption><span>App.tsx · вторая карточка без room</span></figcaption><pre>          <span class="t">&lt;RequestCard</span>
+            <span class="a">title</span>=<span class="s">"Нет интернета"</span>
+            <span class="a">details</span>=<span class="s">"На всех компьютерах в кабинете не открываются сайты."</span>
+            <span class="a">status</span>=<span class="s">"В работе"</span>
+          <span class="t">/&gt;</span></pre></figure><!--/CODE-->
+
+        <figure class="shot" style="max-width: 1246px"><img src="img/03-oshibka-room.png" width="1240" height="577" alt="VS Code: RequestCard в строке 19 подчёркнут красным, в панели Problems ошибка Property room is missing" loading="lazy"><figcaption>Редактор: вызов карточки подчёркнут, в панели Problems — ошибка ts(2741)</figcaption></figure>
+
+        <p>VS Code подчеркнул имя <code>RequestCard</code> в строке 19 красной волнистой линией, файл <code>App.tsx</code> в проводнике стал красным, а в строке состояния внизу появился счётчик ошибок. Полный текст ошибки виден в панели <strong>Problems</strong> (меню <strong>View → Problems</strong> или щелчок по счётчику ошибок): <code>Property 'room' is missing in type '{ title: string; details: string; status: string; }' but required in type 'RequestCardProps'</code>. Читается так: «свойство <code>room</code> отсутствует в переданном объекте, но требуется типом <code>RequestCardProps</code>». В скобках перечислено то, что передано, — <code>title</code>, <code>details</code>, <code>status</code>. Строка под ошибкой <code>'room' is declared here</code> указывает, где в <code>RequestCard.tsx</code> объявлено это свойство.</p>
+
+        <figure class="shot" style="max-width: 1106px"><img src="img/04-stranica-bez-room.png" width="1100" height="518" alt="Доска заявок: у второй карточки вместо номера кабинета пусто — только каб." loading="lazy"><figcaption>Страница при этой ошибке открывается: у второй карточки после «каб.» пусто</figcaption></figure>
+
+        <p>Страница при этом открылась, а во второй карточке после «каб.» пусто. Так происходит потому, что сервер разработки Vite типы не проверяет: он только переводит TypeScript в JavaScript, отбрасывая описания типов, — так быстрее. Проверку типов выполняют редактор и команда сборки. Если в этом состоянии запустить <code>npm run build</code> во втором терминале, сборка остановится на той же ошибке:</p>
+
+        <figure class="code code--out"><figcaption><span>Терминал · npm run build</span></figcaption><pre>&gt; zayavki@0.0.0 build
+&gt; tsc -b &amp;&amp; vite build
+
+src/App.tsx(19,12): error TS2741: Property 'room' is missing in type '{ title: string; details: string; status: string; }' but required in type 'RequestCardProps'.</pre></figure>
+
+        <p>Команда <code>tsc -b</code> нашла ошибку в строке 19, символ 12, и <code>vite build</code> не запустился: знак <code>&amp;&amp;</code> выполняет вторую команду, только если первая прошла без ошибок (глава 1.1, §3). Отсюда правило работы: смотреть на ошибки в редакторе, даже если страница выглядит нормально. Счётчик в строке состояния VS Code должен показывать ноль.</p>
+
+        <p>Верните строку <code>room="305"</code> на место (или вставьте код <code>App.tsx</code> из шага 2) и сохраните. Подчёркивание исчезнет, во второй карточке снова появится номер кабинета.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Статус из трёх значений</h2>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>На бумажном бланке поле «Статус» можно оставить пустым строчками, и кто-то напишет «Новая», кто-то «новая», а кто-то «Нов.». Если вместо строчек напечатать три квадратика — «Новая», «В работе», «Готово» — и попросить отметить один, разночтений не будет.</p>
+          <p class="miss">Квадратик на бумаге можно не отметить вовсе, а TypeScript для обязательного поля это не пропустит.</p>
+        </div></div>
+
+        <p>Сейчас <code>status</code> объявлен как <code>string</code>, то есть любая строка. Можно передать «Новый» или «готово» с маленькой буквы, и TypeScript ошибку не покажет. Но статусов у заявки всего три, и тип может это записать. Кроме того, новая заявка почти всегда имеет статус «Новая», и писать его при каждом вызове необязательно: у свойства можно задать значение по умолчанию.</p>
+
+        <p>Для этого в TypeScript есть три записи. <span class="term">Объединение</span> <code>'Новая' | 'В работе' | 'Готово'</code> — тип, значением которого может быть только одна из перечисленных строк; черта <code>|</code> читается как «или». Вопросительный знак после имени поля (<code>status?:</code>) делает свойство необязательным. Значение по умолчанию задаётся при распаковке знаком равенства: <code>status = 'Новая'</code> — если родитель статус не передал, будет «Новая».</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое RequestCard.tsx</b>
+            <!--CODE tools/code13/RequestCard.tsx | zayavki/src/components/RequestCard.tsx--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx</span></figcaption><pre><span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>
+
+<span class="k">type</span> RequestCardProps = {
+  title: string
+  room: string
+  details: string
+  status?: Status
+}
+
+<span class="k">function</span> <span class="f">RequestCard</span>({ title, room, details, status = <span class="s">'Новая'</span> }: RequestCardProps) {
+  <span class="k">return</span> (
+    <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {room}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{status}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;h3</span><span class="t">&gt;</span>{title}<span class="t">&lt;/h3</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>{details}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+    <span class="t">&lt;/article</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-requestcard-status.png" width="1240" height="608" alt="VS Code: RequestCard.tsx с типом Status, необязательным status и значением по умолчанию Новая" loading="lazy"><figcaption>Так должен выглядеть RequestCard.tsx: тип Status в первой строке, status? в типе props, значение по умолчанию в параметре</figcaption></figure></li>
+          <li><b>Уберите статус у первой карточки</b><p>В <code>App.tsx</code> у первой карточки удалите строку <code>status="Новая"</code> — статус «Новая» теперь подставится сам. Или замените содержимое файла кодом ниже и сохраните.</p>
+            <!--CODE tools/code13/App.tsx | zayavki/src/App.tsx--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          <span class="t">&lt;RequestCard</span>
+            <span class="a">title</span>=<span class="s">"Не работает проектор"</span>
+            <span class="a">room</span>=<span class="s">"214"</span>
+            <span class="a">details</span>=<span class="s">"Проектор включается, но изображения на экране нет."</span>
+          <span class="t">/&gt;</span>
+          <span class="t">&lt;RequestCard</span>
+            <span class="a">title</span>=<span class="s">"Нет интернета"</span>
+            <span class="a">room</span>=<span class="s">"305"</span>
+            <span class="a">details</span>=<span class="s">"На всех компьютерах в кабинете не открываются сайты."</span>
+            <span class="a">status</span>=<span class="s">"В работе"</span>
+          <span class="t">/&gt;</span>
+          <span class="t">&lt;RequestCard</span>
+            <span class="a">title</span>=<span class="s">"Замятие бумаги в принтере"</span>
+            <span class="a">room</span>=<span class="s">"112"</span>
+            <span class="a">details</span>=<span class="s">"Принтер пишет «замятие бумаги», лоток пустой."</span>
+            <span class="a">status</span>=<span class="s">"Готово"</span>
+          <span class="t">/&gt;</span>
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1106px"><img src="img/07-doska-props.png" width="1100" height="518" alt="Доска заявок: у первой карточки статус Новая, хотя в App он не передан" loading="lazy"><figcaption>Так должна выглядеть страница: у первой карточки статус «Новая» — значение по умолчанию</figcaption></figure></li>
+        </ol>
+
+        <p>В первой строке <code>RequestCard.tsx</code> объявлен отдельный тип <code>Status</code> — его удобно назвать отдельно, потому что статус понадобится и в других компонентах. В типе props поле теперь записано как <code>status?: Status</code>: необязательное, одно из трёх значений. В параметре функции <code>status = 'Новая'</code> задаёт значение на случай, если статус не передан. Страница выглядит так же, как после §3, но первая карточка получила «Новая» уже без строки <code>status</code> в <code>App.tsx</code>.</p>
+
+        <h3>Проверка: опечатка в статусе</h3>
+        <p>В <code>App.tsx</code> у третьей карточки замените <code>status="Готово"</code> на <code>status="Готов"</code> и сохраните.</p>
+
+        <figure class="shot" style="max-width: 1246px"><img src="img/06-oshibka-status.png" width="1240" height="577" alt="VS Code: строка status=Готов подчёркнута, в Problems ошибка Type Готов is not assignable to type Status | undefined. Did you mean Готово" loading="lazy"><figcaption>Редактор: TypeScript не принимает «Готов» и предлагает «Готово»</figcaption></figure>
+
+        <p>Редактор подчеркнул строку 29, ошибка в панели Problems: <code>Type '"Готов"' is not assignable to type 'Status | undefined'. Did you mean '"Готово"'?</code> — «значение "Готов" нельзя присвоить типу Status или undefined. Может быть, имелось в виду "Готово"?». <code>undefined</code> в сообщении появился из-за вопросительного знака: необязательное свойство может быть и не передано. Если бы <code>status</code> оставался типа <code>string</code>, опечатка прошла бы незамеченной, и на карточке появился бы статус «Готов». Верните «Готово» и сохраните.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Данные идут сверху вниз</h2>
+
+        <p>Props передаются в одну сторону: от родителя к ребёнку. В <code>App</code> записано, какие заявки показать, и оттуда данные передаются карточкам. Карточка получает props и только выводит их; изменить их она не может и не должна. Если бы карточка поменяла свой <code>status</code>, в <code>App</code> остался бы прежний статус. Данные на странице разошлись бы с данными в родителе — та же ошибка, что в витрине с ручным обновлением из главы 0.1.</p>
+
+        <p>Поэтому правило React такое: компонент относится к своим props как к значениям только для чтения. Когда карточке нужно что-то изменить — например, по кнопке «Взять в работу» сменить статус, — она сообщает об этом родителю, а родитель меняет свои данные и передаёт карточке новые props. Как хранить изменяемые данные и как компонент сообщает родителю о событии, разобрано в главе 1.4.</p>
+
+        <p>Остался ещё один повтор: три вызова <code>&lt;RequestCard&gt;</code> в <code>App.tsx</code> записаны вручную, по одному на заявку. Для доски, где заявок десятки, данные хранят списком и выводят карточки из него. Это предмет главы 1.5.</p>
+
+        <h2 id="s7"><span class="sec">§7</span>Частые ошибки</h2>
+
+        <p>Сообщения ниже получены командой <code>tsc -b</code> в проекте <code>zayavki</code>; VS Code показывает те же сообщения в панели Problems.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td><code>Property 'room' is missing in type '{ … }' but required in type 'RequestCardProps'</code></td><td>При вызове не передано обязательное свойство</td><td>Добавить атрибут <code>room="…"</code> или сделать свойство необязательным: <code>room?: string</code></td></tr>
+              <tr><td><code>Property 'tittle' does not exist on type 'IntrinsicAttributes &amp; RequestCardProps'. Did you mean 'title'?</code></td><td>Опечатка в имени свойства при вызове</td><td>Исправить имя на то, что подсказано после <code>Did you mean</code></td></tr>
+              <tr><td><code>Type '"Готов"' is not assignable to type 'Status | undefined'. Did you mean '"Готово"'?</code></td><td>Значение не входит в объединение допустимых строк</td><td>Выбрать одно из значений типа <code>Status</code></td></tr>
+              <tr><td><code>Type 'number' is not assignable to type 'string'</code></td><td>Передано число <code>room={214}</code>, а в типе <code>room: string</code></td><td>Передать строку <code>room="214"</code> или изменить тип, если по смыслу нужно число</td></tr>
+              <tr><td><code>'{' or JSX element expected</code></td><td>Значение записано без кавычек и без скобок: <code>room=214</code></td><td>Строку — в кавычки <code>room="214"</code>, выражение — в скобки <code>room={214}</code></td></tr>
+              <tr><td><code>'RequestCard' cannot be used as a JSX component</code></td><td>Параметры функции перечислены без фигурных скобок: <code>RequestCard(title, room, …)</code>. React передаёт один объект, а функция ждёт четыре отдельных параметра</td><td>Записать распаковку в фигурных скобках: <code>RequestCard({ title, room, … }: RequestCardProps)</code></td></tr>
+              <tr><td>Страница открывается, но в карточке пустое место</td><td>Ошибка типа есть, но сервер разработки типы не проверяет</td><td>Смотреть на счётчик ошибок в строке состояния VS Code и панель Problems</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s8"><span class="sec">§8</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Что такое props и кто их задаёт?</summary>
+          <p>Props — данные, которые компонент получает при вызове. Их задаёт родительский компонент, записывая атрибуты тега: <code>&lt;RequestCard title="…" room="…" /&gt;</code>. React собирает атрибуты в объект и передаёт его функции компонента.</p>
+        </details>
+        <details>
+          <summary>Чем отличаются записи <code>function RequestCard(props: RequestCardProps)</code> и <code>function RequestCard({ title }: RequestCardProps)</code>?</summary>
+          <p>В первой функция получает весь объект props, и к полям обращаются через точку: <code>props.title</code>. Во второй объект распаковывается в параметре, и поле доступно сразу по имени <code>title</code>. Результат одинаковый.</p>
+        </details>
+        <details>
+          <summary>Почему при забытом свойстве <code>room</code> страница открылась, а <code>npm run build</code> — нет?</summary>
+          <p>Сервер разработки Vite не проверяет типы, а только переводит TypeScript в JavaScript, поэтому код запускается, и на месте <code>room</code> оказывается пусто. Команда сборки начинается с <code>tsc -b</code>, которая проверяет типы, находит ошибку и останавливает сборку.</p>
+        </details>
+        <details>
+          <summary>Что означает запись <code>status?: 'Новая' | 'В работе' | 'Готово'</code>?</summary>
+          <p>Свойство <code>status</code> необязательное (знак <code>?</code>), а если передано, то может быть только одной из трёх строк (черта <code>|</code> означает «или»). Любая другая строка — ошибка в редакторе.</p>
+        </details>
+        <details>
+          <summary>Карточке нужно сменить статус заявки. Можно ли поменять props внутри RequestCard?</summary>
+          <p>Нет. Props только для чтения: данные принадлежат родителю. Карточка должна сообщить родителю о событии, а родитель изменит свои данные и передаст карточке новые props. Как это делается, разобрано в главе 1.4.</p>
+        </details>
+        <details>
+          <summary>Шапка Header всегда показывает подпись «ИТ-отдел колледжа». Что нужно изменить, чтобы подпись задавал App?</summary>
+          <p>Четыре изменения:</p><ol><li>описать тип props шапки: <code>type HeaderProps = { subtitle: string }</code>;</li><li>принять props в параметре: <code>function Header({ subtitle }: HeaderProps)</code>;</li><li>вывести <code>{subtitle}</code> вместо текста подписи;</li><li>передать значение из App: <code>&lt;Header subtitle="ИТ-отдел колледжа" /&gt;</code>.</li></ol>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Тип props</b><code>type CardProps = { title: string }</code></div>
+          <div><b>Приём props</b><code>function Card({ title }: CardProps)</code></div>
+          <div><b>Передача</b><code>&lt;Card title="Нет интернета" /&gt;</code></div>
+          <div><b>Необязательное</b><code>status?: Status</code></div>
+          <div><b>По умолчанию</b><code>{ status = 'Новая' }</code></div>
+          <div><b>Одно из значений</b><code>'Новая' | 'В работе' | 'Готово'</code></div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>Props — данные, которые родитель передаёт компоненту атрибутами тега. React собирает их в объект, функция компонента получает его первым параметром и обычно сразу распаковывает: <code>{ title, room, details, status }</code>. Тип props в TypeScript перечисляет поля и вид их значений; по нему редактор находит забытые свойства, опечатки в именах и недопустимые значения. Объединение строк ограничивает статус тремя значениями, знак <code>?</code> делает свойство необязательным, а знак равенства в распаковке задаёт значение по умолчанию. Сервер разработки типы не проверяет, поэтому ошибки нужно смотреть в редакторе и при сборке. Props идут от родителя к ребёнку и внутри компонента не меняются. Доска заявок показывает три разные заявки из одного компонента RequestCard.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">react.dev — Passing Props to a Component</a></li>
+          <li><a href="https://react.dev/learn/typescript" target="_blank" rel="noreferrer">react.dev — Using TypeScript</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types" target="_blank" rel="noreferrer">TypeScript Handbook — Union Types</a></li>
+          <li><a href="https://vite.dev/guide/features.html#transpile-only" target="_blank" rel="noreferrer">vite.dev — TypeScript: Transpile Only</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../12-jsx-i-komponenty/index.html">← 1.2 JSX и компоненты</a>
+          <a href="../../index.html">Оглавление →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>
