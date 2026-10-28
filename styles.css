@@ -553,3 +553,93 @@ details.more summary::before { content: "Подробнее · "; font: 600 10.5
 .shot-todo b { display: block; margin-bottom: 6px; font: 600 10.5px/1.4 var(--pixel); letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); }
 .shot-todo p { margin: 0 0 6px; font-size: 14.5px; line-height: 1.5; }
 .shot-todo p:last-child { margin-bottom: 0; }
+
+/* ── 8. Архивы проекта и разбор кода ─────────────────────────── */
+/* Архив проекта: с чего начинается глава и чем заканчивается. */
+.starter { margin: 22px 0; border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--acc); background: var(--page); }
+.starter--finish { box-shadow: 6px 6px 0 var(--good); }
+.starter__head { margin: 0; padding: 9px 16px; background: var(--ink); color: var(--acc-pale); font: 600 10.5px/1.4 var(--pixel); letter-spacing: 1.2px; text-transform: uppercase; }
+.starter__body { padding: 14px 16px 6px; font-size: 15px; line-height: 1.55; }
+.starter__body > p { margin: 0 0 12px; }
+.starter__btn { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 10px 16px; border: 3px solid var(--ink); background: var(--acc); color: #fff; box-shadow: 4px 4px 0 var(--ink); font: 600 14px/1.3 var(--mono); text-decoration: none; overflow-wrap: anywhere; }
+.starter--finish .starter__btn { background: var(--good); }
+.starter__btn:hover { color: #fff; transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--ink); }
+.starter__btn small { font: 500 12px/1 var(--mono); opacity: .85; white-space: nowrap; }
+.starter__steps { margin: 0 0 12px; padding-left: 22px; }
+.starter__steps li { margin-bottom: 8px; }
+.starter__body > .code { margin: 0 0 12px; }
+
+/* Код с номерными метками: метка в строке, пояснение под кодом. */
+.pin { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin: 0 2px; padding: 0 4px; border-radius: 10px; background: var(--ng); color: #fff; font: 700 11.5px/1 var(--mono); vertical-align: 1px; user-select: none; }
+.anno { margin: -8px 0 22px; padding: 0; list-style: none; border: 3px solid var(--ink); border-top: 0; background: var(--page); }
+.anno > li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 10px 16px; border-top: 1px solid var(--rule); font-size: 15px; line-height: 1.55; }
+.anno > li > .pin { margin: 2px 0 0; }
+.anno > li p { margin: 0 0 6px; }
+.anno > li p:last-child { margin: 0; }
+
+/* Ячейки памяти: имя переменной и её значение. Массив — ряд ячеек с номерами. */
+.vars { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.var { display: inline-flex; border: 2px solid var(--ink); background: #fff; font: 500 13px/1.35 var(--mono); }
+.var > i { padding: 4px 8px; background: var(--ink); color: var(--acc-bright); font-style: normal; font-weight: 700; }
+.var > span { padding: 4px 9px; }
+.var--new { box-shadow: 3px 3px 0 var(--ng); }
+.arr { display: flex; flex-wrap: wrap; gap: 0; margin: 10px 0; }
+.arr > span { position: relative; min-width: 54px; padding: 16px 9px 6px; border: 2px solid var(--ink); margin: 0 -2px 0 0; background: #fff; font: 500 12.5px/1.3 var(--mono); text-align: center; }
+.arr > span::before { content: attr(data-i); position: absolute; top: 2px; left: 5px; font: 700 10px/1 var(--mono); color: var(--ink-faint); }
+.arr > span.is-cur { background: var(--acc-pale); outline: 3px solid var(--acc); outline-offset: -3px; z-index: 1; }
+.arr > span.is-new { background: var(--ng-pale); }
+.arr > span.is-out { color: var(--ink-faint); text-decoration: line-through; background: repeating-linear-gradient(135deg, #fff, #fff 6px, var(--paper) 6px, var(--paper) 12px); }
+.arr__label { margin: 12px 0 0; font: 600 10px/1.3 var(--pixel); letter-spacing: 1px; text-transform: uppercase; color: var(--ink-soft); }
+
+/* Мини-карточка: как заявка выглядит на странице. */
+.minis { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.mini { width: 150px; padding: 7px 9px; border: 1px solid #c4cad8; border-radius: 6px; background: #fff; font-size: 12px; line-height: 1.35; }
+.mini b { display: block; margin: 3px 0 2px; font-size: 12.5px; }
+.mini em { display: inline-block; padding: 1px 6px; border-radius: 8px; background: #e3ecff; color: #2f6fde; font-style: normal; font-size: 11px; }
+.mini small { display: block; color: #5b6478; }
+.mini.is-cur { outline: 3px solid var(--acc); }
+.mini.is-new { outline: 3px solid var(--ng); }
+.mini.is-ghost { border-style: dashed; color: var(--ink-faint); background: transparent; }
+
+/* Пошаговый разбор: код слева, шаги справа; на шаге подсвечены его строки.
+   Без скрипта все шаги показаны списком под кодом. */
+.trace { margin: 24px 0; border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--ng); background: var(--page); }
+.trace__head { margin: 0; padding: 9px 16px; background: var(--ink); color: var(--ng-pale); font: 600 10.5px/1.4 var(--pixel); letter-spacing: 1.2px; text-transform: uppercase; }
+.trace__grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
+.trace__code { position: relative; margin: 0; padding: 12px 0; overflow-x: auto; border-right: 3px solid var(--ink); font: 400 13px/1.6 var(--mono); background: var(--page); }
+.trace__code .ln { display: block; min-width: max-content; padding: 0 14px 0 0; border-left: 5px solid transparent; transition: background .2s; }
+.trace__code .ln::before { content: attr(data-n); display: inline-block; width: 30px; margin-right: 10px; text-align: right; color: var(--ink-faint); user-select: none; }
+.trace__code .ln.is-lit { background: var(--ng-pale); border-left-color: var(--ng); }
+.trace__code .ln.is-dim { opacity: .45; }
+.trace__steps { margin: 0; padding: 0; list-style: none; counter-reset: tstep; }
+.trace__steps > li { counter-increment: tstep; padding: 14px 18px; border-bottom: 1px solid var(--rule); font-size: 15px; line-height: 1.55; }
+.trace__steps > li > b:first-child { display: block; margin-bottom: 6px; }
+.trace__steps > li > b:first-child::before { content: "Шаг " counter(tstep) " · "; font: 600 10.5px/1 var(--pixel); letter-spacing: 1px; text-transform: uppercase; color: var(--ng); }
+.trace__steps > li p { margin: 0 0 8px; }
+.trace__steps > li p:last-child { margin-bottom: 0; }
+.trace__nav { display: none; }
+/* Со скриптом виден один шаг, переключатель снизу. */
+.trace.is-live .trace__panel { display: flex; flex-direction: column; min-height: 100%; }
+.trace.is-live .trace__steps { flex: 1 1 auto; }
+.trace.is-live .trace__steps > li { display: none; border-bottom: 0; animation: trace-in .25s ease; }
+.trace.is-live .trace__steps > li.is-on { display: block; }
+/* Скрытые шаги не увеличивают счётчик CSS, поэтому номер приходит из скрипта. */
+.trace.is-live .trace__steps > li > b:first-child::before { content: "Шаг " attr(data-step) " · "; }
+.trace.is-live .trace__nav { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-top: 2px solid var(--ink); background: var(--paper); }
+.trace__nav button { padding: 6px 12px; border: 2px solid var(--ink); background: var(--page); color: var(--ink); font: 600 12px/1.2 var(--mono); cursor: pointer; }
+.trace__nav button:hover:not(:disabled) { background: var(--ng-pale); }
+.trace__nav button:disabled { color: var(--ink-faint); border-color: var(--ink-faint); cursor: default; }
+.trace__nav button:focus-visible { outline: 3px solid var(--ng); outline-offset: 1px; }
+.trace__dots { display: flex; flex: 1 1 auto; justify-content: center; gap: 6px; }
+.trace__dots i { width: 10px; height: 10px; border: 2px solid var(--ink); cursor: pointer; }
+.trace__dots i.is-on { background: var(--ng); }
+@keyframes trace-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (max-width: 860px) {
+  .trace__grid { grid-template-columns: 1fr; }
+  .trace__code { border-right: 0; border-bottom: 3px solid var(--ink); max-height: 340px; overflow-y: auto; }
+}
+@media print {
+  .trace, .starter { box-shadow: none; }
+  .trace .trace__steps > li { display: block !important; }
+  .trace__nav { display: none !important; }
+}

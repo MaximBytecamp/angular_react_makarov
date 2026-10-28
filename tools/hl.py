@@ -7,7 +7,10 @@
 
 Слева от черты — файл-источник (путь от корня справочника), справа — подпись блока.
 Необязательные ключи после второй черты: `read` (блок для чтения, без кнопки
-«копировать»), `lines=3-9` (взять только эти строки файла).
+«копировать»), `lines=3-9` (взять только эти строки файла), `pins=5:1,9:2` (номерные
+метки в конце строк 5 и 9 для пояснений списком .anno; такой блок — только для чтения),
+`bare` (только <pre class="trace__code"> для пошагового разбора .trace; номера строк
+в разборе — как в файле).
 `expand()` заменяет содержимое между комментариями на готовый <figure class="code">,
 поэтому повторный запуск обновляет блоки, а не дублирует их.
 """
@@ -61,15 +64,26 @@ def figure(spec: str) -> str:
     path, caption = parts[0], parts[1]
     opts = parts[2].split() if len(parts) > 2 else []
     text = (ROOT / path).read_text()
+    start = 1
     for o in opts:
         if o.startswith("lines="):
             a, b = map(int, o[6:].split("-"))
             text = "\n".join(text.split("\n")[a - 1:b])
+            start = a
     text = text.rstrip("\n")
     lang = "css" if path.endswith(".css") else "tsx"
-    attr = " data-read" if "read" in opts else ""
+    code = highlight(text, lang)
+    pins = dict(p.split(":") for o in opts if o.startswith("pins=") for p in o[5:].split(","))
+    if pins:
+        rows = code.split("\n")
+        for line, num in pins.items():
+            rows[int(line) - start] += f'  <span class="pin">{num}</span>'
+        code = "\n".join(rows)
+    if "bare" in opts:
+        return f'<pre class="trace__code" data-start="{start}">{code}</pre>'
+    attr = " data-read" if "read" in opts or pins else ""
     return (f'<figure class="code"{attr}><figcaption><span>{html.escape(caption)}</span></figcaption>'
-            f'<pre>{highlight(text, lang)}</pre></figure>')
+            f'<pre>{code}</pre></figure>')
 
 
 def expand(chapter: Path) -> int:

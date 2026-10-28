@@ -41,7 +41,7 @@
         <dl class="passport">
           <div><dt>Категория</dt><dd>React</dd></div>
           <div><dt>Уровень</dt><dd>Начальный</dd></div>
-          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после главы 1.3, запущенный <code>npm run dev</code>, браузер Chrome, Edge или Яндекс Браузер</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после главы 1.3 (или архив ниже), запущенный <code>npm run dev</code>, браузер Chrome, Edge или Яндекс Браузер</dd></div>
           <div><dt>Результат</dt><dd>Кнопка в карточке переводит заявку из «Новая» в «В работе» и «Готово», шапка показывает число новых заявок</dd></div>
         </dl>
 
@@ -57,6 +57,22 @@
             <li><a href="#s7">Проверьте себя</a></li>
           </ol>
         </nav>
+
+        <div class="starter">
+          <p class="starter__head">Если проекта нет или он в другом состоянии</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в том состоянии, с которого начинается глава, — после главы 1.3. Папки <code>node_modules</code> в архиве нет: её создаёт команда <code>npm install</code> по списку пакетов из <code>package.json</code>.</p>
+            <a class="starter__btn" href="zayavki-nachalo-1-4.zip" download>zayavki-nachalo-1-4.zip <small>18 КБ</small></a>
+            <ol class="starter__steps">
+              <li>Распакуйте архив в папку с проектами курса, например <code>react-kurs</code>. Появится папка <code>zayavki</code>. Если папка с таким именем там уже есть, сначала переименуйте старую, например в <code>zayavki-staraya</code>.</li>
+              <li>Откройте папку курса в VS Code: <b>File → Open Folder</b>.</li>
+              <li>Откройте терминал (<b>Terminal → New Terminal</b>) и выполните три команды по очереди. Последняя запускает сервер разработки; страница открывается по адресу <code>http://localhost:5173/</code>.</li>
+            </ol>
+            <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>cd zayavki
+npm install
+npm run dev</pre></figure>
+          </div>
+        </div>
 
         <h2 id="s1"><span class="sec">§1</span>Событие и обработчик</h2>
 
@@ -489,6 +505,14 @@
 
         <p>В <code>App.tsx</code> остался повтор: три состояния и три почти одинаковых вызова карточки. Для доски с десятками заявок статусы хранят одним списком и выводят карточки из него циклом. Это тема главы 1.5.</p>
 
+        <div class="starter starter--finish">
+          <p class="starter__head">Проект после главы</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в состоянии конца главы. По нему можно сверить свой код или начать следующую главу. Распаковка и запуск — как у архива в начале главы.</p>
+            <a class="starter__btn" href="zayavki-konec-1-4.zip" download>zayavki-konec-1-4.zip <small>19 КБ</small></a>
+          </div>
+        </div>
+
         <h2 id="s6"><span class="sec">§6</span>Частые ошибки</h2>
 
         <p>Сообщения ниже получены в проекте <code>zayavki</code>: ошибки типов — командой <code>tsc -b</code>, предупреждения — командой <code>npm run lint</code>, ошибка «Too many re-renders» — в консоли браузера.</p>
@@ -569,7 +593,7 @@
 
         <div class="pager">
           <a href="../13-props/index.html">← 1.3 Props: данные от родителя</a>
-          <a href="../../index.html">Оглавление →</a>
+          <a href="../15-spiski-i-usloviya/index.html">1.5 Списки, ключи, условный вывод →</a>
         </div>
 
         <div class="colophon">
