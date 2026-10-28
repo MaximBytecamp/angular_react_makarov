@@ -86,7 +86,11 @@ npm run dev</pre></figure>
 
         <h2 id="s1"><span class="sec">§1</span>Заявки в одном массиве</h2>
 
-        <p>Сейчас каждая заявка записана в <code>App.tsx</code> отдельным вызовом <code>&lt;RequestCard … /&gt;</code>, а её статус хранится в отдельном состоянии: <code>status1</code>, <code>status2</code>, <code>status3</code>. Для четвёртой заявки пришлось бы добавить ещё одно состояние и ещё один вызов карточки. Заявок на доске может быть десятки, и для каждой так не напишешь. Поэтому данные заявок отделяют от разметки: все заявки хранятся одним списком, а разметка описывает одну карточку и повторяется для каждого элемента списка.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Зачем хранить заявки списком</p>
+
+        <p>Сейчас каждая заявка записана в <code>App.tsx</code> отдельным вызовом <code>&lt;RequestCard … /&gt;</code>. Статус каждой хранится в отдельном состоянии: <code>status1</code>, <code>status2</code>, <code>status3</code>. Для четвёртой заявки пришлось бы добавить ещё одно состояние и ещё один вызов карточки. Заявок на доске могут быть десятки, и для каждой так не напишешь.</p>
+
+        <p>Поэтому данные отделяют от разметки. Все заявки хранятся одним списком. Разметка описывает одну карточку, и React повторяет её для каждой заявки из списка.</p>
 
         <div class="analogy"><div>
           <b>Сравнение из жизни</b>
@@ -94,9 +98,11 @@ npm run dev</pre></figure>
           <p class="miss">Строки журнала нумеруют с единицы, элементы массива — с нуля.</p>
         </div></div>
 
-        <p><span class="term">Массив</span> — список значений в квадратных скобках через запятую: <code>['214', '305', '112']</code>. Каждое значение — <span class="term">элемент</span> массива, у элемента есть номер — <span class="term">индекс</span>. Индексы начинаются с нуля: первый элемент — <code>[0]</code>, второй — <code>[1]</code>. Число элементов хранит свойство <code>length</code>.</p>
+        <p><span class="term">Массив</span> — список значений в квадратных скобках через запятую: <code>['214', '305', '112']</code>. Каждое значение — <span class="term">элемент</span> массива. У элемента есть номер — <span class="term">индекс</span>. Индексы начинаются с нуля: первый элемент — <code>[0]</code>, второй — <code>[1]</code>. Число элементов хранит свойство <code>length</code>.</p>
 
-        <p><span class="term">Объект</span> — набор пар «имя: значение» в фигурных скобках: <code>{ id: 1, title: 'Не работает проектор' }</code>. Пары называются <span class="term">полями</span> (или свойствами), значение поля читают через точку: <code>request.title</code>. Объектами в главе 1.3 были props карточки.</p>
+        <p><span class="term">Объект</span> — набор пар «имя: значение» в фигурных скобках: <code>{ id: 1, title: 'Не работает проектор' }</code>. Пары называются <span class="term">полями</span>. Значение поля читают через точку: <code>request.title</code>. Объектом уже были props карточки в главе 1.3.</p>
+
+        <p>На схеме — массив заявок, который появится в проекте: пять ячеек, в каждой объект с пятью полями.</p>
 
         <figure class="scheme">
           <p class="scheme__head">Массив initialRequests: пять объектов, у каждого пять полей</p>
@@ -121,8 +127,10 @@ npm run dev</pre></figure>
           <p class="scheme__note">Маленькая цифра в углу ячейки — индекс элемента. Индекс — место в массиве, <code>id</code> — номер самой заявки; при удалении заявки индексы остальных сдвигаются, <code>id</code> остаются прежними.</p>
         </figure>
 
+        <p class="phase phase--do"><span>Делаем</span>Создаём файл с заявками</p>
+
         <ol class="steps">
-          <li><b>Создайте файл requests.ts</b><p>В проводнике VS Code щёлкните правой кнопкой по папке <code>src</code>, выберите <b>New File</b>, введите имя <code>requests.ts</code> и нажмите <kbd>Enter</kbd>. Вставьте в файл код ниже и сохраните. Расширение <code>.ts</code> без <code>x</code>: в файле нет разметки JSX, только данные и функция.</p>
+          <li><b>Создайте файл requests.ts</b><p>В проводнике VS Code щёлкните правой кнопкой по папке <code>src</code>, выберите <b>New File</b>, введите имя <code>requests.ts</code> и нажмите <kbd>Enter</kbd>. Вставьте в файл код ниже и сохраните (<kbd>Ctrl</kbd>+<kbd>S</kbd>, на macOS <kbd>Cmd</kbd>+<kbd>S</kbd>).</p>
             <!--CODE tools/code15/requests.ts | zayavki/src/requests.ts--><figure class="code"><figcaption><span>zayavki/src/requests.ts</span></figcaption><pre><span class="k">export</span> <span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>
 
 <span class="k">export</span> <span class="k">type</span> RequestItem = {
@@ -177,10 +185,14 @@ npm run dev</pre></figure>
   }
   <span class="k">return</span> <span class="s">'Готово'</span>
 }</pre></figure><!--/CODE-->
-            <figure class="shot" style="max-width: 1246px"><img src="img/01-requests-ts.png" width="1240" height="780" alt="VS Code: файл requests.ts в папке src, в редакторе типы Status и RequestItem и начало массива initialRequests" loading="lazy"><figcaption>Так должен выглядеть проект: requests.ts лежит в src рядом с App.tsx</figcaption></figure></li>
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-requests-ts.png" width="1240" height="780" alt="VS Code: файл requests.ts в папке src, в редакторе типы Status и RequestItem и начало массива initialRequests" loading="lazy"><figcaption>Так должен выглядеть проект: requests.ts лежит в src рядом с App.tsx</figcaption></figure></li></li>
         </ol>
 
-        <p>Страница после сохранения не меняется: файл пока никто не подключает. Ниже — начало файла с номерными метками; под кодом разобрано, что делает каждая отмеченная строка.</p>
+        <p>Страница в браузере после этого шага не меняется: файл пока никто не подключает.</p>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что записано в requests.ts</p>
+
+        <p>Расширение файла <code>.ts</code>, без буквы <code>x</code>: в файле нет разметки JSX, только данные и функция. Ниже — начало файла. Цифры в кружках отмечают строки, под кодом разобрана каждая.</p>
 
         <!--CODE tools/code15/requests.ts | zayavki/src/requests.ts · начало | lines=1-18 pins=1:1,3:2,11:3,12:4,13:5--><figure class="code" data-read><figcaption><span>zayavki/src/requests.ts · начало</span></figcaption><pre><span class="k">export</span> <span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>  <span class="pin">1</span>
 
@@ -208,13 +220,13 @@ npm run dev</pre></figure>
           <li><span class="pin">5</span><div><p>Поле <code>id</code> — номер, который у каждой заявки свой и не меняется. Он нужен, чтобы отличать заявки друг от друга: у двух заявок может совпасть кабинет и даже название, <code>id</code> не совпадает никогда.</p></div></li>
         </ol>
 
-        <p>В конце файла — функция <code>nextStatus</code>, перенесённая из <code>App.tsx</code> главы 1.4 без изменений: из «Новая» она возвращает «В работе», из остальных статусов — «Готово». Статусы и правило их смены теперь описаны в одном файле.</p>
+        <p>Остальные четыре заявки записаны так же. В конце файла — функция <code>nextStatus</code> из главы 1.4, перенесённая сюда без изменений. Из «Новая» она возвращает «В работе», из остальных статусов — «Готово». Теперь статусы и правило их смены описаны в одном файле.</p>
 
         <p class="bridge">Данные готовы. Следующий шаг — вывести из массива карточки.</p>
 
         <h2 id="s2"><span class="sec">§2</span>Карточки из массива: map и key</h2>
 
-        <p>У массива есть метод <code>map</code> («сопоставить»). Он проходит по элементам по очереди, для каждого вызывает функцию, которую ему передали, и собирает результаты в новый массив той же длины. Исходный массив при этом не меняется.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Метод map</p>
 
         <div class="analogy"><div>
           <b>Сравнение из жизни</b>
@@ -222,13 +234,15 @@ npm run dev</pre></figure>
           <p class="miss">Секретарь может ошибиться или пропустить строку. <code>map</code> вызывает функцию для каждого элемента по порядку и всегда возвращает массив той же длины.</p>
         </div></div>
 
+        <p>У массива есть метод <code>map</code> («сопоставить»). Он берёт элементы по очереди и для каждого вызывает функцию, которую ему передали. Результаты он собирает в новый массив той же длины. Исходный массив не меняется.</p>
+
         <p>Пример без React: из массива номеров кабинетов получается массив подписей.</p>
 
         <!--CODE tools/code15/primer-map.ts | Пример: map над массивом строк | read--><figure class="code" data-read><figcaption><span>Пример: map над массивом строк</span></figcaption><pre><span class="k">const</span> rooms = [<span class="s">'214'</span>, <span class="s">'305'</span>, <span class="s">'112'</span>]
 <span class="k">const</span> labels = rooms.<span class="f">map</span>((room) =<span class="t">&gt;</span> <span class="s">'каб. '</span> + room)
 console.<span class="f">log</span>(labels) <span class="c">// [ 'каб. 214', 'каб. 305', 'каб. 112' ]</span></pre></figure><!--/CODE-->
 
-        <p>Функция <code>(room) =&gt; 'каб. ' + room</code> — стрелочная функция из главы 1.4, на этот раз с параметром <code>room</code>. Метод <code>map</code> вызывает её три раза: с <code>'214'</code>, с <code>'305'</code> и с <code>'112'</code>. Каждый раз <code>room</code> получает очередной элемент, а то, что записано после стрелки, становится элементом нового массива. Комментарий после <code>//</code> показывает, что напечатает <code>console.log</code>.</p>
+        <p>В скобках у <code>map</code> — стрелочная функция из главы 1.4: <code>(room) =&gt; 'каб. ' + room</code>. Слева от стрелки её параметр <code>room</code>, справа — что она возвращает. <code>map</code> вызывает её три раза: с <code>'214'</code>, с <code>'305'</code> и с <code>'112'</code>. Каждый ответ становится элементом нового массива. Комментарий после <code>//</code> показывает, что напечатает <code>console.log</code>.</p>
 
         <figure class="scheme">
           <p class="scheme__head">map вызывает функцию для каждого элемента</p>
@@ -250,12 +264,12 @@ console.<span class="f">log</span>(labels) <span class="c">// [ 'каб. 214', '
           <p class="scheme__note">Три элемента на входе — три вызова функции — три элемента на выходе. Массив <code>rooms</code> остаётся прежним.</p>
         </figure>
 
-        <p>В React функция для <code>map</code> возвращает разметку карточки. Массив разметок React выводит на страницу подряд, как если бы карточки были записаны в коде одна за другой.</p>
+        <p>В React функция для <code>map</code> возвращает разметку карточки. Получается массив карточек, и React выводит их на страницу подряд, как если бы они были записаны в коде одна за другой.</p>
 
-        <h3>Список заявок на доске</h3>
+        <p class="phase phase--do"><span>Делаем</span>Выводим заявки из массива</p>
 
         <ol class="steps">
-          <li><b>Замените содержимое RequestCard.tsx</b><p>Изменились две строки в начале: тип <code>Status</code> теперь импортируется из <code>requests.ts</code>, а своего объявления типа в карточке больше нет. Откройте <code>src/components/RequestCard.tsx</code>, замените весь текст и сохраните.</p>
+          <li><b>Замените содержимое RequestCard.tsx</b><p>Откройте <code>src/components/RequestCard.tsx</code>, выделите весь текст (<kbd>Ctrl</kbd>+<kbd>A</kbd>), вставьте код ниже и сохраните. Изменилось только начало файла: тип <code>Status</code> теперь берётся из <code>requests.ts</code>.</p>
             <!--CODE tools/code15/RequestCard-import.tsx | zayavki/src/components/RequestCard.tsx--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx</span></figcaption><pre><span class="k">import</span> <span class="k">type</span> { Status } <span class="k">from</span> <span class="s">'../requests'</span>
 
 <span class="k">type</span> RequestCardProps = {
@@ -328,14 +342,23 @@ console.<span class="f">log</span>(labels) <span class="c">// [ 'каб. 214', '
 }
 
 <span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
-            <figure class="shot" style="max-width: 1246px"><img src="img/02-app-map.png" width="1240" height="780" alt="VS Code: App.tsx с useState(initialRequests) в строке 8 и requests.map в строке 29" loading="lazy"><figcaption>Так должен выглядеть App.tsx: одно состояние requests в строке 8, map в строке 29</figcaption></figure></li>
-          <li><b>Проверьте страницу</b><p>Перейдите в браузер. На доске пять заявок, в шапке «Новых заявок: 3».</p>
-            <figure class="shot" style="max-width: 1106px"><img src="img/03-spisok-pyat.png" width="1100" height="1007" alt="Доска заявок: пять карточек, в шапке Новых заявок: 3" loading="lazy"><figcaption>Так должна выглядеть страница: пять карточек из массива, в шапке число новых — 3</figcaption></figure></li>
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-app-map.png" width="1240" height="780" alt="VS Code: App.tsx с useState(initialRequests) в строке 8 и requests.map в строке 29" loading="lazy"><figcaption>Так должен выглядеть App.tsx: одно состояние requests в строке 8, map в строке 29</figcaption></figure></li></li>
+          <li><b>Проверьте страницу</b><p>Перейдите в браузер. На доске пять заявок, в шапке «Новых заявок: 3». Кнопки «Взять в работу» и «Завершить» работают, как в главе 1.4.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/03-spisok-pyat.png" width="1100" height="1007" alt="Доска заявок: пять карточек, в шапке Новых заявок: 3" loading="lazy"><figcaption>Так должна выглядеть страница: пять карточек из массива, в шапке число новых — 3</figcaption></figure></li></li>
         </ol>
 
-        <p>Из <code>App</code> исчезли три состояния и три вызова карточки. Вместо них одно состояние <code>requests</code> с начальным значением <code>initialRequests</code> и один вызов <code>&lt;RequestCard&gt;</code> внутри <code>map</code>. Фигурные скобки вокруг <code>requests.map(…)</code> нужны по правилу JSX из главы 1.2: внутри разметки выражение JavaScript записывается в фигурных скобках. Круглые скобки после стрелки, <code>(r) =&gt; ( &lt;RequestCard … /&gt; )</code>, позволяют записать возвращаемую разметку на нескольких строках.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Как App строит пять карточек</p>
 
-        <p>Пошаговый разбор ниже показывает, что происходит при отрисовке <code>App</code>. Кнопки «Дальше» и «Назад» переключают шаги, подсвеченные строки слева — те, о которых идёт речь в шаге. Справа показано, какие значения в этот момент лежат в переменных и что появляется на странице.</p>
+        <p>Из <code>App</code> исчезли три состояния и три вызова карточки. Вместо них:</p>
+        <ul>
+          <li>одно состояние <code>requests</code> в строке 8 — массив заявок, начальное значение <code>initialRequests</code>;</li>
+          <li>один вызов <code>&lt;RequestCard&gt;</code> внутри <code>requests.map(…)</code> в строках 29–37;</li>
+          <li>функция <code>handleNext</code> в строках 12–20 — меняет статус заявки по нажатию кнопки.</li>
+        </ul>
+
+        <p>Вокруг <code>requests.map(…)</code> стоят фигурные скобки: внутри разметки JSX код JavaScript всегда пишут в фигурных скобках (глава 1.2). Круглые скобки после стрелки нужны, чтобы разметку карточки можно было записать на нескольких строках.</p>
+
+        <p>Пошаговый разбор ниже показывает, что происходит при отрисовке <code>App</code>. Кнопки «Дальше» и «Назад» переключают шаги. Слева подсвечены строки, о которых идёт речь. Справа — какие значения лежат в переменных и что появляется на странице.</p>
 
         <figure class="trace">
           <figcaption class="trace__head">Отрисовка App: из массива — пять карточек</figcaption>
@@ -412,25 +435,86 @@ console.<span class="f">log</span>(labels) <span class="c">// [ 'каб. 214', '
           </div>
         </figure>
 
-        <h3>Предупреждение о key</h3>
-
-        <p>Карточки выводятся, но в консоли браузера появилась ошибка. Откройте консоль (<kbd>F12</kbd>, вкладка <strong>Console</strong>) и обновите страницу.</p>
-
-        <figure class="shot" style="max-width: 1106px"><img src="img/04-konsol-key.png" width="1100" height="826" alt="Доска заявок, в консоли ошибка Each child in a list should have a unique key prop. Check the render method of section. It was passed a child from App." loading="lazy"><figcaption>В консоли: Each child in a list should have a unique "key" prop</figcaption></figure>
-
-        <p>Сообщение <code>Each child in a list should have a unique "key" prop</code> переводится как «у каждого элемента списка должен быть уникальный prop key». Вторая строка уточняет место: список выводится внутри <code>section</code>, а передан он из компонента <code>App</code>. То же самое находит линтер до запуска страницы:</p>
-
-        <figure class="shot" style="max-width: 1246px"><img src="img/05-lint-key.png" width="1240" height="234" alt="Терминал: npm run lint выводит предупреждение react(jsx-key) Missing key prop for element in iterator для строки 29 App.tsx" loading="lazy"><figcaption>npm run lint: react(jsx-key) — у элемента внутри map нет key</figcaption></figure>
-
-        <p>Адрес <code>App.tsx:29:21</code> — строка 29, символ 21: начало стрелочной функции внутри <code>map</code>. Слово <code>iterator</code> в сообщении означает функцию, которая вызывается для каждого элемента массива.</p>
-
-        <p><span class="term">Ключ</span> (<code>key</code>) — особый атрибут элемента в списке, по которому React отличает элементы друг от друга. В компонент он не передаётся и в props карточки не появляется: его читает сам React. Когда массив меняется — заявку убрали, добавили или переставили, — React сравнивает новый список с прежним по ключам. Карточку с тем же ключом он считает той же самой: обновляет её текст и сохраняет её состояние. Карточку с новым ключом он создаёт заново. Карточку, ключа которой больше нет, удаляет со страницы.</p>
-
-        <p>Ключ должен быть разным у элементов одного списка и не должен меняться, пока элемент существует. Для заявок такой признак уже есть — поле <code>id</code>.</p>
+        <p class="phase phase--do"><span>Делаем</span>Смотрим консоль и линтер</p>
 
         <ol class="steps">
-          <li><b>Добавьте ключ</b><p>В <code>App.tsx</code> добавьте строку <code>key={r.id}</code> первым атрибутом карточки внутри <code>map</code> и сохраните. Фрагмент после правки:</p>
-            <!--CODE tools/code15/App-map.tsx | zayavki/src/App.tsx · строки 29–38 | read lines=29-38--><figure class="code" data-read><figcaption><span>zayavki/src/App.tsx · строки 29–38</span></figcaption><pre>          {requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+          <li><b>Откройте консоль браузера</b><p>Нажмите <kbd>F12</kbd> (на macOS — <kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>J</kbd>), выберите вкладку <strong>Console</strong> и обновите страницу (<kbd>F5</kbd>).</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/04-konsol-key.png" width="1100" height="826" alt="Доска заявок, в консоли ошибка Each child in a list should have a unique key prop. Check the render method of section. It was passed a child from App." loading="lazy"><figcaption>В консоли: Each child in a list should have a unique "key" prop</figcaption></figure></li>
+          <li><b>Запустите линтер</b><p>В VS Code откройте второй терминал: <b>Terminal → New Terminal</b>. Первый терминал занят сервером разработки. Выполните команду:</p>
+            <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>cd zayavki &amp;&amp; npm run lint</pre></figure>
+            <p>Знаки <code>&amp;&amp;</code> между командами означают «выполнить вторую, если первая прошла успешно»: сначала переход в папку проекта, затем проверка.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-lint-key.png" width="1240" height="234" alt="Терминал: npm run lint выводит предупреждение react(jsx-key) Missing key prop for element in iterator для строки 29 App.tsx" loading="lazy"><figcaption>npm run lint: react(jsx-key) — у элемента внутри map нет key</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что такое key</p>
+
+        <p>Сообщение в консоли <code>Each child in a list should have a unique "key" prop</code> переводится как «у каждого элемента списка должен быть уникальный prop key». Вторая строка уточняет место: список выводится внутри <code>section</code>, а передан он из компонента <code>App</code>.</p>
+
+        <p>Линтер пишет о том же: <code>Missing "key" prop for element in iterator</code> — «у элемента внутри перебора нет prop key». Адрес <code>App.tsx:29:21</code> — строка 29, символ 21: начало стрелочной функции внутри <code>map</code>.</p>
+
+        <p><span class="term">Ключ</span> (<code>key</code>) — атрибут элемента списка, по которому React отличает элементы друг от друга. Его читает сам React: в props карточки он не попадает. Когда массив меняется, React сравнивает новый список карточек с прежним по ключам:</p>
+        <ul>
+          <li>карточку с тем же ключом React считает той же самой — обновляет её текст и сохраняет её состояние;</li>
+          <li>карточку с новым ключом создаёт;</li>
+          <li>карточку, ключа которой в новом списке нет, удаляет со страницы.</li>
+        </ul>
+
+        <p>Поэтому ключ должен быть разным у всех элементов списка и не меняться, пока элемент существует. У заявок такой признак уже есть — поле <code>id</code>.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Добавляем ключ</p>
+
+        <ol class="steps">
+          <li><b>Добавьте строку key</b><p>В <code>App.tsx</code> поставьте курсор в конец строки 30 <code>&lt;RequestCard</code>, нажмите <kbd>Enter</kbd> и наберите <code>key={r.id}</code>. Сохраните файл. Фрагмент после правки:</p>
+            <!--CODE tools/code15/App-map.tsx | zayavki/src/App.tsx · строки 29–38 | read lines=29-38 mark=31-31--><figure class="code" data-read><figcaption><span>zayavki/src/App.tsx · строки 29–38</span></figcaption><pre>          {requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+<span class="hl">              <span class="a">key</span>={r.id}</span>
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}</pre></figure><!--/CODE--></li>
+          <li><b>Проверьте консоль</b><p>Обновите страницу (<kbd>F5</kbd>). Ошибки о key в консоли больше нет.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/06-konsol-chisto.png" width="1100" height="826" alt="Доска заявок, в консоли только сообщение о React DevTools, ошибки о key нет" loading="lazy"><figcaption>Так должна выглядеть консоль после обновления страницы: ошибки о key нет</figcaption></figure></li></li>
+        </ol>
+
+        <p class="bridge">Список выводится из массива. Следующий шаг — разобраться, как кнопка меняет статус заявки внутри массива.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Изменение заявки в массиве</h2>
+
+        <p>Статус заявки теперь — поле объекта внутри массива <code>requests</code>. Прямой способ поменять его — найти нужную заявку и записать ей новый статус. Опыт ниже показывает, что из этого получается.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: меняем массив на месте</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое App.tsx версией для опыта</b><p>Изменилась только функция <code>handleNext</code>: новые строки 13–16 подсвечены. Замените весь текст <code>App.tsx</code> и сохраните.</p>
+            <!--CODE tools/code15/App-mutaciya.tsx | zayavki/src/App.tsx · опыт | mark=13-16--><figure class="code"><figcaption><span>zayavki/src/App.tsx · опыт</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> { initialRequests, nextStatus } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [requests, setRequests] = <span class="f">useState</span>(initialRequests)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+
+  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
+<span class="hl">    <span class="k">const</span> index = requests.<span class="f">findIndex</span>((r) =<span class="t">&gt;</span> r.id === id)</span>
+<span class="hl">    requests[index].status = <span class="f">nextStatus</span>(requests[index].status)</span>
+<span class="hl">    console.<span class="f">log</span>(<span class="s">'Статус в массиве:'</span>, requests[index].status)</span>
+<span class="hl">    <span class="f">setRequests</span>(requests)</span>
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
             <span class="t">&lt;RequestCard</span>
               <span class="a">key</span>={r.id}
               <span class="a">title</span>={r.title}
@@ -439,32 +523,31 @@ console.<span class="f">log</span>(labels) <span class="c">// [ 'каб. 214', '
               <span class="a">status</span>={r.status}
               <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
             <span class="t">/&gt;</span>
-          ))}</pre></figure><!--/CODE-->
-            <figure class="shot" style="max-width: 1106px"><img src="img/06-konsol-chisto.png" width="1100" height="826" alt="Доска заявок, в консоли только сообщение о React DevTools, ошибки о key нет" loading="lazy"><figcaption>Так должна выглядеть консоль после обновления страницы: ошибки о key нет</figcaption></figure></li>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE--></li>
+          <li><b>Нажмите «Взять в работу» в первой карточке</b><p>Обновите страницу (<kbd>F5</kbd>), чтобы все заявки вернулись к начальным статусам. Консоль браузера должна быть открыта. Нажмите «Взять в работу» в первой карточке.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/07-mutaciya.png" width="1100" height="826" alt="Доска заявок: первая карточка по-прежнему Новая, в шапке Новых заявок: 3, в консоли Статус в массиве: В работе" loading="lazy"><figcaption>В консоли «Статус в массиве: В работе», на карточке по-прежнему «Новая», в шапке — 3</figcaption></figure></li>
+          <li><b>Запустите линтер</b><p>Во втором терминале выполните <code>npm run lint</code>. Терминал уже находится в папке <code>zayavki</code>, поэтому <code>cd zayavki</code> не нужен; на снимке команда набрана в новом терминале, вместе с переходом в папку.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/08-lint-mutaciya.png" width="1240" height="234" alt="Терминал: npm run lint выводит react(immutability) This value cannot be modified для строки 14 App.tsx" loading="lazy"><figcaption>npm run lint: react(immutability) — значение из useState нельзя менять напрямую</figcaption></figure></li>
         </ol>
 
-        <p class="bridge">Список выводится из массива. Следующий шаг — менять статус заявки внутри массива.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Почему страница не изменилась</p>
 
-        <h2 id="s3"><span class="sec">§3</span>Изменение заявки в массиве</h2>
+        <p>В опыте <code>handleNext</code> делает четыре действия:</p>
+        <ol>
+          <li><code>findIndex</code> находит номер заявки с нужным <code>id</code> в массиве;</li>
+          <li>в поле <code>status</code> этой заявки записывается следующий статус;</li>
+          <li>новый статус печатается в консоль;</li>
+          <li>тот же массив передаётся в <code>setRequests</code>.</li>
+        </ol>
 
-        <p>Когда статусы хранились в трёх отдельных состояниях, новый статус передавался в <code>setStatus1</code>. Теперь статус — поле объекта внутри массива <code>requests</code>. Прямой способ — найти нужную заявку и записать ей новый статус. Опыт ниже показывает, что из этого получается.</p>
-
-        <h3>Опыт: изменить массив на месте</h3>
-
-        <p>Замените в <code>App.tsx</code> функцию <code>handleNext</code> вариантом ниже и сохраните. Нажмите «Взять в работу» в первой карточке.</p>
-
-        <!--CODE tools/code15/App-mutaciya.tsx | zayavki/src/App.tsx · опыт, строки 12–17 | lines=12-17--><figure class="code"><figcaption><span>zayavki/src/App.tsx · опыт, строки 12–17</span></figcaption><pre>  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
-    <span class="k">const</span> index = requests.<span class="f">findIndex</span>((r) =<span class="t">&gt;</span> r.id === id)
-    requests[index].status = <span class="f">nextStatus</span>(requests[index].status)
-    console.<span class="f">log</span>(<span class="s">'Статус в массиве:'</span>, requests[index].status)
-    <span class="f">setRequests</span>(requests)
-  }</pre></figure><!--/CODE-->
-
-        <p>Метод <code>findIndex</code> возвращает индекс первого элемента, для которого условие истинно, — здесь индекс заявки с нужным <code>id</code>. Следующая строка записывает в поле <code>status</code> этой заявки следующий статус. Затем новый статус печатается в консоль, и тот же массив передаётся в <code>setRequests</code>.</p>
-
-        <figure class="shot" style="max-width: 1106px"><img src="img/07-mutaciya.png" width="1100" height="826" alt="Доска заявок: первая карточка по-прежнему Новая, в шапке Новых заявок: 3, в консоли Статус в массиве: В работе" loading="lazy"><figcaption>В консоли «Статус в массиве: В работе», на карточке по-прежнему «Новая», в шапке — 3</figcaption></figure>
-
-        <p>Статус внутри массива изменился — консоль это подтверждает. Страница осталась прежней. Причина — в правиле, по которому React запускает новую отрисовку. Получив значение в <code>setRequests</code>, React сравнивает его с текущим значением состояния. Для массивов и объектов проверяется, тот же это массив в памяти или другой; поля внутри не сравниваются. В <code>setRequests</code> передан тот же массив <code>requests</code>, в котором поменяли одно поле, поэтому React считает, что состояние не изменилось, и функцию <code>App</code> заново не вызывает.</p>
+        <p>Консоль показывает «Статус в массиве: В работе» — значит, статус внутри массива изменился. А карточка по-прежнему «Новая». Причина — в правиле, по которому React запускает новую отрисовку. React сравнивает значение из <code>setRequests</code> с текущим. Для массива проверяется одно: это тот же массив или другой. Что внутри, React не сравнивает. В <code>setRequests</code> передан тот же массив, поэтому React считает, что ничего не изменилось, и страницу не обновляет.</p>
 
         <div class="analogy"><div>
           <b>Сравнение из жизни</b>
@@ -472,17 +555,66 @@ console.<span class="f">log</span>(labels) <span class="c">// [ 'каб. 214', '
           <p class="miss">Секретарь заметит исправление, если присмотрится. React содержимое не просматривает и проверяет только, тот же это массив или другой.</p>
         </div></div>
 
-        <p>Линтер находит и эту ошибку:</p>
+        <p>Линтер сообщает о той же ошибке для строки 14: <code>This value cannot be modified</code> — «это значение нельзя изменять». Подсказка в конце: значение из <code>useState()</code> не меняют напрямую, для обновления используют функцию изменения.</p>
 
-        <figure class="shot" style="max-width: 1246px"><img src="img/08-lint-mutaciya.png" width="1240" height="234" alt="Терминал: npm run lint выводит react(immutability) This value cannot be modified для строки 14 App.tsx" loading="lazy"><figcaption>npm run lint: react(immutability) — значение из useState нельзя менять напрямую</figcaption></figure>
+        <p>Отсюда правило для всех состояний: <span class="term">значение состояния заменяют новым значением</span>. Для массива это значит: построить новый массив с нужным изменением и передать его в <code>setRequests</code>.</p>
 
-        <p>Сообщение для строки 14 переводится так: «это значение нельзя изменять. Значение, полученное из useState(), не изменяют напрямую; для обновления используйте функцию изменения». Правило общее для всех состояний: <span class="term">значение состояния заменяют новым значением</span>, старое остаётся нетронутым. Для массива это значит — построить новый массив с нужными изменениями и передать его в функцию изменения.</p>
+        <p class="phase phase--do"><span>Делаем</span>Возвращаем правильную версию</p>
 
-        <h3>Новый массив через map</h3>
+        <ol class="steps">
+          <li><b>Замените содержимое App.tsx</b><p>Это версия из §2 с ключом; строки 13–19 с правильной функцией <code>handleNext</code> подсвечены. Замените весь текст и сохраните.</p>
+            <!--CODE tools/code15/App-map.tsx | zayavki/src/App.tsx | mark=13-19--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> { initialRequests, nextStatus } <span class="k">from</span> <span class="s">'./requests'</span>
 
-        <p>Верните <code>handleNext</code> к виду, который был в §2, и сохраните:</p>
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [requests, setRequests] = <span class="f">useState</span>(initialRequests)
 
-        <!--CODE tools/code15/App-map.tsx | zayavki/src/App.tsx · строки 12–20 | lines=12-20--><figure class="code"><figcaption><span>zayavki/src/App.tsx · строки 12–20</span></figcaption><pre>  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+
+  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
+<span class="hl">    <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {</span>
+<span class="hl">      <span class="k">if</span> (r.id === id) {</span>
+<span class="hl">        <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }</span>
+<span class="hl">      }</span>
+<span class="hl">      <span class="k">return</span> r</span>
+<span class="hl">    })</span>
+<span class="hl">    <span class="f">setRequests</span>(updated)</span>
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE--></li>
+          <li><b>Проверьте кнопку</b><p>Обновите страницу (<kbd>F5</kbd>) и нажмите «Взять в работу» в первой карточке. Статус меняется, в шапке «Новых заявок: 2».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/09-map-novyy-massiv.png" width="1100" height="1007" alt="Доска заявок: первая карточка В работе с кнопкой Завершить, в шапке Новых заявок: 2" loading="lazy"><figcaption>Так должна выглядеть страница: первая заявка «В работе», в шапке «Новых заявок: 2»</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как handleNext строит новый массив</p>
+
+        <!--CODE tools/code15/App-map.tsx | App.tsx · строки 12–20 | read lines=12-20--><figure class="code" data-read><figcaption><span>App.tsx · строки 12–20</span></figcaption><pre>  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
     <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {
       <span class="k">if</span> (r.id === id) {
         <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }
@@ -492,11 +624,15 @@ console.<span class="f">log</span>(labels) <span class="c">// [ 'каб. 214', '
     <span class="f">setRequests</span>(updated)
   }</pre></figure><!--/CODE-->
 
-        <p>Функция для <code>map</code> здесь записана в фигурных скобках, с несколькими командами и словом <code>return</code>. В §2 после стрелки стояло одно выражение, и его значение возвращалось само. Когда в функции нужно условие <code>if</code>, тело пишут в фигурных скобках, а возвращаемое значение указывают через <code>return</code>.</p>
+        <p><code>handleNext</code> не трогает старый массив. Она строит новый массив <code>updated</code> через <code>map</code>, а затем передаёт его в <code>setRequests</code>.</p>
 
-        <p>Для каждой заявки функция возвращает элемент нового массива. Если <code>id</code> совпал с тем, что пришёл в <code>handleNext</code>, — новый объект с другим статусом. Иначе — ту же самую заявку <code>r</code>. Новый объект собирается записью <code>{ ...r, status: nextStatus(r.status) }</code>.</p>
+        <p>Функция внутри <code>map</code> на этот раз записана в фигурных скобках и со словом <code>return</code>. Так пишут, когда внутри нужно условие <code>if</code>. Для каждой заявки она проверяет <code>id</code>:</p>
+        <ul>
+          <li><code>id</code> совпал — вернуть новый объект с другим статусом;</li>
+          <li>не совпал — вернуть ту же заявку <code>r</code> без изменений.</li>
+        </ul>
 
-        <p>Три точки перед <code>r</code> — <span class="term">оператор расширения</span> (spread). Внутри фигурных скобок он копирует в новый объект все поля объекта <code>r</code>. Поле, записанное после него, заменяет одноимённое скопированное. Пример без React:</p>
+        <p>Новый объект собирается записью <code>{ ...r, status: nextStatus(r.status) }</code>. Три точки перед <code>r</code> — <span class="term">оператор расширения</span> (spread). Он копирует в новый объект все поля <code>r</code>. Поле, записанное после него, заменяет скопированное поле с тем же именем. Пример без React:</p>
 
         <!--CODE tools/code15/primer-spread.ts | Пример: копия объекта с другим статусом | read--><figure class="code" data-read><figcaption><span>Пример: копия объекта с другим статусом</span></figcaption><pre><span class="k">const</span> card = { id: <span class="n">1</span>, title: <span class="s">'Не работает проектор'</span>, status: <span class="s">'Новая'</span> }
 <span class="k">const</span> copy = { ...card, status: <span class="s">'В работе'</span> }
@@ -516,7 +652,7 @@ console.<span class="f">log</span>(card === copy) <span class="c">// false</span
           <p class="scheme__note"><code>...card</code> копирует три поля, <code>status: 'В работе'</code> заменяет одно из них. Исходный объект <code>card</code> не изменился, <code>card === copy</code> даёт <code>false</code>: это два разных объекта.</p>
         </figure>
 
-        <p>Разбор ниже показывает, что происходит при нажатии «Взять в работу» в первой карточке.</p>
+        <p>Разбор ниже повторяет по шагам то, что произошло при нажатии «Взять в работу» в первой карточке.</p>
 
         <figure class="trace">
           <figcaption class="trace__head">Щелчок по первой карточке: новый массив вместо старого</figcaption>
@@ -580,13 +716,9 @@ console.<span class="f">log</span>(card === copy) <span class="c">// false</span
           </div>
         </figure>
 
-        <p>Нажмите «Взять в работу» в первой карточке.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Как считается число новых заявок</p>
 
-        <figure class="shot" style="max-width: 1106px"><img src="img/09-map-novyy-massiv.png" width="1100" height="1007" alt="Доска заявок: первая карточка В работе с кнопкой Завершить, в шапке Новых заявок: 2" loading="lazy"><figcaption>Так должна выглядеть страница: первая заявка «В работе», в шапке «Новых заявок: 2»</figcaption></figure>
-
-        <h3>Подсчёт через filter</h3>
-
-        <p>Строка 10 считает новые заявки методом <code>filter</code> («отобрать»). Он тоже проходит по массиву и для каждого элемента вызывает функцию. Если функция вернула <code>true</code>, элемент попадает в новый массив, если <code>false</code> — не попадает. Пример без React:</p>
+        <p>Строка 10 считает новые заявки методом <code>filter</code> («отобрать»). Он тоже вызывает функцию для каждого элемента. Если функция вернула <code>true</code>, элемент попадает в новый массив. Если <code>false</code> — не попадает. Пример без React:</p>
 
         <!--CODE tools/code15/primer-filter.ts | Пример: filter оставляет подходящие элементы | read--><figure class="code" data-read><figcaption><span>Пример: filter оставляет подходящие элементы</span></figcaption><pre><span class="k">const</span> statuses = [<span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>, <span class="s">'Новая'</span>]
 <span class="k">const</span> onlyNew = statuses.<span class="f">filter</span>((s) =<span class="t">&gt;</span> s === <span class="s">'Новая'</span>)
@@ -604,9 +736,11 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
           <p class="scheme__note">Перечёркнуты элементы, для которых условие <code>s === 'Новая'</code> ложно. У <code>map</code> новый массив всегда той же длины, у <code>filter</code> — такой или короче.</p>
         </figure>
 
-        <p class="bridge">Список и счётчик работают. Следующий раздел — показ части карточки по условию.</p>
+        <p class="bridge">Список и счётчик работают. Следующий шаг — показывать часть карточки только при определённом условии.</p>
 
         <h2 id="s4"><span class="sec">§4</span>Условный вывод</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Два способа выводить разметку по условию</p>
 
         <div class="analogy"><div>
           <b>Сравнение из жизни</b>
@@ -614,9 +748,9 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
           <p class="miss">Погасшее табло остаётся на стене. Элемент, который по условию не выводится, на странице отсутствует совсем.</p>
         </div></div>
 
-        <p>В пяти карточках подробности занимают половину высоты списка. Удобнее показывать их по кнопке «Подробнее». А у готовых заявок кнопка «Завершить» сейчас выключена и бесполезна; на её месте нужна кнопка «Убрать с доски». В обоих случаях часть разметки выводится только при каком-то условии. Это называется <span class="term">условным выводом</span> (conditional rendering).</p>
+        <p>В пяти карточках подробности занимают половину высоты списка: удобнее показывать их по кнопке «Подробнее». У готовых заявок кнопка «Завершить» выключена, и на её месте нужна кнопка «Убрать с доски». В обоих случаях часть разметки выводится только при каком-то условии. Это называется <span class="term">условным выводом</span>.</p>
 
-        <p>В JSX условие записывают выражением, потому что <code>if</code> внутри фигурных скобок не допускается (глава 1.4). Используют две записи:</p>
+        <p>Инструкцию <code>if</code> внутри разметки JSX писать нельзя (глава 1.4). Вместо неё используют две записи:</p>
 
         <div class="table-scroll">
           <table>
@@ -628,12 +762,18 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
           </table>
         </div>
 
-        <p>Знак <code>&amp;&amp;</code> — логическое «и». Выражение <code>a &amp;&amp; b</code> сначала проверяет <code>a</code>. Если <code>a</code> ложно, результат — само <code>a</code>, и <code>b</code> даже не вычисляется. Если <code>a</code> истинно, результат — <code>b</code>. В JSX это работает так. При <code>open</code>, равном <code>true</code>, выражение <code>{open &amp;&amp; &lt;p&gt;…&lt;/p&gt;}</code> даёт абзац. При <code>false</code> оно даёт значение <code>false</code>, а <code>false</code> React на страницу не выводит.</p>
+        <p>Как читается первая запись на примере <code>{open &amp;&amp; &lt;p&gt;Подробности&lt;/p&gt;}</code>:</p>
+        <ul>
+          <li><code>open</code> равно <code>true</code> — результат выражения абзац, и он появляется на странице;</li>
+          <li><code>open</code> равно <code>false</code> — результат <code>false</code>, а <code>false</code> React на страницу не выводит.</li>
+        </ul>
 
-        <h3>Карточка с подробностями и кнопкой «Убрать»</h3>
+        <p>Вторая запись, тернарный оператор <code>условие ? A : B</code>, знакома по главе 1.4. Там он выбирал текст кнопки. Так же он выбирает, какую из двух кнопок вывести.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Подробности по кнопке и удаление заявки</p>
 
         <ol class="steps">
-          <li><b>Добавьте стили</b><p>В конец <code>src/index.css</code> добавьте правила и сохраните.</p>
+          <li><b>Добавьте стили</b><p>Откройте <code>src/index.css</code>, вставьте правила в самый конец файла и сохраните.</p>
             <!--CODE tools/code15/index-uslovie.css | zayavki/src/index.css · в конец файла | lines=145-166--><figure class="code"><figcaption><span>zayavki/src/index.css · в конец файла</span></figcaption><pre>.card__actions {
   <span class="a">display</span>: flex;
   <span class="a">gap</span>: <span class="n">8px</span>;
@@ -656,7 +796,7 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
   <span class="a">color</span>: <span class="n">#5b6478</span>;
   <span class="a">text-align</span>: center;
 }</pre></figure><!--/CODE-->
-            <p>Правило <code>.card__actions</code> ставит кнопки карточки в ряд, <code>.card__more</code> делает кнопку «Подробнее» серой, <code>.empty</code> оформляет сообщение о пустом списке пунктирной рамкой.</p></li>
+            <p><code>.card__actions</code> ставит кнопки карточки в ряд, <code>.card__more</code> делает кнопку «Подробнее» серой, <code>.empty</code> рисует пунктирную рамку вокруг сообщения о пустом списке.</p></li>
           <li><b>Замените содержимое RequestCard.tsx</b>
             <!--CODE tools/code15/RequestCard.tsx | zayavki/src/components/RequestCard.tsx--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
 <span class="k">import</span> <span class="k">type</span> { Status } <span class="k">from</span> <span class="s">'../requests'</span>
@@ -696,7 +836,7 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
 }
 
 <span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
-            <figure class="shot" style="max-width: 1246px"><img src="img/10-card-uslovie.png" width="1240" height="780" alt="VS Code: RequestCard.tsx с useState(false) в строке 14, open && в строке 23 и тернарным оператором в строках 28–32" loading="lazy"><figcaption>Так должен выглядеть RequestCard.tsx: состояние open в строке 14, условный вывод в строках 23 и 28–32</figcaption></figure></li>
+            <figure class="shot" style="max-width: 1246px"><img src="img/10-card-uslovie.png" width="1240" height="780" alt="VS Code: RequestCard.tsx с useState(false) в строке 14, open && в строке 23 и тернарным оператором в строках 28–32" loading="lazy"><figcaption>Так должен выглядеть RequestCard.tsx: состояние open в строке 14, условный вывод в строках 23 и 28–32</figcaption></figure></li></li>
           <li><b>Замените содержимое App.tsx</b><p>В <code>App</code> добавлены функция <code>handleRemove</code>, сообщение о пустом списке и prop <code>onRemove</code> у карточки.</p>
             <!--CODE tools/code15/App-uslovie.tsx | zayavki/src/App.tsx--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
 <span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
@@ -749,14 +889,15 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
 }
 
 <span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE--></li>
-          <li><b>Проверьте карточки</b><p>У всех карточек подробности скрыты. Нажмите «Подробнее» в первой карточке.</p>
-            <figure class="shot" style="max-width: 1106px"><img src="img/11-svernuto.png" width="1100" height="897" alt="Доска заявок: пять карточек без подробностей, у каждой кнопка Подробнее; у третьей кнопка Убрать с доски" loading="lazy"><figcaption>До щелчка: подробностей нет, у готовой заявки — «Убрать с доски»</figcaption></figure>
-            <figure class="shot" style="max-width: 1106px"><img src="img/12-podrobnee.png" width="1100" height="919" alt="Доска заявок: у первой карточки показаны подробности и кнопка Скрыть" loading="lazy"><figcaption>После щелчка: у первой карточки подробности и кнопка «Скрыть»</figcaption></figure></li>
-          <li><b>Уберите готовую заявку</b><p>Нажмите «Убрать с доски» в третьей карточке.</p>
-            <figure class="shot" style="max-width: 1106px"><img src="img/13-ubrana.png" width="1100" height="784" alt="Доска заявок: четыре карточки, заявки про принтер нет" loading="lazy"><figcaption>Так должна выглядеть страница: заявки про принтер нет, осталось четыре</figcaption></figure></li>
+          <li><b>Обновите страницу</b><p>Нажмите <kbd>F5</kbd>. У всех карточек подробности скрыты, у заявки про принтер вместо «Завершить» — «Убрать с доски».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/11-svernuto.png" width="1100" height="897" alt="Доска заявок: пять карточек без подробностей, у каждой кнопка Подробнее; у третьей кнопка Убрать с доски" loading="lazy"><figcaption>До щелчка: подробностей нет, у готовой заявки — «Убрать с доски»</figcaption></figure></li>
+          <li><b>Раскройте первую карточку</b><p>Нажмите «Подробнее» в первой карточке. Появились подробности, кнопка сменилась на «Скрыть».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/12-podrobnee.png" width="1100" height="919" alt="Доска заявок: у первой карточки показаны подробности и кнопка Скрыть" loading="lazy"><figcaption>После щелчка: у первой карточки подробности и кнопка «Скрыть»</figcaption></figure></li></li>
+          <li><b>Уберите готовую заявку</b><p>Нажмите «Убрать с доски» у заявки про принтер. На доске осталось четыре заявки.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/13-ubrana.png" width="1100" height="784" alt="Доска заявок: четыре карточки, заявки про принтер нет" loading="lazy"><figcaption>Так должна выглядеть страница: заявки про принтер нет, осталось четыре</figcaption></figure></li></li>
         </ol>
 
-        <h3>Разбор RequestCard.tsx</h3>
+        <p class="phase phase--read"><span>Разбираемся</span>Что изменилось в карточке</p>
 
         <!--CODE tools/code15/RequestCard.tsx | RequestCard.tsx · строки 13–33 | lines=13-33 pins=14:1,23:2,25:3,26:4,28:5--><figure class="code" data-read><figcaption><span>RequestCard.tsx · строки 13–33</span></figcaption><pre><span class="k">function</span> <span class="f">RequestCard</span>({ title, room, details, status, onNext, onRemove }: RequestCardProps) {
   <span class="k">const</span> [open, setOpen] = <span class="f">useState</span>(<span class="k">false</span>)  <span class="pin">1</span>
@@ -787,31 +928,31 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
           <li><span class="pin">5</span><div><p>Тернарный оператор выбирает между двумя кнопками. У готовой заявки выводится «Убрать с доски» с обработчиком <code>onRemove</code>, у остальных — прежняя кнопка с <code>onNext</code>. Варианты обёрнуты в круглые скобки, чтобы каждый можно было записать на отдельной строке. Атрибут <code>disabled</code> больше не нужен: у готовой заявки кнопки перевода статуса нет совсем.</p></div></li>
         </ol>
 
-        <h3>Удаление и пустой список</h3>
-
-        <p>Функция <code>handleRemove</code> в <code>App</code> убирает заявку тем же способом, каким меняется статус, — строит новый массив:</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Удаление и пустой список</p>
 
         <!--CODE tools/code15/App-uslovie.tsx | App.tsx · строки 22–24 | read lines=22-24--><figure class="code" data-read><figcaption><span>App.tsx · строки 22–24</span></figcaption><pre>  <span class="k">function</span> <span class="f">handleRemove</span>(id: number) {
     <span class="f">setRequests</span>(requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))
   }</pre></figure><!--/CODE-->
 
-        <p>Знак <code>!==</code> — «не равно». <code>filter</code> оставляет все заявки, у которых <code>id</code> не совпадает с переданным, то есть все, кроме удаляемой. Новый массив короче прежнего на один элемент, <code>setRequests</code> его сохраняет, и React убирает со страницы карточку, ключа которой в новом списке нет.</p>
+        <p><code>handleRemove</code> убирает заявку так же, как <code>handleNext</code> меняет статус: строит новый массив. Знак <code>!==</code> означает «не равно». <code>filter</code> оставляет заявки, у которых <code>id</code> не равен переданному, — все, кроме удаляемой.</p>
 
         <div class="arr"><span data-i="0">id 1</span><span data-i="1">id 2</span><span data-i="2" class="is-out">id 3</span><span data-i="3">id 4</span><span data-i="4">id 5</span></div>
-        <p class="arr__label">handleRemove(3): заявка с id 3 не проходит условие r.id !== 3</p>
+        <p class="arr__label">handleRemove(3): заявка с id 3 не проходит условие r.id !== 3, в новом массиве четыре заявки</p>
 
-        <p>Строка <code>{requests.length === 0 &amp;&amp; &lt;p className="empty"&gt;Заявок нет&lt;/p&gt;}</code> выводит сообщение, когда в массиве не осталось заявок. Пока заявки есть, сравнение даёт <code>false</code>, и сообщения на странице нет.</p>
+        <p>Карточки с ключом 3 в новом списке нет, и React убирает её со страницы.</p>
+
+        <p>Строка 33 в <code>App.tsx</code> — <code>{requests.length === 0 &amp;&amp; &lt;p className="empty"&gt;Заявок нет&lt;/p&gt;}</code> — выводит сообщение, когда в массиве не осталось заявок. Пока заявки есть, сравнение даёт <code>false</code>, и сообщения нет.</p>
 
         <div class="margin-note margin-note--warn">
           <b>Число слева от &amp;&amp;</b>
           <p>Короткая запись <code>{requests.length &amp;&amp; …}</code> выглядит похоже, но при пустом массиве выводит на страницу цифру <code>0</code>. Выражение <code>0 &amp;&amp; …</code> равно <code>0</code>, а число React выводит, в отличие от <code>false</code>. Слева от <code>&amp;&amp;</code> ставят сравнение, которое даёт <code>true</code> или <code>false</code>: <code>requests.length === 0</code>, <code>requests.length &gt; 0</code>.</p>
         </div>
 
-        <p class="bridge">Карточка показывает части по условию. Последнее дополнение доски — фильтр по статусу.</p>
+        <p class="bridge">Карточка показывает части по условию. Последнее, что нужно доске, — фильтр по статусу.</p>
 
         <h2 id="s5"><span class="sec">§5</span>Фильтр по статусу</h2>
 
-        <p>Над списком появляются четыре кнопки: «Все», «Новая», «В работе», «Готово». Выбранная кнопка закрашена, и в списке остаются только заявки с этим статусом. Для этого в <code>App</code> нужно ещё одно состояние — выбранный фильтр — и список видимых заявок, вычисленный из двух состояний.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Что будет на доске</p>
 
         <div class="analogy"><div>
           <b>Сравнение из жизни</b>
@@ -819,8 +960,16 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
           <p class="miss">В таблице фильтр настраивают мышью в меню столбца. Здесь правило отбора записано в коде, а кнопки только меняют значение <code>filter</code>.</p>
         </div></div>
 
+        <p>Над списком появятся четыре кнопки: «Все», «Новая», «В работе», «Готово». Выбранная кнопка закрашена, в списке только заявки с этим статусом. Для этого в <code>App</code> понадобятся:</p>
+        <ul>
+          <li>второе состояние <code>filter</code> — какая кнопка выбрана;</li>
+          <li>массив <code>visible</code> — заявки, которые нужно показать. Он вычисляется из <code>requests</code> и <code>filter</code>.</li>
+        </ul>
+
+        <p class="phase phase--do"><span>Делаем</span>Добавляем фильтр</p>
+
         <ol class="steps">
-          <li><b>Добавьте стили кнопок</b><p>В конец <code>src/index.css</code> добавьте правила и сохраните.</p>
+          <li><b>Добавьте стили кнопок</b><p>В самый конец <code>src/index.css</code> добавьте правила и сохраните.</p>
             <!--CODE tools/code15/index.css | zayavki/src/index.css · в конец файла | lines=168-189--><figure class="code"><figcaption><span>zayavki/src/index.css · в конец файла</span></figcaption><pre>.filters {
   <span class="a">display</span>: flex;
   <span class="a">flex-wrap</span>: wrap;
@@ -908,21 +1057,22 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
 }
 
 <span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
-            <figure class="shot" style="max-width: 1246px"><img src="img/14-app-filtr.png" width="1240" height="780" alt="VS Code: App.tsx с типом Filter, массивом FILTERS, состояниями requests и filter и константой visible" loading="lazy"><figcaption>Так должен выглядеть App.tsx: тип Filter и массив FILTERS до App, два состояния и visible в строках 12–16</figcaption></figure></li>
-          <li><b>Проверьте фильтр</b><p>Нажмите «Новая». Затем нажмите «Все», уберите заявку про принтер и нажмите «Готово».</p>
-            <figure class="shot" style="max-width: 1106px"><img src="img/16-filtr-novaya.png" width="1100" height="668" alt="Доска заявок: выбран фильтр Новая, в списке три заявки со статусом Новая" loading="lazy"><figcaption>Фильтр «Новая»: три заявки, кнопка «Новая» закрашена</figcaption></figure>
-            <figure class="shot" style="max-width: 1106px"><img src="img/17-filtr-pusto.png" width="1100" height="634" alt="Доска заявок: выбран фильтр Готово, вместо карточек сообщение Заявок с таким статусом нет" loading="lazy"><figcaption>Фильтр «Готово» после удаления единственной готовой заявки: сообщение о пустом списке</figcaption></figure></li>
+            <figure class="shot" style="max-width: 1246px"><img src="img/14-app-filtr.png" width="1240" height="780" alt="VS Code: App.tsx с типом Filter, массивом FILTERS, состояниями requests и filter и константой visible" loading="lazy"><figcaption>Так должен выглядеть App.tsx: тип Filter и массив FILTERS до App, два состояния и visible в строках 12–16</figcaption></figure></li></li>
+          <li><b>Выберите фильтр «Новая»</b><p>Обновите страницу (<kbd>F5</kbd>): на доске снова пять заявок. Нажмите «Новая» — остаются три новые заявки.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/16-filtr-novaya.png" width="1100" height="668" alt="Доска заявок: выбран фильтр Новая, в списке три заявки со статусом Новая" loading="lazy"><figcaption>Фильтр «Новая»: три заявки, кнопка «Новая» закрашена</figcaption></figure></li>
+          <li><b>Проверьте пустой список</b><p>Нажмите «Все», затем «Убрать с доски» у заявки про принтер, затем «Готово». Готовых заявок не осталось, вместо карточек — сообщение.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/17-filtr-pusto.png" width="1100" height="634" alt="Доска заявок: выбран фильтр Готово, вместо карточек сообщение Заявок с таким статусом нет" loading="lazy"><figcaption>Фильтр «Готово» после удаления единственной готовой заявки: сообщение о пустом списке</figcaption></figure></li></li>
         </ol>
 
-        <h3>Разбор App.tsx</h3>
+        <p class="phase phase--read"><span>Разбираемся</span>Что добавилось в App.tsx</p>
 
-        <p><code>type Filter = 'Все' | Status</code> описывает значение фильтра: «Все» или один из трёх статусов. Массив <code>FILTERS</code> перечисляет кнопки в нужном порядке. Он объявлен вне <code>App</code>, потому что не меняется и не зависит от состояния. Имя записано заглавными буквами — так в JavaScript принято обозначать постоянные наборы значений.</p>
+        <p><code>type Filter = 'Все' | Status</code> (строка 7) описывает значение фильтра: «Все» или один из трёх статусов. Массив <code>FILTERS</code> (строка 9) перечисляет кнопки по порядку. Он записан вне <code>App</code>, потому что никогда не меняется. Имя набрано заглавными буквами — так в JavaScript обозначают постоянные наборы значений.</p>
 
-        <p><code>useState&lt;Filter&gt;('Все')</code> создаёт второе состояние. Тип в угловых скобках нужен по той же причине, что в главе 1.4: без него TypeScript вывел бы из <code>'Все'</code> тип <code>string</code>.</p>
+        <p><code>useState&lt;Filter&gt;('Все')</code> (строка 13) создаёт второе состояние. Тип в угловых скобках нужен, как в главе 1.4: без него TypeScript решил бы, что в <code>filter</code> может лежать любая строка.</p>
 
-        <p>Строка 16 вычисляет <code>visible</code> — заявки, которые нужно показать. Если выбран фильтр «Все», это весь массив <code>requests</code>. Иначе — результат <code>filter</code> по статусу. <code>visible</code> не хранится в состоянии. Как и <code>newCount</code>, он вычисляется при каждой отрисовке из двух состояний — <code>requests</code> и <code>filter</code>. Удаление заявки и смена фильтра меняют разные состояния, а <code>visible</code> после любого из них пересчитывается сам.</p>
+        <p>Строка 16 вычисляет <code>visible</code>. При фильтре «Все» это весь массив <code>requests</code>, иначе — результат <code>filter</code> по статусу. Как и <code>newCount</code>, <code>visible</code> вычисляется заново при каждой отрисовке; в состоянии он не хранится. Поэтому после удаления заявки и после смены фильтра он всегда верный.</p>
 
-        <p>Кнопки фильтра тоже выводятся через <code>map</code> — из массива <code>FILTERS</code>. Ключом служит сама строка <code>f</code>: названия фильтров разные и не меняются. Атрибут <code>className={f === filter ? 'active' : ''}</code> — условный вывод класса: у выбранной кнопки класс <code>active</code>, у остальных пустая строка. По классу <code>active</code> правило <code>.filters button.active</code> закрашивает кнопку синим.</p>
+        <p>Кнопки фильтра тоже выводятся через <code>map</code> — из массива <code>FILTERS</code> (строки 40–44). Ключ кнопки — сама строка <code>f</code>: названия фильтров разные и не меняются. Запись <code>className={f === filter ? 'active' : ''}</code> даёт выбранной кнопке класс <code>active</code>, остальным — пустую строку. Правило <code>.filters button.active</code> красит кнопку с этим классом в синий цвет.</p>
 
         <figure class="trace">
           <figcaption class="trace__head">Щелчок по кнопке «Новая»</figcaption>
@@ -1004,20 +1154,29 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
 
         <h2 id="s6"><span class="sec">§6</span>Опыт: ключ — номер в массиве</h2>
 
-        <p>Функция для <code>map</code> может принимать второй параметр — индекс элемента. Его иногда используют как ключ: <code>key={index}</code>. Ошибка о key в консоли исчезает, и пока список не меняется, всё работает. Опыт показывает, что происходит при удалении заявки.</p>
+        <p>Функция для <code>map</code> может принимать второй параметр — индекс элемента. Его иногда ставят ключом: <code>key={index}</code>. Ошибка о key в консоли тогда исчезает, и пока список не меняется, всё работает. Опыт показывает, что происходит при удалении заявки.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт с ключом-индексом</p>
 
         <ol class="steps">
-          <li><b>Замените ключ</b><p>В <code>App.tsx</code> измените две строки внутри <code>visible.map</code>, как показано ниже, и сохраните.</p>
+          <li><b>Замените ключ</b><p>В <code>App.tsx</code> выделите строки 47–49 — от <code>{visible.map((r) =&gt; (</code> до <code>key={r.id}</code> — и вставьте вместо них код ниже. Сохраните.</p>
             <!--CODE tools/code15/App-index.tsx | zayavki/src/App.tsx · опыт, строки 47–49 | lines=47-49--><figure class="code"><figcaption><span>zayavki/src/App.tsx · опыт, строки 47–49</span></figcaption><pre>          {visible.<span class="f">map</span>((r, index) =<span class="t">&gt;</span> (
             <span class="t">&lt;RequestCard</span>
               <span class="a">key</span>={index}</pre></figure><!--/CODE--></li>
-          <li><b>Раскройте четвёртую карточку</b><p>Обновите страницу, чтобы вернуть все пять заявок. Нажмите «Подробнее» в четвёртой карточке — «Не включается компьютер».</p>
-            <figure class="shot" style="max-width: 1106px"><img src="img/18-index-do.png" width="1100" height="960" alt="Доска заявок: пять карточек, у четвёртой Не включается компьютер показаны подробности" loading="lazy"><figcaption>Раскрыта четвёртая карточка — «Не включается компьютер»</figcaption></figure></li>
-          <li><b>Уберите третью заявку</b><p>Нажмите «Убрать с доски» у заявки про принтер.</p>
-            <figure class="shot" style="max-width: 1106px"><img src="img/19-index-posle.png" width="1100" height="825" alt="Доска заявок: четыре карточки, подробности показаны у заявки Не работает мышь, а Не включается компьютер свёрнута" loading="lazy"><figcaption>После удаления раскрыта карточка «Не работает мышь», хотя раскрывали «Не включается компьютер»</figcaption></figure></li>
+          <li><b>Раскройте четвёртую карточку</b><p>Обновите страницу (<kbd>F5</kbd>), чтобы вернуть все пять заявок. Нажмите «Подробнее» в четвёртой карточке — «Не включается компьютер».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/18-index-do.png" width="1100" height="960" alt="Доска заявок: пять карточек, у четвёртой Не включается компьютер показаны подробности" loading="lazy"><figcaption>Раскрыта четвёртая карточка — «Не включается компьютер»</figcaption></figure></li></li>
+          <li><b>Уберите заявку про принтер</b><p>Нажмите «Убрать с доски» у третьей карточки. Подробности теперь открыты у «Не работает мышь», а «Не включается компьютер» свёрнута.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/19-index-posle.png" width="1100" height="825" alt="Доска заявок: четыре карточки, подробности показаны у заявки Не работает мышь, а Не включается компьютер свёрнута" loading="lazy"><figcaption>После удаления раскрыта карточка «Не работает мышь», хотя раскрывали «Не включается компьютер»</figcaption></figure></li></li>
         </ol>
 
-        <p>Раскрытой оказалась другая заявка. Состояние <code>open</code> хранится в React для каждой карточки, а React находит карточку по ключу. До удаления «Не включается компьютер» стояла на месте <code>[3]</code> и имела ключ 3. После удаления принтера все следующие заявки сдвинулись на одно место: «компьютер» получил индекс 2, «мышь» — индекс 3. В новом списке снова есть ключ 3, и React отдаёт карточке с этим ключом прежнее состояние <code>open = true</code>. Карточку с ключом 4 он удаляет: такого ключа в новом списке нет.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Почему раскрылась чужая карточка</p>
+
+        <p>Состояние <code>open</code> React хранит для каждой карточки отдельно и находит карточку по ключу. Проследим ключи:</p>
+        <ul>
+          <li>до удаления «Не включается компьютер» стояла на месте <code>[3]</code> и имела ключ 3;</li>
+          <li>после удаления принтера все следующие заявки сдвинулись на одно место: «компьютер» стал <code>[2]</code>, «мышь» — <code>[3]</code>;</li>
+          <li>в новом списке снова есть ключ 3, и React отдаёт карточке с этим ключом прежнее состояние <code>open = true</code>. Эта карточка теперь — «мышь».</li>
+        </ul>
 
         <figure class="scheme">
           <p class="scheme__head">Чьё состояние получает карточка после удаления заявки 3</p>
@@ -1053,10 +1212,18 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
           <p class="miss">В гардеробе пальто сами не сдвигаются. В массиве после удаления элемента все следующие элементы получают индекс на единицу меньше.</p>
         </div></div>
 
+        <p class="phase phase--do"><span>Делаем</span>Возвращаем ключ id</p>
+
         <ol class="steps">
-          <li><b>Верните ключ id</b><p>Верните в <code>App.tsx</code> строки <code>{visible.map((r) =&gt; (</code> и <code>key={r.id}</code>, сохраните и повторите опыт: обновите страницу, раскройте «Не включается компьютер», уберите принтер.</p>
-            <figure class="shot" style="max-width: 1106px"><img src="img/21-id-posle.png" width="1100" height="825" alt="Доска заявок после удаления принтера: раскрыта карточка Не включается компьютер, мышь свёрнута" loading="lazy"><figcaption>С ключом id раскрытой остаётся «Не включается компьютер»</figcaption></figure></li>
+          <li><b>Верните ключ id</b><p>В <code>App.tsx</code> выделите строки 47–49 и вставьте вместо них код ниже. Сохраните.</p>
+            <!--CODE tools/code15/App.tsx | zayavki/src/App.tsx · строки 47–49 | lines=47-49--><figure class="code"><figcaption><span>zayavki/src/App.tsx · строки 47–49</span></figcaption><pre>          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}</pre></figure><!--/CODE--></li>
+          <li><b>Повторите опыт</b><p>Обновите страницу, раскройте «Не включается компьютер», уберите заявку про принтер. Раскрытой осталась та карточка, которую раскрывали.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/21-id-posle.png" width="1100" height="825" alt="Доска заявок после удаления принтера: раскрыта карточка Не включается компьютер, мышь свёрнута" loading="lazy"><figcaption>С ключом id раскрытой остаётся «Не включается компьютер»</figcaption></figure></li></li>
         </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как выбирать ключ</p>
 
         <p>Правила выбора ключа:</p>
         <ul>
@@ -1065,7 +1232,7 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
           <li>значение берётся из самих данных — обычно это <code>id</code> из базы или с сервера.</li>
         </ul>
 
-        <p>Индекс подходит, только если список никогда не меняется: в нём не удаляют, не добавляют в начало или середину и не сортируют элементы. Случайное число вида <code>key={Math.random()}</code> не подходит совсем: при каждой отрисовке ключи новые, и React пересоздаёт все карточки, теряя их состояние.</p>
+        <p>Индекс подходит, только если список никогда не меняется: из него не удаляют элементы, не добавляют их в начало или середину и не сортируют. Случайное число вида <code>key={Math.random()}</code> не подходит совсем. При каждой отрисовке ключи будут новыми, и React будет пересоздавать все карточки, теряя их состояние.</p>
 
         <div class="starter starter--finish">
           <p class="starter__head">Проект после главы</p>
@@ -1107,7 +1274,7 @@ console.<span class="f">log</span>(onlyNew.length) <span class="c">// 2</span></
         </details>
         <details>
           <summary>Зачем React нужен <code>key</code> и почему для заявок выбран <code>id</code>?</summary>
-          <p>По ключу React находит, какая карточка нового списка соответствует какой карточке прежнего. Такую карточку он обновляет и сохраняет её состояние. <code>id</code> у каждой заявки свой и не меняется при удалении, добавлении и сортировке, а индекс при удалении сдвигается.</p>
+          <p>По ключу React находит, какая карточка нового списка соответствует какой карточке прежнего. Такую карточку он обновляет и сохраняет её состояние. <code>id</code> у каждой заявки свой и не меняется при удалении, добавлении и сортировке. Индекс при удалении сдвигается.</p>
         </details>
         <details>
           <summary>Почему после <code>requests[0].status = 'Готово'; setRequests(requests)</code> страница не обновляется?</summary>

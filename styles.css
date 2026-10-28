@@ -643,3 +643,11 @@ details.more summary::before { content: "Подробнее · "; font: 600 10.5
   .trace .trace__steps > li { display: block !important; }
   .trace__nav { display: none !important; }
 }
+
+/* Метка части раздела: «Делаем» — действия в проекте по шагам, «Разбираемся» — объяснение.
+   Студент, который повторяет за презентацией, листает от одной метки «Делаем» к следующей. */
+.phase { display: flex; align-items: center; gap: 14px; margin: 34px 0 16px; padding-top: 12px; border-top: 3px solid var(--ink); font-weight: 700; font-size: 18px; line-height: 1.35; }
+.phase > span { flex: 0 0 auto; padding: 6px 12px; font: 600 12.5px/1.3 var(--pixel); letter-spacing: 1.2px; text-transform: uppercase; }
+.phase--do > span { background: var(--acc); color: #fff; }
+.phase--read > span { background: var(--ink); color: var(--acc-bright); }
+.phase--do { border-top-color: var(--acc); }
