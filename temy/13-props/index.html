@@ -212,9 +212,104 @@ npm run dev</pre></figure>
 
         <p class="phase phase--read"><span>Разбираемся</span>Что изменилось в карточке и App</p>
 
-        <p>В новой карточке каждое место, где раньше стоял постоянный текст, заменено значением из props. В строке кабинета <code>каб. {room}</code>: слово «каб.» постоянное, номер подставляется. В статусе — <code>{status}</code>, в заголовке — <code>{title}</code>, в описании — <code>{details}</code>. Сама разметка и классы не изменились, поэтому стили из главы 1.2 действуют как раньше.</p>
+        <p>Сначала — что изменилось в карточке. Цифры в кружках отмечают строки, под кодом каждая объяснена простыми словами.</p>
 
-        <p>В <code>App.tsx</code> каждый вызов <code>&lt;RequestCard&gt;</code> теперь занимает несколько строк: по одному атрибуту на строку, закрывающая косая черта <code>/&gt;</code> — на отдельной строке. Так записывают теги с тремя и больше атрибутами, чтобы их было удобно читать. Значения записаны в кавычках, потому что все они строки. Номер кабинета тоже строка (<code>room="214"</code>): в типе <code>room</code> объявлен как <code>string</code>, ведь кабинет может называться и словом, например «актовый зал».</p>
+        <!--CODE tools/code13/RequestCard-props.tsx | RequestCard.tsx · по строкам | pins=1:1,2:2,8:3,12:4,13:5,15:6--><figure class="code" data-read><figcaption><span>RequestCard.tsx · по строкам</span></figcaption><pre><span class="k">type</span> RequestCardProps = {  <span class="pin">1</span>
+  title: string  <span class="pin">2</span>
+  room: string
+  details: string
+  status: string
+}
+
+<span class="k">function</span> <span class="f">RequestCard</span>({ title, room, details, status }: RequestCardProps) {  <span class="pin">3</span>
+  <span class="k">return</span> (
+    <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {room}<span class="t">&lt;/span</span><span class="t">&gt;</span>  <span class="pin">4</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{status}<span class="t">&lt;/span</span><span class="t">&gt;</span>  <span class="pin">5</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;h3</span><span class="t">&gt;</span>{title}<span class="t">&lt;/h3</span><span class="t">&gt;</span>  <span class="pin">6</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>{details}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+    <span class="t">&lt;/article</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>«Карточке нужны вот такие данные». Это <span class="term">тип props</span> — список того, что карточка ждёт от родителя. Сам на странице ничего не показывает, нужен TypeScript и редактору для проверки.</p></div></li>
+          <li><span class="pin">2</span><div><p>Первое, что нужно, — <code>title</code>, текст (<code>string</code>). Так же ниже: кабинет, подробности и статус — все текстом.</p></div></li>
+          <li><span class="pin">3</span><div><p>«Получи данные от родителя и разложи по четырём переменным». В фигурных скобках перечислены имена из типа, после двоеточия — сам тип. Теперь внутри карточки слово <code>title</code> означает тот заголовок, который передал <code>App</code>. Так записывается <span class="term">распаковка</span> объекта props из §2.</p></div></li>
+          <li><span class="pin">4</span><div><p>«каб.» — постоянный текст, а на место <code>{room}</code> подставится номер кабинета этой карточки. Раньше здесь было записано «каб. 214» для всех.</p></div></li>
+          <li><span class="pin">5</span><div><p>На место <code>{status}</code> — статус этой заявки.</p></div></li>
+          <li><span class="pin">6</span><div><p>Заголовок и ниже подробности тоже подставляются. Разметка и ярлыки <code>className</code> остались прежними, поэтому стили из главы 1.2 работают как раньше.</p></div></li>
+        </ol>
+
+        <p>Теперь — что изменилось в <code>App.tsx</code>. Вызов каждой карточки занимает несколько строк, по атрибуту на строку:</p>
+
+        <!--CODE tools/code13/App-props.tsx | App.tsx · первая карточка | lines=13-18 pins=13:1,14:2,15:3,18:4--><figure class="code" data-read><figcaption><span>App.tsx · первая карточка</span></figcaption><pre>          <span class="t">&lt;RequestCard</span>  <span class="pin">1</span>
+            <span class="a">title</span>=<span class="s">"Не работает проектор"</span>  <span class="pin">2</span>
+            <span class="a">room</span>=<span class="s">"214"</span>  <span class="pin">3</span>
+            <span class="a">details</span>=<span class="s">"Проектор включается, но изображения на экране нет."</span>
+            <span class="a">status</span>=<span class="s">"Новая"</span>
+          <span class="t">/&gt;</span>  <span class="pin">4</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>«Поставь сюда карточку». Тег открыт, но не закрыт: дальше идут данные для неё.</p></div></li>
+          <li><span class="pin">2</span><div><p>Заголовок для этой карточки. Слева имя из типа props, справа значение в кавычках.</p></div></li>
+          <li><span class="pin">3</span><div><p>Номер кабинета тоже записан в кавычках, как текст: в типе <code>room</code> объявлен как <code>string</code>. Кабинет может называться и словом, например «актовый зал».</p></div></li>
+          <li><span class="pin">4</span><div><p>Косая черта закрывает тег карточки. Её ставят на отдельной строке, когда атрибутов три и больше: так их удобно читать.</p></div></li>
+        </ol>
+
+        <p>Пошаговый разбор ниже показывает, как данные из <code>App</code> попадают в карточку. Слева код карточки, справа — какие значения она получила и что появилось на странице.</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Как данные из App попадают в карточку</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code13/RequestCard-props.tsx | | bare--><pre class="trace__code" data-start="1"><span class="k">type</span> RequestCardProps = {
+  title: string
+  room: string
+  details: string
+  status: string
+}
+
+<span class="k">function</span> <span class="f">RequestCard</span>({ title, room, details, status }: RequestCardProps) {
+  <span class="k">return</span> (
+    <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {room}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{status}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;h3</span><span class="t">&gt;</span>{title}<span class="t">&lt;/h3</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>{details}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+    <span class="t">&lt;/article</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="8"><b>React собирает атрибуты в объект</b>
+                  <p>В <code>App</code> записано <code>&lt;RequestCard title="Не работает проектор" room="214" … /&gt;</code>. React складывает все атрибуты в один объект и вызывает функцию <code>RequestCard</code>, передав ей этот объект.</p>
+                  <div class="obj"><b>props</b><div>title: 'Не работает проектор'</div><div>room: '214'</div><div>details: 'Проектор включается, но…'</div><div>status: 'Новая'</div></div></li>
+                <li data-lines="8"><b>Распаковка: четыре переменные</b>
+                  <p>Фигурные скобки в параметре раскладывают объект по переменным с теми же именами.</p>
+                  <div class="vars"><span class="var"><i>title</i><span>'Не работает проектор'</span></span><span class="var"><i>room</i><span>'214'</span></span><span class="var"><i>status</i><span>'Новая'</span></span><span class="var"><i>details</i><span>'Проектор…'</span></span></div></li>
+                <li data-lines="12-13"><b>Подстановка в верхнюю строку</b>
+                  <p>На место <code>{room}</code> встаёт <code>214</code>, на место <code>{status}</code> — «Новая».</p>
+                  <div class="dom"><div class="is-new"><i>&lt;div class="card__top"&gt;</i><span>каб. 214 · Новая</span></div></div></li>
+                <li data-lines="15-16"><b>Подстановка заголовка и подробностей</b>
+                  <p>Карточка собрана и возвращается в <code>App</code>.</p>
+                  <div class="minis"><span class="mini is-new"><small>каб. 214</small><b>Не работает проектор</b><em>Новая</em></span></div></li>
+                <li data-lines="8"><b>Второй вызов — другие данные</b>
+                  <p>Для второго <code>&lt;RequestCard … /&gt;</code> React вызывает ту же функцию ещё раз, теперь с объектом второй заявки. Переменные получают новые значения.</p>
+                  <div class="vars"><span class="var var--new"><i>title</i><span>'Нет интернета'</span></span><span class="var var--new"><i>room</i><span>'305'</span></span><span class="var var--new"><i>status</i><span>'В работе'</span></span></div></li>
+                <li data-lines="10-17"><b>Три вызова — три разные карточки</b>
+                  <p>Функция одна, разметка в ней одна, а данные каждый раз свои. Поэтому на доске три разные заявки.</p>
+                  <div class="minis"><span class="mini"><small>каб. 214</small><b>Не работает проектор</b><em>Новая</em></span><span class="mini"><small>каб. 305</small><b>Нет интернета</b><em>В работе</em></span><span class="mini is-new"><small>каб. 112</small><b>Замятие бумаги</b><em>Готово</em></span></div></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
 
         <h2 id="s4"><span class="sec">§4</span>Что будет, если забыть свойство</h2>
 
@@ -340,7 +435,21 @@ src/App.tsx(19,12): error TS2741: Property 'room' is missing in type '{ title: s
 
         <p class="phase phase--read"><span>Разбираемся</span>Что изменилось в типе props</p>
 
-        <p>В первой строке <code>RequestCard.tsx</code> объявлен отдельный тип <code>Status</code>. У него своё имя, потому что статус понадобится и в других компонентах. В типе props поле теперь записано как <code>status?: Status</code>: необязательное, одно из трёх значений. В параметре функции <code>status = 'Новая'</code> задаёт значение на случай, если статус не передан. Страница выглядит так же, как после §3, но первая карточка получила «Новая» уже без строки <code>status</code> в <code>App.tsx</code>.</p>
+        <!--CODE tools/code13/RequestCard.tsx | RequestCard.tsx · строки 1–10 | lines=1-10 pins=1:1,7:2,10:3--><figure class="code" data-read><figcaption><span>RequestCard.tsx · строки 1–10</span></figcaption><pre><span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>  <span class="pin">1</span>
+
+<span class="k">type</span> RequestCardProps = {
+  title: string
+  room: string
+  details: string
+  status?: Status  <span class="pin">2</span>
+}
+
+<span class="k">function</span> <span class="f">RequestCard</span>({ title, room, details, status = <span class="s">'Новая'</span> }: RequestCardProps) {  <span class="pin">3</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>«Статус бывает только таким: Новая, В работе или Готово». Черта <code>|</code> читается как «или». Это <span class="term">объединение</span> трёх строк, у него своё имя <code>Status</code>, потому что статус понадобится и в других компонентах.</p></div></li>
+          <li><span class="pin">2</span><div><p>Вопросительный знак после имени: «статус можно не передавать». Без знака <code>?</code> поле обязательное, как <code>title</code> и <code>room</code>.</p></div></li>
+          <li><span class="pin">3</span><div><p><code>status = 'Новая'</code>: «если статус не передали, считать его новым». Это <span class="term">значение по умолчанию</span>. Поэтому у первой карточки статус «Новая», хотя в <code>App.tsx</code> строки <code>status</code> у неё больше нет.</p></div></li>
+        </ol>
 
         <p class="phase phase--do"><span>Делаем</span>Опыт: опечатка в статусе</p>
 

@@ -148,9 +148,26 @@ npm run dev</pre></figure>
 
         <p class="phase phase--read"><span>Разбираемся</span>Что написано в Header.tsx</p>
 
-        <p>Код шапки разобран по строкам. <code>function Header() { … }</code> объявляет компонент — функцию с именем <code>Header</code>, которая ничего не получает (пустые скобки) и возвращает разметку. После <code>return</code> стоит JSX в круглых скобках: скобки нужны, чтобы разметку можно было начать с новой строки. Внешний элемент — <code>&lt;header&gt;</code>, тег HTML для шапки страницы или раздела. Внутри него заголовок <code>&lt;h1&gt;</code> и абзац <code>&lt;p&gt;</code> с подписью. Последняя строка <code>export default Header</code> делает компонент доступным другим файлам.</p>
+        <p>Цифры в кружках отмечают строки, под кодом каждая объяснена простыми словами. Точное название конструкции дано в конце пояснения.</p>
 
-        <p>У тега <code>&lt;header&gt;</code> записан атрибут <code>className="header"</code>. В HTML этот атрибут называется <code>class</code>, но слово <code>class</code> в JavaScript занято: им объявляют классы. Поэтому в JSX атрибут называется <code>className</code>, а в браузере он превращается в обычный <code>class</code>. По имени класса стили из <code>index.css</code> находят элемент; стили будут добавлены в §6.</p>
+        <!--CODE tools/code12/Header.tsx | Header.tsx · по строкам | pins=1:1,2:2,3:3,4:4,5:5,10:6--><figure class="code" data-read><figcaption><span>Header.tsx · по строкам</span></figcaption><pre><span class="k">function</span> <span class="f">Header</span>() {  <span class="pin">1</span>
+  <span class="k">return</span> (  <span class="pin">2</span>
+    <span class="t">&lt;header</span> <span class="a">className</span>=<span class="s">"header"</span><span class="t">&gt;</span>  <span class="pin">3</span>
+      <span class="t">&lt;h1</span><span class="t">&gt;</span>Доска заявок<span class="t">&lt;/h1</span><span class="t">&gt;</span>  <span class="pin">4</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>ИТ-отдел колледжа · заявки студентов и преподавателей<span class="t">&lt;/p</span><span class="t">&gt;</span>  <span class="pin">5</span>
+    <span class="t">&lt;/header</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> Header  <span class="pin">6</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>«Вот шапка доски». Здесь начинается описание шапки, её имя — <code>Header</code>. Всё, что между фигурными скобками <code>{ … }</code>, относится к шапке. Пустые круглые скобки значат, что шапке для работы ничего не нужно передавать. По-программистски это <span class="term">объявление функции</span>; функция, которая возвращает разметку, называется компонентом.</p></div></li>
+          <li><span class="pin">2</span><div><p>«Шапка выглядит так:». Слово <code>return</code> («вернуть») отдаёт то, что записано после него, — разметку шапки. Круглая скобка после <code>return</code> позволяет начать разметку с новой строки; закрывается она в строке 7.</p></div></li>
+          <li><span class="pin">3</span><div><p>Коробка всей шапки — тег <code>&lt;header&gt;</code>. Всё, что внутри него до <code>&lt;/header&gt;</code> в строке 6, будет внутри шапки на странице. <code>className="header"</code> — ярлык коробки: по нему файл стилей найдёт шапку и покрасит её. В HTML этот ярлык пишут как <code>class</code>, но в JavaScript слово <code>class</code> уже занято, поэтому в JSX пишут <code>className</code>.</p></div></li>
+          <li><span class="pin">4</span><div><p>Крупный заголовок «Доска заявок». <code>&lt;h1&gt;</code> — заголовок первого, самого главного уровня.</p></div></li>
+          <li><span class="pin">5</span><div><p>Строка-подпись под заголовком. <code>&lt;p&gt;</code> — абзац текста.</p></div></li>
+          <li><span class="pin">6</span><div><p>«Шапку можно брать в другие файлы». Без этой строки <code>App</code> не сможет подключить шапку. <code>export</code> — «выдать наружу», <code>default</code> — «это главное, что есть в файле».</p></div></li>
+        </ol>
 
         <p class="phase phase--do"><span>Делаем</span>Подключаем шапку в App</p>
 
@@ -176,9 +193,67 @@ npm run dev</pre></figure>
 
         <p class="phase phase--read"><span>Разбираемся</span>Как App выводит шапку</p>
 
-        <p>Первая строка подключает компонент из файла <code>components/Header.tsx</code>. В разметке <code>&lt;Header /&gt;</code> выводит шапку; косая черта в конце означает, что у тега нет содержимого. Заголовок <code>&lt;h1&gt;</code> из <code>App</code> убран: он теперь в шапке.</p>
+        <!--CODE tools/code12/App-shapka.tsx | App.tsx · по строкам | pins=1:1,5:2,6:3,7:4--><figure class="code" data-read><figcaption><span>App.tsx · по строкам</span></figcaption><pre><span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>  <span class="pin">1</span>
 
-        <p>В начале разметки стоят пустые угловые скобки <code>&lt;&gt;</code>, в конце — <code>&lt;/&gt;</code>. Компонент <code>App</code> теперь возвращает два элемента подряд — шапку и <code>&lt;main&gt;</code>, а функция может вернуть только одно значение (§1). Пустые скобки — это <span class="term">фрагмент</span>: обёртка, которая объединяет несколько элементов в один для React, но в браузере никакого тега не создаёт. Если обернуть в <code>&lt;div&gt;</code>, на странице появится лишний блок; фрагмент этого не делает.</p>
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>  <span class="pin">2</span>
+      <span class="t">&lt;Header</span> <span class="t">/&gt;</span>  <span class="pin">3</span>
+      <span class="t">&lt;main</span><span class="t">&gt;</span>  <span class="pin">4</span>
+        <span class="t">&lt;p</span><span class="t">&gt;</span>Здесь появятся форма заявки и список карточек.<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>«Возьми шапку из файла <code>components/Header.tsx</code> и называй её <code>Header</code>». Это <span class="term">импорт</span> — пара к строке <code>export default Header</code> в файле шапки. Точка и косая черта <code>./</code> значат «начиная с папки, где лежит этот файл». Расширение <code>.tsx</code> не пишется: Vite находит файл сам.</p></div></li>
+          <li><span class="pin">2</span><div><p>Пустые скобки <code>&lt;&gt;</code> — невидимая обёртка, закрывается она <code>&lt;/&gt;</code> в строке 10. <code>App</code> возвращает две вещи — шапку и <code>&lt;main&gt;</code>, а вернуть можно только одну. Обёртка складывает их в один свёрток. На странице её не видно: это <span class="term">фрагмент</span>. С <code>&lt;div&gt;</code> вместо фрагмента на странице появился бы лишний блок.</p></div></li>
+          <li><span class="pin">3</span><div><p>«Поставь сюда шапку». По заглавной букве <code>H</code> React понимает, что это компонент. React вызывает функцию <code>Header</code> и ставит на это место то, что она вернула. Косая черта в конце, <code>/&gt;</code>, значит, что внутри тега ничего нет и закрывающий тег не нужен.</p></div></li>
+          <li><span class="pin">4</span><div><p>Основная часть страницы со строкой-заглушкой. Заголовок <code>&lt;h1&gt;</code> из прежней версии <code>App</code> убран: он теперь в шапке.</p></div></li>
+        </ol>
+
+        <p>Пошаговый разбор ниже показывает, как из этих строк получается страница. Кнопки «Дальше» и «Назад» переключают шаги, слева подсвечены строки, о которых идёт речь, справа — какие блоки появляются на странице.</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Как &lt;Header /&gt; становится шапкой на странице</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code12/App-shapka.tsx | | bare--><pre class="trace__code" data-start="1"><span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span><span class="t">&gt;</span>Здесь появятся форма заявки и список карточек.<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="1"><b>Файл подключает шапку</b>
+                  <p>Когда браузер загружает <code>App.tsx</code>, первой выполняется строка импорта. Теперь имя <code>Header</code> в этом файле означает функцию из <code>Header.tsx</code>.</p>
+                  <div class="vars"><span class="var"><i>Header</i><span>функция из Header.tsx</span></span></div></li>
+                <li data-lines="3-4"><b>React вызывает App</b>
+                  <p>Файл <code>main.tsx</code> из главы 1.1 просит React вывести <code>&lt;App /&gt;</code>. React вызывает функцию <code>App</code>, и она начинает собирать разметку после <code>return</code>.</p></li>
+                <li data-lines="6"><b>Встречен &lt;Header /&gt;</b>
+                  <p>Имя с заглавной буквы — компонент. React вызывает функцию <code>Header</code>. Она возвращает коробку <code>&lt;header&gt;</code> с заголовком и подписью, и эта коробка встаёт на место <code>&lt;Header /&gt;</code>.</p>
+                  <div class="dom"><div class="is-new"><i>&lt;header class="header"&gt;</i><div><i>&lt;h1&gt;</i><span>Доска заявок</span></div><div><i>&lt;p&gt;</i><span>ИТ-отдел колледжа · заявки…</span></div></div></div></li>
+                <li data-lines="7-9"><b>Основная часть</b>
+                  <p><code>&lt;main&gt;</code> — обычный тег, с маленькой буквы. React ничего не вызывает и просто кладёт его следующим.</p>
+                  <div class="dom"><div><i>&lt;header class="header"&gt;</i><span>Доска заявок…</span></div><div class="is-new"><i>&lt;main&gt;</i><div><i>&lt;p&gt;</i><span>Здесь появятся форма заявки и список карточек.</span></div></div></div></li>
+                <li data-lines="5,10"><b>Обёртка исчезает</b>
+                  <p>Фрагмент <code>&lt;&gt; … &lt;/&gt;</code> держал шапку и <code>&lt;main&gt;</code> вместе, пока <code>App</code> возвращала их. На странице от него ничего не остаётся: <code>&lt;header&gt;</code> и <code>&lt;main&gt;</code> стоят рядом внутри блока <code>root</code> из <code>index.html</code>.</p>
+                  <div class="dom"><div><i>&lt;div id="root"&gt;</i><div><i>&lt;header class="header"&gt;</i><span>Доска заявок · ИТ-отдел колледжа…</span></div><div><i>&lt;main&gt;</i><span>Здесь появятся форма заявки и список карточек.</span></div></div></div></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
 
         <p>Шапка прижата к левому краю без отступов: правило <code>main</code> из <code>index.css</code> на неё не действует, потому что шапка стоит вне <code>&lt;main&gt;</code>.</p>
 
@@ -262,7 +337,44 @@ npm run dev</pre></figure>
 
         <p class="phase phase--read"><span>Разбираемся</span>Три правила JSX в коде формы</p>
 
-        <p>Форма состоит из пар «подпись — поле». Внешний элемент — <code>&lt;form className="form"&gt;</code>, внутри заголовок <code>&lt;h2&gt;</code>, четыре пары и кнопка. В коде формы встречаются три правила JSX, которых не было в шапке.</p>
+        <p>Форма состоит из пар «подпись — поле». Ниже — что делает каждая отмеченная строка. После разбора — три правила JSX, которых не было в шапке.</p>
+
+        <!--CODE tools/code12/RequestForm.tsx | RequestForm.tsx · по строкам | pins=3:1,6:2,7:3,13:4,21:5,23:6--><figure class="code" data-read><figcaption><span>RequestForm.tsx · по строкам</span></figcaption><pre><span class="k">function</span> <span class="f">RequestForm</span>() {
+  <span class="k">return</span> (
+    <span class="t">&lt;form</span> <span class="a">className</span>=<span class="s">"form"</span><span class="t">&gt;</span>  <span class="pin">1</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>Новая заявка<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"title"</span><span class="t">&gt;</span>Что случилось<span class="t">&lt;/label</span><span class="t">&gt;</span>  <span class="pin">2</span>
+      <span class="t">&lt;input</span> <span class="a">id</span>=<span class="s">"title"</span> <span class="a">type</span>=<span class="s">"text"</span> <span class="a">placeholder</span>=<span class="s">"Например: не работает проектор"</span> <span class="t">/&gt;</span>  <span class="pin">3</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"room"</span><span class="t">&gt;</span>Кабинет<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span> <span class="a">id</span>=<span class="s">"room"</span> <span class="a">type</span>=<span class="s">"text"</span> <span class="a">placeholder</span>=<span class="s">"214"</span> <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"category"</span><span class="t">&gt;</span>Категория<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;select</span> <span class="a">id</span>=<span class="s">"category"</span><span class="t">&gt;</span>  <span class="pin">4</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Компьютер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Проектор<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Принтер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Интернет<span class="t">&lt;/option</span><span class="t">&gt;</span>
+      <span class="t">&lt;/select</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"details"</span><span class="t">&gt;</span>Подробности<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;textarea</span> <span class="a">id</span>=<span class="s">"details"</span> <span class="a">rows</span>={<span class="n">3</span>} <span class="t">/&gt;</span>  <span class="pin">5</span>
+
+      <span class="t">&lt;button</span> <span class="a">type</span>=<span class="s">"submit"</span><span class="t">&gt;</span>Отправить заявку<span class="t">&lt;/button</span><span class="t">&gt;</span>  <span class="pin">6</span>
+    <span class="t">&lt;/form</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestForm</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Коробка всей формы — тег <code>&lt;form&gt;</code> с ярлыком <code>form</code> для стилей. Внутри — заголовок «Новая заявка» и поля.</p></div></li>
+          <li><span class="pin">2</span><div><p>Подпись «Что случилось» над полем. <code>htmlFor="title"</code> привязывает подпись к полю с именем <code>title</code> из следующей строки: щелчок по подписи ставит курсор в это поле.</p></div></li>
+          <li><span class="pin">3</span><div><p>Поле для одной строки текста. <code>id="title"</code> — имя поля, к нему привязана подпись. <code>placeholder</code> — серая подсказка, которая видна, пока поле пустое. Косая черта <code>/&gt;</code> в конце закрывает тег.</p></div></li>
+          <li><span class="pin">4</span><div><p>Выпадающий список. Каждый <code>&lt;option&gt;</code> внутри — один вариант: компьютер, проектор, принтер, интернет.</p></div></li>
+          <li><span class="pin">5</span><div><p>Большое поле для нескольких строк текста. <code>rows={3}</code> — высота в три строки; число записано в фигурных скобках.</p></div></li>
+          <li><span class="pin">6</span><div><p>Кнопка «Отправить заявку». <code>type="submit"</code> значит, что кнопка отправляет форму.</p></div></li>
+        </ol>
 
         <h3>Правило 1: htmlFor вместо for</h3>
         <p>Тег <code>&lt;label&gt;</code> — подпись к полю. Атрибут <code>htmlFor="title"</code> связывает подпись с полем, у которого <code>id="title"</code>. Связь нужна по двум причинам. Щелчок по подписи ставит курсор в поле. Программа чтения экрана для незрячих пользователей читает подпись, когда пользователь попадает в поле. В HTML этот атрибут называется <code>for</code>, но <code>for</code> в JavaScript — слово для цикла, поэтому в JSX пишут <code>htmlFor</code>. Это тот же случай, что с <code>className</code>.</p>
@@ -273,9 +385,6 @@ npm run dev</pre></figure>
         <h3>Правило 3: числа и выражения — в фигурных скобках</h3>
         <p>У поля подробностей записано <code>rows={3}</code> — высота поля в три строки. Значение в кавычках JSX передаёт как строку, а в фигурных скобках — как значение JavaScript, здесь число 3. Для чисел, переменных и вычислений используются скобки, для постоянного текста — кавычки.</p>
 
-        <hr class="sep">
-
-        <p>Остальные теги формы — обычный HTML. <code>&lt;input type="text"&gt;</code> — однострочное поле, <code>placeholder</code> — серая подсказка внутри пустого поля. <code>&lt;select&gt;</code> — выпадающий список, внутри него варианты <code>&lt;option&gt;</code>. <code>&lt;textarea&gt;</code> — многострочное поле. <code>&lt;button type="submit"&gt;</code> — кнопка отправки формы.</p>
 
         <div class="margin-note margin-note--warn">
           <b>Кнопка пока перезагружает страницу</b>
@@ -310,7 +419,28 @@ npm run dev</pre></figure>
 
         <p class="phase phase--read"><span>Разбираемся</span>Что написано в RequestCard.tsx</p>
 
-        <p>Внешний элемент — <code>&lt;article&gt;</code>: тег HTML для самостоятельного блока, который имеет смысл и отдельно от страницы, как заметка или карточка. Верхняя строка <code>card__top</code> содержит кабинет и статус в двух элементах <code>&lt;span&gt;</code>. Ниже заголовок заявки <code>&lt;h3&gt;</code> и описание <code>&lt;p&gt;</code>. Заголовки идут по уровням: <code>h1</code> — название страницы в шапке, <code>h2</code> — разделы «Новая заявка» и «Заявки», <code>h3</code> — заявка внутри раздела. Программы чтения экрана строят по уровням заголовков оглавление страницы.</p>
+        <!--CODE tools/code12/RequestCard.tsx | RequestCard.tsx · по строкам | pins=3:1,4:2,5:3,6:4,8:5,9:6--><figure class="code" data-read><figcaption><span>RequestCard.tsx · по строкам</span></figcaption><pre><span class="k">function</span> <span class="f">RequestCard</span>() {
+  <span class="k">return</span> (
+    <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card"</span><span class="t">&gt;</span>  <span class="pin">1</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>  <span class="pin">2</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. <span class="n">214</span><span class="t">&lt;/span</span><span class="t">&gt;</span>  <span class="pin">3</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>Новая<span class="t">&lt;/span</span><span class="t">&gt;</span>  <span class="pin">4</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;h3</span><span class="t">&gt;</span>Не работает проектор<span class="t">&lt;/h3</span><span class="t">&gt;</span>  <span class="pin">5</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>Проектор включается, но изображения на экране нет.<span class="t">&lt;/p</span><span class="t">&gt;</span>  <span class="pin">6</span>
+    <span class="t">&lt;/article</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Коробка карточки — тег <code>&lt;article&gt;</code> с ярлыком <code>card</code>. <code>&lt;article&gt;</code> ставят вокруг блока, который понятен и сам по себе, отдельно от страницы: заметки, новости, карточки.</p></div></li>
+          <li><span class="pin">2</span><div><p>Верхняя строка карточки, в ней две части рядом: кабинет и статус. <code>&lt;div&gt;</code> — коробка без особого смысла, нужна только чтобы сгруппировать.</p></div></li>
+          <li><span class="pin">3</span><div><p>Номер кабинета. <code>&lt;span&gt;</code> — кусочек текста внутри строки.</p></div></li>
+          <li><span class="pin">4</span><div><p>Статус заявки. Стили покажут его справа, в голубом овале.</p></div></li>
+          <li><span class="pin">5</span><div><p>Заголовок заявки — что случилось. <code>&lt;h3&gt;</code> — заголовок третьего уровня: <code>h1</code> — название доски, <code>h2</code> — раздел «Заявки», <code>h3</code> — одна заявка в разделе.</p></div></li>
+          <li><span class="pin">6</span><div><p>Подробности заявки обычным абзацем.</p></div></li>
+        </ol>
 
         <p>Имена классов записаны по одному правилу: имя блока (<code>card</code>), два подчёркивания и имя части блока (<code>room</code>, <code>status</code>, <code>top</code>). Такое правило называется БЭМ (блок, элемент, модификатор). По имени <code>card__status</code> сразу видно, что это статус внутри карточки, и стили разных компонентов не пересекаются.</p>
 
@@ -473,7 +603,35 @@ body {
 
         <p class="phase phase--read"><span>Разбираемся</span>Как App собирает страницу</p>
 
-        <p>Три строки <code>import</code> подключают компоненты из папки <code>components</code>. Разметка обёрнута во фрагмент, как в §3. Внутри <code>&lt;main className="board"&gt;</code> два блока: форма <code>&lt;RequestForm /&gt;</code> и раздел <code>&lt;section className="list"&gt;</code> с заголовком и тремя карточками. Каждое <code>&lt;RequestCard /&gt;</code> — отдельный вызов функции <code>RequestCard</code>, поэтому на странице появятся три карточки.</p>
+        <!--CODE tools/code12/App.tsx | App.tsx · по строкам | pins=1:1,9:2,10:3,11:4,13:5--><figure class="code" data-read><figcaption><span>App.tsx · по строкам</span></figcaption><pre><span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>  <span class="pin">1</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>  <span class="pin">2</span>
+        <span class="t">&lt;RequestForm</span> <span class="t">/&gt;</span>  <span class="pin">3</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>  <span class="pin">4</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          <span class="t">&lt;RequestCard</span> <span class="t">/&gt;</span>  <span class="pin">5</span>
+          <span class="t">&lt;RequestCard</span> <span class="t">/&gt;</span>
+          <span class="t">&lt;RequestCard</span> <span class="t">/&gt;</span>
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Три строки импорта берут три компонента из папки <code>components</code>: шапку, форму и карточку.</p></div></li>
+          <li><span class="pin">2</span><div><p>Основная часть страницы. Ярлык <code>board</code> («доска») нужен стилям: правило <code>.board</code> делит её на две колонки.</p></div></li>
+          <li><span class="pin">3</span><div><p>Левая колонка — форма. React вызывает функцию <code>RequestForm</code> и ставит сюда форму.</p></div></li>
+          <li><span class="pin">4</span><div><p>Правая колонка — раздел со списком заявок и заголовком «Заявки».</p></div></li>
+          <li><span class="pin">5</span><div><p>Три одинаковые строки — три вызова одной функции <code>RequestCard</code>. Каждый вызов ставит на страницу ещё одну карточку, поэтому карточек три и они одинаковые.</p></div></li>
+        </ol>
 
         <p class="phase phase--read"><span>Разбираемся</span>Как работают стили</p>
 
