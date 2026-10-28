@@ -117,6 +117,8 @@
 
         <p>У Node.js выходит много версий, и для учёбы и работы берут версию с пометкой <span class="term">LTS</span> (Long Term Support — долгосрочная поддержка). Такая версия получает исправления ошибок и уязвимостей около двух с половиной лет, и её обновления не ломают уже написанные проекты. В октябре 2026 года LTS — версия 24; 28 октября 2026 года статус LTS получит версия 26. Vite 8, на котором создаётся проект, требует Node.js не ниже 20.19 или 22.12, поэтому подходит любая из этих версий.</p>
 
+        <p class="phase phase--do"><span>Делаем</span>Устанавливаем Node.js</p>
+
         <p>Установщик скачивается с сайта <a href="https://nodejs.org/en/download" target="_blank" rel="noreferrer">nodejs.org/en/download</a>. Сайт сам определяет систему и подставляет её в строку «Get Node.js for …». В середине страницы показан блок команд для установки через Docker — программу, которая запускает приложения в отдельных контейнерах. Этот блок нужно пропустить: ниже, в строке «Or get a prebuilt Node.js», находятся кнопки обычного установщика.</p>
 
         <figure class="shot" style="max-width: 1206px">
@@ -146,7 +148,8 @@
           <li><b>Установите Node.js 24</b><figure class="code"><figcaption><span>Терминал</span></figcaption><pre>nvm install 24</pre></figure></li>
         </ol>
 
-        <h3>Проверка установки</h3>
+        <p class="phase phase--do"><span>Делаем</span>Проверяем установку</p>
+
         <p>Проверка выполняется в терминале VS Code. Перед ней создаётся папка, в которой будут лежать все проекты дисциплины.</p>
 
         <ol class="steps">
@@ -172,6 +175,8 @@ npm -v</pre></figure></li>
           <p>Если вместо номера версии появилось «Невозможно загрузить файл C:\Program Files\nodejs\npm.ps1, так как выполнение сценариев отключено в этой системе», PowerShell запрещает запуск сценариев, а npm запускается сценарием. Выполните в том же терминале команду ниже, ответьте <code>Y</code> и повторите <code>npm -v</code>.</p>
           <figure class="code"><figcaption><span>Терминал PowerShell</span></figcaption><pre>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</pre></figure>
         </div>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что показали команды</p>
 
         <p>Ключ <code>-v</code> (от слова version) просит программу назвать свою версию и завершиться. Слева от каждой команды терминал показывает имя текущей папки — <code>react-kurs</code>, справа от знака <code>$</code> — набранную команду. Первая команда вывела <code>v24.21.0</code>: Node.js установлен и терминал его находит. Вторая вывела <code>11.19.0</code>: вместе с Node.js установился npm. На Windows в PowerShell строка слева выглядит иначе, а ответы команд те же.</p>
 
@@ -238,23 +243,14 @@ npm -v</pre></figure></li>
 
         <p><span class="term">Vite</span> (читается «вит», от французского «быстро») — инструмент, который делает две вещи. Во время разработки он работает как сервер: раздаёт файлы проекта браузеру, на лету переводит TypeScript и JSX в JavaScript и обновляет страницу при сохранении файла. Перед публикацией он собирает проект в несколько готовых файлов, которые можно положить на любой хостинг. Документация React называет Vite первым среди инструментов для создания приложения без готовой надстройки вроде Next.js и приводит ту же команду создания проекта, что и эта глава.</p>
 
-        <p>Проект создаётся одной командой в терминале VS Code. Перед вводом проверьте, что терминал открыт в папке <code>react-kurs</code>: слева от курсора написано <code>react-kurs $</code> (на Windows строка заканчивается на <code>\react-kurs&gt;</code>). Наберите команду и нажмите <kbd>Enter</kbd>:</p>
-
-        <figure class="code">
-          <figcaption><span>Терминал · папка react-kurs</span></figcaption>
-          <pre>npm create vite@latest zayavki -- --template react-ts</pre>
-        </figure>
-
-        <p>Команда состоит из пяти частей:</p>
-        <ul>
-          <li><code>npm create vite</code> — запустить генератор <code>create-vite</code>; слово <code>create-</code> в имени пакета npm подставляет сам;</li>
-          <li><code>@latest</code> — взять последнюю версию генератора, даже если на компьютере осталась более старая;</li>
-          <li><code>zayavki</code> — имя папки нового проекта; имя пишется латиницей, без пробелов и заглавных букв, потому что оно станет именем пакета в <code>package.json</code>;</li>
-          <li><code>--</code> — разделитель: всё, что после него, npm передаёт генератору без изменений;</li>
-          <li><code>--template react-ts</code> — шаблон «React и TypeScript». Без этого ключа генератор спросит фреймворк и вариант списком.</li>
-        </ul>
+        <p class="phase phase--do"><span>Делаем</span>Создаём проект</p>
 
         <ol class="steps">
+          <li><b>Наберите команду создания проекта</b><p>Проект создаётся одной командой в терминале VS Code. Перед вводом проверьте, что терминал открыт в папке <code>react-kurs</code>: слева от курсора написано <code>react-kurs $</code> (на Windows строка заканчивается на <code>\react-kurs&gt;</code>). Наберите команду и нажмите <kbd>Enter</kbd>.</p>
+            <figure class="code">
+              <figcaption><span>Терминал · папка react-kurs</span></figcaption>
+              <pre>npm create vite@latest zayavki -- --template react-ts</pre>
+            </figure></li>
           <li><b>Разрешите скачать генератор</b>
             <figure class="shot" style="max-width: 655px"><img src="img/02-create-ok-to-proceed.png" width="649" height="141" alt="Терминал: Need to install the following packages: create-vite@9.2.1. Ok to proceed? (y)" loading="lazy"><figcaption>Первый запуск: npm спрашивает разрешение скачать create-vite 9.2.1</figcaption></figure>
             <p>Генератора ещё нет на компьютере, и npm спрашивает, можно ли его скачать: <code>Need to install the following packages: create-vite@9.2.1 · Ok to proceed? (y)</code>. Буква <code>(y)</code> в скобках — ответ по умолчанию. Нажмите <kbd>y</kbd> и <kbd>Enter</kbd>. При следующих запусках этот вопрос не появится: генератор останется в кэше npm — папке, где npm хранит скачанные пакеты.</p></li>
@@ -269,34 +265,54 @@ npm -v</pre></figure></li>
             <p>Строка <code>Scaffolding project in …/react-kurs/zayavki...</code> сообщает, где создана папка (scaffolding — «возведение лесов», то есть создание каркаса). Ниже генератор перечисляет три команды, которые нужно выполнить дальше: перейти в папку проекта, установить пакеты, запустить сервер. Им посвящён следующий раздел. В проводнике VS Code под заголовком <strong>REACT-KURS</strong> появилась папка <code>zayavki</code>.</p></li>
         </ol>
 
+        <p class="phase phase--read"><span>Разбираемся</span>Из чего состоит команда</p>
+
+        <p>Команда состоит из пяти частей:</p>
+        <ul>
+          <li><code>npm create vite</code> — запустить генератор <code>create-vite</code>; слово <code>create-</code> в имени пакета npm подставляет сам;</li>
+          <li><code>@latest</code> — взять последнюю версию генератора, даже если на компьютере осталась более старая;</li>
+          <li><code>zayavki</code> — имя папки нового проекта; имя пишется латиницей, без пробелов и заглавных букв, потому что оно станет именем пакета в <code>package.json</code>;</li>
+          <li><code>--</code> — разделитель: всё, что после него, npm передаёт генератору без изменений;</li>
+          <li><code>--template react-ts</code> — шаблон «React и TypeScript». Без этого ключа генератор спросит фреймворк и вариант списком.</li>
+        </ul>
+
         <h2 id="s5"><span class="sec">§5</span>Установка зависимостей и запуск</h2>
 
-        <p>Генератор создал файлы проекта, но не скачал пакеты: в папке <code>zayavki</code> есть <code>package.json</code>, но нет <code>node_modules</code>. Первые две команды переходят в папку проекта и скачивают всё, что перечислено в <code>package.json</code>:</p>
+        <p>Генератор создал файлы проекта, но не скачал пакеты: в папке <code>zayavki</code> есть <code>package.json</code>, но нет <code>node_modules</code>. Дальше — три шага: перейти в папку проекта и скачать пакеты, запустить сервер разработки, открыть страницу.</p>
 
-        <figure class="code">
-          <figcaption><span>Терминал · папка react-kurs</span></figcaption>
-          <pre>cd zayavki
+        <p class="phase phase--do"><span>Делаем</span>Устанавливаем пакеты и запускаем</p>
+
+        <ol class="steps">
+          <li><b>Перейдите в папку проекта и установите пакеты</b><p>В том же терминале выполните две команды по очереди. Установка занимает от нескольких секунд до минуты.</p>
+            <figure class="code">
+              <figcaption><span>Терминал · папка react-kurs</span></figcaption>
+              <pre>cd zayavki
 npm install</pre>
-        </figure>
+            </figure>
+            <figure class="shot" style="max-width: 556px">
+              <img src="img/06-npm-install.png" width="550" height="189" alt="Терминал: cd zayavki, npm install; added 27 packages, and audited 28 packages in 15s; found 0 vulnerabilities" loading="lazy">
+              <figcaption>Установка пакетов: 27 пакетов за 15 секунд, уязвимостей не найдено</figcaption>
+            </figure></li>
+          <li><b>Запустите сервер разработки</b>
+            <figure class="code">
+              <figcaption><span>Терминал · папка zayavki</span></figcaption>
+              <pre>npm run dev</pre>
+            </figure>
+            <figure class="shot" style="max-width: 556px">
+              <img src="img/07-npm-run-dev.png" width="550" height="189" alt="Терминал: VITE v8.3.4 ready in 504 ms; Local: http://localhost:5173/; Network: use --host to expose; press h + enter to show help" loading="lazy">
+              <figcaption>Сервер разработки Vite запущен и ждёт браузер по адресу localhost:5173</figcaption>
+            </figure></li>
+          <li><b>Откройте страницу</b><p>Щёлкните по ссылке в терминале с зажатой клавишей <kbd>Ctrl</kbd> (на macOS — <kbd>⌘</kbd>) или скопируйте адрес в адресную строку браузера.</p>
+            <figure class="code"><figcaption><span>Адрес в браузере</span></figcaption><pre>http://localhost:5173/</pre></figure>
+            <figure class="shot" style="max-width: 1106px">
+              <img src="img/08-stranica-vite.png" width="1100" height="434" alt="Стартовая страница шаблона Vite и React: логотипы, заголовок Get started, подсказка Edit src/App.tsx and save to test HMR, кнопка Count is 0, блоки Documentation и Connect with us" loading="lazy">
+              <figcaption>Страница шаблона по адресу localhost:5173: заголовок Get started и кнопка-счётчик Count is 0</figcaption>
+            </figure></li>
+        </ol>
 
-        <figure class="shot" style="max-width: 556px">
-          <img src="img/06-npm-install.png" width="550" height="189" alt="Терминал: cd zayavki, npm install; added 27 packages, and audited 28 packages in 15s; found 0 vulnerabilities" loading="lazy">
-          <figcaption>Установка пакетов: 27 пакетов за 15 секунд, уязвимостей не найдено</figcaption>
-        </figure>
+        <p class="phase phase--read"><span>Разбираемся</span>Что сделали команды</p>
 
         <p>Команда <code>cd</code> (change directory) меняет текущую папку терминала: имя слева от <code>$</code> сменилось с <code>react-kurs</code> на <code>zayavki</code>. Все следующие команды выполняются в папке проекта — там, где лежит <code>package.json</code>. Команда <code>npm install</code> прочитала <code>package.json</code>, скачала пакеты в папку <code>node_modules</code> и записала точные версии в <code>package-lock.json</code>. Строка <code>added 27 packages, and audited 28 packages in 15s</code> означает, что добавлено 27 пакетов. В <code>package.json</code> их перечислено 9; остальные нужны этим девяти для работы, и npm скачал их сам. Проверено 28 пакетов — 27 скачанных и сам проект. Установка заняла 15 секунд; на другом компьютере время будет другим. Строка <code>found 0 vulnerabilities</code> означает, что известных уязвимостей в пакетах не найдено.</p>
-
-        <p>Теперь можно запустить сервер разработки:</p>
-
-        <figure class="code">
-          <figcaption><span>Терминал · папка zayavki</span></figcaption>
-          <pre>npm run dev</pre>
-        </figure>
-
-        <figure class="shot" style="max-width: 556px">
-          <img src="img/07-npm-run-dev.png" width="550" height="189" alt="Терминал: VITE v8.3.4 ready in 504 ms; Local: http://localhost:5173/; Network: use --host to expose; press h + enter to show help" loading="lazy">
-          <figcaption>Сервер разработки Vite запущен и ждёт браузер по адресу localhost:5173</figcaption>
-        </figure>
 
         <p>npm нашёл в <code>package.json</code> команду <code>dev</code> и запустил <code>vite</code>. Первая строка — версия Vite и время запуска: <code>VITE v8.3.4 ready in 504 ms</code>. Строка <code>Local: http://localhost:5173/</code> — адрес, по которому проект открывается в браузере. <code>localhost</code> означает «этот же компьютер». <code>5173</code> — номер порта. Порт похож на номер квартиры: дом один, а письмо попадает в ту квартиру, номер которой указан. Так и запрос попадает к той программе на компьютере, которая заняла этот номер, — здесь к Vite. Строка <code>Network: use --host to expose</code> сообщает, что с других устройств сайт пока не открыть. Последняя строка подсказывает, что сочетание <kbd>h</kbd> и <kbd>Enter</kbd> покажет справку.</p>
 
@@ -304,15 +320,6 @@ npm install</pre>
           <b>Сервер работает, пока открыт терминал</b>
           <p>Пока Vite запущен, терминал занят и новые команды в нём не выполняются. Остановить сервер — <kbd>Ctrl</kbd>+<kbd>C</kbd> в этом терминале. Для других команд откройте второй терминал кнопкой <strong>+</strong> на панели терминала.</p>
         </div>
-
-        <p>Откройте адрес в браузере: щёлкните по ссылке в терминале с зажатой клавишей <kbd>Ctrl</kbd> (на macOS — <kbd>⌘</kbd>) или скопируйте адрес из блока ниже в адресную строку браузера.</p>
-
-        <figure class="code"><figcaption><span>Адрес в браузере</span></figcaption><pre>http://localhost:5173/</pre></figure>
-
-        <figure class="shot" style="max-width: 1106px">
-          <img src="img/08-stranica-vite.png" width="1100" height="434" alt="Стартовая страница шаблона Vite и React: логотипы, заголовок Get started, подсказка Edit src/App.tsx and save to test HMR, кнопка Count is 0, блоки Documentation и Connect with us" loading="lazy">
-          <figcaption>Страница шаблона по адресу localhost:5173: заголовок Get started и кнопка-счётчик Count is 0</figcaption>
-        </figure>
 
         <p>Это стартовая страница шаблона. Под заголовком <strong>Get started</strong> шаблон подсказывает: <code>Edit src/App.tsx and save to test HMR</code> — измените файл <code>src/App.tsx</code>, сохраните и проверьте HMR. Что такое HMR, разобрано в §7. Кнопка <strong>Count is 0</strong> — счётчик: каждое нажатие увеличивает число на единицу. Ниже идут ссылки на документацию Vite и React и на сообщества разработчиков Vite.</p>
 
@@ -393,7 +400,9 @@ npm install</pre>
           <li><code>import App from './App.tsx'</code> — взять компонент <code>App</code> из соседнего файла. Скобок нет, потому что <code>App.tsx</code> отдаёт компонент как главную часть файла (в конце <code>App.tsx</code> стоит <code>export default App</code>).</li>
         </ul>
 
-        <p>Строка 6 выполняет основную работу, и её удобнее читать по частям изнутри наружу. <code>document.getElementById('root')</code> находит на странице элемент с именем <code>root</code> — пустой блок из <code>index.html</code>. Восклицательный знак после скобки — запись TypeScript: она сообщает проверке типов, что элемент точно существует. Без него TypeScript предупредил бы, что функция может вернуть «ничего», если элемента нет. <code>createRoot(…)</code> создаёт в этом блоке корень React — блок, содержимое которого дальше меняет только React. Метод <code>.render(…)</code> выводит в корень то, что передано в скобках.</p>
+        <p>Строка 6 выполняет основную работу, и её удобнее читать по частям изнутри наружу. <code>document.getElementById('root')</code> находит на странице элемент с именем <code>root</code> — пустой блок из <code>index.html</code>. Восклицательный знак после скобки — запись TypeScript: она сообщает проверке типов, что элемент точно существует. Без него TypeScript предупредил бы, что функция может вернуть «ничего», если элемента нет.</p>
+
+        <p><code>createRoot(…)</code> создаёт в этом блоке корень React — блок, содержимое которого дальше меняет только React. Метод <code>.render(…)</code> выводит в корень то, что передано в скобках.</p>
 
         <p>Внутри <code>render</code> записан JSX — разметка внутри кода (глава 0.1). <code>&lt;App /&gt;</code> означает «вывести компонент App»; косая черта перед закрывающей скобкой ставится, когда у элемента нет содержимого. Обёртка <code>&lt;StrictMode&gt;</code> — строгий режим: во время разработки React специально выполняет некоторые действия дважды и выводит предупреждения, чтобы раньше найти ошибки. На опубликованный сайт строгий режим не влияет.</p>
 
@@ -435,6 +444,8 @@ npm install</pre>
 
         <p><span class="term">HMR</span> (Hot Module Replacement — горячая замена модулей; модулем здесь называется отдельный файл кода) — способ обновить изменённый файл на открытой странице без её перезагрузки. Когда файл сохранён, Vite замечает изменение, переводит только этот файл и отправляет его в браузер. React заменяет старую версию компонента новой и сохраняет его состояние. Поэтому, если на странице что-то было введено или нажато, после правки это остаётся на месте.</p>
 
+        <p class="phase phase--do"><span>Делаем</span>Проверяем живое обновление</p>
+
         <p>Проверить HMR можно на счётчике шаблона. Сервер должен быть запущен (§5), а страница <code>localhost:5173</code> — открыта в браузере.</p>
 
         <ol class="steps">
@@ -461,6 +472,8 @@ npm install</pre>
             </figure></li>
         </ol>
 
+        <p class="phase phase--read"><span>Разбираемся</span>Что произошло</p>
+
         <p>Заголовок на странице сменился через мгновение после сохранения, и кнопка по-прежнему показывает <strong>Count is 3</strong>. Если бы страница перезагрузилась, счётчик начал бы с нуля: состояние хранится в памяти браузера и при перезагрузке теряется. По сохранённому числу видно, что сработала горячая замена. При работе с формами это значит, что заполненную форму после правки кода не нужно заполнять заново.</p>
 
         <div class="margin-note margin-note--warn">
@@ -471,6 +484,8 @@ npm install</pre>
         <h2 id="s8"><span class="sec">§8</span>Заготовка проекта «Доска заявок»</h2>
 
         <p>Стартовая страница шаблона нужна только для проверки, что всё работает. Для проекта модуля 1 из шаблона убирается всё лишнее, и остаётся пустая страница с заголовком. Сервер можно не останавливать: изменения будут видны сразу. Сначала заменяется <code>App.tsx</code>, и только потом удаляются файлы, которые он подключал; что будет при обратном порядке, описано в блоке после шагов.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Готовим заготовку</p>
 
         <ol class="steps">
           <li><b>Замените содержимое App.tsx</b><p>Откройте <code>src/App.tsx</code>, выделите весь текст (<kbd>Ctrl</kbd>+<kbd>A</kbd>, на macOS <kbd>⌘</kbd>+<kbd>A</kbd>) и удалите его. Скопируйте код ниже кнопкой «копировать» в шапке блока, вставьте в пустой файл (<kbd>Ctrl</kbd>+<kbd>V</kbd>) и сохраните (<kbd>Ctrl</kbd>+<kbd>S</kbd>). В файле должно получиться 10 строк.</p>
@@ -519,13 +534,16 @@ main {
           <p>Старый <code>App.tsx</code> подключает <code>./App.css</code> и картинки из <code>assets</code>. Если удалить их первыми, в терминале и на странице появится ошибка <code>Failed to resolve import "./App.css" from "src/App.tsx". Does the file exist?</code> — «не удалось найти подключаемый файл». Ошибка исчезнет, как только будет сохранён новый <code>App.tsx</code> из шага 1.</p>
         </div>
 
-        <p>В новом <code>App.tsx</code> осталось только то, что нужно любому компоненту. <code>function App() { … }</code> объявляет функцию с именем <code>App</code>; имя компонента всегда пишется с заглавной буквы, иначе React примет <code>&lt;app /&gt;</code> за обычный тег HTML. Внутри функции <code>return ( … )</code> возвращает разметку: тег <code>&lt;main&gt;</code> — основная часть страницы, в нём заголовок и абзац. Круглые скобки вокруг разметки позволяют записать её на нескольких строках. Последняя строка <code>export default App</code> отдаёт компонент наружу — его берёт <code>import App from './App.tsx'</code> в <code>main.tsx</code>.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Что осталось в App.tsx и index.css</p>
 
-        <p>В <code>index.css</code> три правила. Правило <code>:root</code> задаёт для всей страницы шрифт (первый доступный из списка: системный, Segoe UI на Windows, Roboto на Android), цвет текста и цвет фона. Правило <code>body</code> убирает отступ, который браузер по умолчанию ставит вокруг страницы. Правило <code>main</code> ограничивает ширину содержимого 960 пикселями, ставит его по центру (<code>margin: 0 auto</code>) и даёт внутренние отступы: 32 пикселя сверху и снизу, 20 — слева и справа.</p>
+        <p>В новом <code>App.tsx</code> осталось только то, что нужно любому компоненту. <code>function App() { … }</code> объявляет функцию с именем <code>App</code>. Имя компонента всегда пишется с заглавной буквы, иначе React примет <code>&lt;app /&gt;</code> за обычный тег HTML. Внутри функции <code>return ( … )</code> возвращает разметку: тег <code>&lt;main&gt;</code> — основная часть страницы, в нём заголовок и абзац. Круглые скобки вокруг разметки позволяют записать её на нескольких строках. Последняя строка <code>export default App</code> отдаёт компонент наружу — его берёт <code>import App from './App.tsx'</code> в <code>main.tsx</code>.</p>
+
+        <p>В <code>index.css</code> три правила. Правило <code>:root</code> задаёт для всей страницы шрифт (первый доступный из списка: системный, Segoe UI на Windows, Roboto на Android), цвет текста и цвет фона. Правило <code>body</code> убирает отступ, который браузер по умолчанию ставит вокруг страницы. Правило <code>main</code> ограничивает ширину содержимого 960 пикселями и ставит его по центру (<code>margin: 0 auto</code>). Ещё оно даёт внутренние отступы: 32 пикселя сверху и снизу, 20 — слева и справа.</p>
 
         <p>С этой заготовки начинается глава 1.2: в ней доска заявок разбивается на компоненты — шапку, форму и карточку.</p>
 
-        <h3>Как вернуться к проекту на следующем занятии</h3>
+        <p class="phase phase--do"><span>Делаем</span>Как вернуться к проекту на следующем занятии</p>
+
         <p>Сервер разработки работает, только пока открыт терминал. На следующем занятии проект запускается так:</p>
         <ol class="steps">
           <li><b>Откройте папку react-kurs в VS Code</b><p>Меню <strong>File → Open Recent</strong> → <code>react-kurs</code>, или <strong>File → Open Folder…</strong>, как в §2.</p></li>

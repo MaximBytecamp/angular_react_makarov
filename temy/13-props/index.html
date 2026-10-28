@@ -142,6 +142,8 @@ npm run dev</pre></figure>
 
         <p>Работа идёт в проекте <code>zayavki</code>, сервер разработки запущен, доска заявок из главы 1.2 открыта в браузере.</p>
 
+        <p class="phase phase--do"><span>Делаем</span>Передаём данные в карточки</p>
+
         <ol class="steps">
           <li><b>Замените содержимое RequestCard.tsx</b><p>Откройте <code>src/components/RequestCard.tsx</code>, выделите весь текст (<kbd>Ctrl</kbd>+<kbd>A</kbd>), вставьте код ниже и сохраните.</p>
             <!--CODE tools/code13/RequestCard-props.tsx | zayavki/src/components/RequestCard.tsx--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx</span></figcaption><pre><span class="k">type</span> RequestCardProps = {
@@ -208,36 +210,53 @@ npm run dev</pre></figure>
             <figure class="shot" style="max-width: 1106px"><img src="img/02-tri-zayavki.png" width="1100" height="518" alt="Доска заявок: три разные карточки — проектор каб. 214 Новая, интернет каб. 305 В работе, принтер каб. 112 Готово" loading="lazy"><figcaption>Так должна выглядеть страница: три разные заявки с разными статусами</figcaption></figure></li>
         </ol>
 
+        <p class="phase phase--read"><span>Разбираемся</span>Что изменилось в карточке и App</p>
+
         <p>В новой карточке каждое место, где раньше стоял постоянный текст, заменено значением из props. В строке кабинета <code>каб. {room}</code>: слово «каб.» постоянное, номер подставляется. В статусе — <code>{status}</code>, в заголовке — <code>{title}</code>, в описании — <code>{details}</code>. Сама разметка и классы не изменились, поэтому стили из главы 1.2 действуют как раньше.</p>
 
         <p>В <code>App.tsx</code> каждый вызов <code>&lt;RequestCard&gt;</code> теперь занимает несколько строк: по одному атрибуту на строку, закрывающая косая черта <code>/&gt;</code> — на отдельной строке. Так записывают теги с тремя и больше атрибутами, чтобы их было удобно читать. Значения записаны в кавычках, потому что все они строки. Номер кабинета тоже строка (<code>room="214"</code>): в типе <code>room</code> объявлен как <code>string</code>, ведь кабинет может называться и словом, например «актовый зал».</p>
 
         <h2 id="s4"><span class="sec">§4</span>Что будет, если забыть свойство</h2>
 
-        <p>Все четыре props в типе обязательные. Чтобы увидеть, что происходит при пропущенном свойстве, в <code>App.tsx</code> у второй карточки удалите строку <code>room="305"</code> и сохраните файл. Вызов карточки станет таким:</p>
+        <p>Все четыре props в типе обязательные. Опыт показывает, что происходит, если одно из них не передать.</p>
 
-        <!--CODE tools/code13/App-bez-room.tsx | App.tsx · вторая карточка без room | read lines=19-23--><figure class="code" data-read><figcaption><span>App.tsx · вторая карточка без room</span></figcaption><pre>          <span class="t">&lt;RequestCard</span>
+        <p class="phase phase--do"><span>Делаем</span>Опыт: карточка без кабинета</p>
+
+        <ol class="steps">
+          <li><b>Удалите room у второй карточки</b><p>В <code>App.tsx</code> у второй карточки удалите строку <code>room="305"</code> и сохраните. Вызов карточки станет таким:</p>
+            <!--CODE tools/code13/App-bez-room.tsx | App.tsx · вторая карточка без room | read lines=19-23--><figure class="code" data-read><figcaption><span>App.tsx · вторая карточка без room</span></figcaption><pre>          <span class="t">&lt;RequestCard</span>
             <span class="a">title</span>=<span class="s">"Нет интернета"</span>
             <span class="a">details</span>=<span class="s">"На всех компьютерах в кабинете не открываются сайты."</span>
             <span class="a">status</span>=<span class="s">"В работе"</span>
-          <span class="t">/&gt;</span></pre></figure><!--/CODE-->
-
-        <figure class="shot" style="max-width: 1246px"><img src="img/03-oshibka-room.png" width="1240" height="577" alt="VS Code: RequestCard в строке 19 подчёркнут красным, в панели Problems ошибка Property room is missing" loading="lazy"><figcaption>Редактор: вызов карточки подчёркнут, в панели Problems — ошибка ts(2741)</figcaption></figure>
-
-        <p>VS Code подчеркнул имя <code>RequestCard</code> в строке 19 красной волнистой линией, файл <code>App.tsx</code> в проводнике стал красным, а в строке состояния внизу появился счётчик ошибок. Полный текст ошибки виден в панели <strong>Problems</strong> (меню <strong>View → Problems</strong> или щелчок по счётчику ошибок): <code>Property 'room' is missing in type '{ title: string; details: string; status: string; }' but required in type 'RequestCardProps'</code>. Читается так: «свойство <code>room</code> отсутствует в переданном объекте, но требуется типом <code>RequestCardProps</code>». В скобках перечислено то, что передано, — <code>title</code>, <code>details</code>, <code>status</code>. Строка под ошибкой <code>'room' is declared here</code> указывает, где в <code>RequestCard.tsx</code> объявлено это свойство.</p>
-
-        <figure class="shot" style="max-width: 1106px"><img src="img/04-stranica-bez-room.png" width="1100" height="518" alt="Доска заявок: у второй карточки вместо номера кабинета пусто — только каб." loading="lazy"><figcaption>Страница при этой ошибке открывается: у второй карточки после «каб.» пусто</figcaption></figure>
-
-        <p>Страница при этом открылась, а во второй карточке после «каб.» пусто. Так происходит потому, что сервер разработки Vite типы не проверяет: он только переводит TypeScript в JavaScript, отбрасывая описания типов, — так быстрее. Проверку типов выполняют редактор и команда сборки. Если в этом состоянии запустить <code>npm run build</code> во втором терминале, сборка остановится на той же ошибке:</p>
-
-        <figure class="code code--out"><figcaption><span>Терминал · npm run build</span></figcaption><pre>&gt; zayavki@0.0.0 build
+          <span class="t">/&gt;</span></pre></figure><!--/CODE--></li>
+          <li><b>Посмотрите на редактор</b><p>Имя <code>RequestCard</code> в строке 19 подчеркнуто красным. Откройте панель <strong>Problems</strong>: меню <strong>View → Problems</strong> или щелчок по счётчику ошибок в строке состояния внизу.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-oshibka-room.png" width="1240" height="577" alt="VS Code: RequestCard в строке 19 подчёркнут красным, в панели Problems ошибка Property room is missing" loading="lazy"><figcaption>Редактор: вызов карточки подчёркнут, в панели Problems — ошибка ts(2741)</figcaption></figure></li>
+          <li><b>Посмотрите на страницу</b><p>Страница открывается, но у второй карточки после «каб.» пусто.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/04-stranica-bez-room.png" width="1100" height="518" alt="Доска заявок: у второй карточки вместо номера кабинета пусто — только каб." loading="lazy"><figcaption>Страница при этой ошибке открывается: у второй карточки после «каб.» пусто</figcaption></figure></li>
+          <li><b>Запустите сборку</b><p>Откройте второй терминал (<b>Terminal → New Terminal</b>; первый занят сервером разработки) и выполните команду:</p>
+            <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>cd zayavki &amp;&amp; npm run build</pre></figure>
+            <p>Сборка останавливается на той же ошибке:</p>
+            <figure class="code code--out"><figcaption><span>Терминал · npm run build</span></figcaption><pre>&gt; zayavki@0.0.0 build
 &gt; tsc -b &amp;&amp; vite build
 
-src/App.tsx(19,12): error TS2741: Property 'room' is missing in type '{ title: string; details: string; status: string; }' but required in type 'RequestCardProps'.</pre></figure>
+src/App.tsx(19,12): error TS2741: Property 'room' is missing in type '{ title: string; details: string; status: string; }' but required in type 'RequestCardProps'.</pre></figure></li>
+        </ol>
 
-        <p>Команда <code>tsc -b</code> нашла ошибку в строке 19, символ 12, и <code>vite build</code> не запустился: знак <code>&amp;&amp;</code> выполняет вторую команду, только если первая прошла без ошибок (глава 1.1, §3). Отсюда правило работы: смотреть на ошибки в редакторе, даже если страница выглядит нормально. Счётчик в строке состояния VS Code должен показывать ноль.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Почему страница открылась, а сборка нет</p>
 
-        <p>Верните строку <code>room="305"</code> на место (или вставьте код <code>App.tsx</code> из шага 2) и сохраните. Подчёркивание исчезнет, во второй карточке снова появится номер кабинета.</p>
+        <p>Кроме подчёркивания, файл <code>App.tsx</code> в проводнике стал красным, а в строке состояния появился счётчик ошибок. Полный текст ошибки в панели <strong>Problems</strong>: <code>Property 'room' is missing in type '{ title: string; details: string; status: string; }' but required in type 'RequestCardProps'</code>. Читается так: «свойство <code>room</code> отсутствует в переданном объекте, но требуется типом <code>RequestCardProps</code>». В скобках перечислено то, что передано, — <code>title</code>, <code>details</code>, <code>status</code>. Строка под ошибкой <code>'room' is declared here</code> указывает, где в <code>RequestCard.tsx</code> объявлено это свойство.</p>
+
+        <p>Страница при этом открылась, а во второй карточке после «каб.» пусто. Так происходит потому, что сервер разработки Vite типы не проверяет: он только переводит TypeScript в JavaScript, отбрасывая описания типов, — так быстрее. Проверку типов выполняют редактор и команда сборки.</p>
+
+        <p>Команда <code>tsc -b</code> нашла ошибку в строке 19, символ 12, и <code>vite build</code> не запустился. Знак <code>&amp;&amp;</code> выполняет вторую команду, только если первая прошла без ошибок (глава 1.1, §3).</p>
+
+        <p>Отсюда правило работы: смотреть на ошибки в редакторе, даже если страница выглядит нормально. Счётчик ошибок в строке состояния VS Code должен показывать ноль.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Возвращаем кабинет</p>
+
+        <ol class="steps">
+          <li><b>Верните room="305"</b><p>Нажмите <kbd>Ctrl</kbd>+<kbd>Z</kbd> в <code>App.tsx</code>, чтобы вернуть удалённую строку, или вставьте код <code>App.tsx</code> из §3. Сохраните. Подчёркивание исчезнет, у второй карточки снова появится номер кабинета.</p></li>
+        </ol>
 
         <h2 id="s5"><span class="sec">§5</span>Статус из трёх значений</h2>
 
@@ -250,6 +269,8 @@ src/App.tsx(19,12): error TS2741: Property 'room' is missing in type '{ title: s
         <p>Сейчас <code>status</code> объявлен как <code>string</code>, то есть любая строка. Можно передать «Новый» или «готово» с маленькой буквы, и TypeScript ошибку не покажет. Но статусов у заявки всего три, и тип может это записать. Кроме того, новая заявка почти всегда имеет статус «Новая», и писать его при каждом вызове необязательно: у свойства можно задать значение по умолчанию.</p>
 
         <p>Для этого в TypeScript есть три записи. <span class="term">Объединение</span> <code>'Новая' | 'В работе' | 'Готово'</code> — тип, значением которого может быть только одна из перечисленных строк; черта <code>|</code> читается как «или». Вопросительный знак после имени поля (<code>status?:</code>) делает свойство необязательным. Значение по умолчанию задаётся при распаковке знаком равенства: <code>status = 'Новая'</code> — если родитель статус не передал, будет «Новая».</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Статус из трёх значений</p>
 
         <ol class="steps">
           <li><b>Замените содержимое RequestCard.tsx</b>
@@ -277,7 +298,7 @@ src/App.tsx(19,12): error TS2741: Property 'room' is missing in type '{ title: s
 
 <span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
             <figure class="shot" style="max-width: 1246px"><img src="img/05-requestcard-status.png" width="1240" height="608" alt="VS Code: RequestCard.tsx с типом Status, необязательным status и значением по умолчанию Новая" loading="lazy"><figcaption>Так должен выглядеть RequestCard.tsx: тип Status в первой строке, status? в типе props, значение по умолчанию в параметре</figcaption></figure></li>
-          <li><b>Уберите статус у первой карточки</b><p>В <code>App.tsx</code> у первой карточки удалите строку <code>status="Новая"</code> — статус «Новая» теперь подставится сам. Или замените содержимое файла кодом ниже и сохраните.</p>
+          <li><b>Уберите статус у первой карточки</b><p>В <code>App.tsx</code> у первой карточки удалите строку <code>status="Новая"</code>: статус «Новая» теперь подставится сам. Можно вместо этого заменить весь текст файла кодом ниже. Сохраните.</p>
             <!--CODE tools/code13/App.tsx | zayavki/src/App.tsx--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
 <span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
 <span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
@@ -317,20 +338,27 @@ src/App.tsx(19,12): error TS2741: Property 'room' is missing in type '{ title: s
             <figure class="shot" style="max-width: 1106px"><img src="img/07-doska-props.png" width="1100" height="518" alt="Доска заявок: у первой карточки статус Новая, хотя в App он не передан" loading="lazy"><figcaption>Так должна выглядеть страница: у первой карточки статус «Новая» — значение по умолчанию</figcaption></figure></li>
         </ol>
 
-        <p>В первой строке <code>RequestCard.tsx</code> объявлен отдельный тип <code>Status</code> — его удобно назвать отдельно, потому что статус понадобится и в других компонентах. В типе props поле теперь записано как <code>status?: Status</code>: необязательное, одно из трёх значений. В параметре функции <code>status = 'Новая'</code> задаёт значение на случай, если статус не передан. Страница выглядит так же, как после §3, но первая карточка получила «Новая» уже без строки <code>status</code> в <code>App.tsx</code>.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Что изменилось в типе props</p>
 
-        <h3>Проверка: опечатка в статусе</h3>
-        <p>В <code>App.tsx</code> у третьей карточки замените <code>status="Готово"</code> на <code>status="Готов"</code> и сохраните.</p>
+        <p>В первой строке <code>RequestCard.tsx</code> объявлен отдельный тип <code>Status</code>. У него своё имя, потому что статус понадобится и в других компонентах. В типе props поле теперь записано как <code>status?: Status</code>: необязательное, одно из трёх значений. В параметре функции <code>status = 'Новая'</code> задаёт значение на случай, если статус не передан. Страница выглядит так же, как после §3, но первая карточка получила «Новая» уже без строки <code>status</code> в <code>App.tsx</code>.</p>
 
-        <figure class="shot" style="max-width: 1246px"><img src="img/06-oshibka-status.png" width="1240" height="577" alt="VS Code: строка status=Готов подчёркнута, в Problems ошибка Type Готов is not assignable to type Status | undefined. Did you mean Готово" loading="lazy"><figcaption>Редактор: TypeScript не принимает «Готов» и предлагает «Готово»</figcaption></figure>
+        <p class="phase phase--do"><span>Делаем</span>Опыт: опечатка в статусе</p>
 
-        <p>Редактор подчеркнул строку 29, ошибка в панели Problems: <code>Type '"Готов"' is not assignable to type 'Status | undefined'. Did you mean '"Готово"'?</code> — «значение "Готов" нельзя присвоить типу Status или undefined. Может быть, имелось в виду "Готово"?». <code>undefined</code> в сообщении появился из-за вопросительного знака: необязательное свойство может быть и не передано. Если бы <code>status</code> оставался типа <code>string</code>, опечатка прошла бы незамеченной, и на карточке появился бы статус «Готов». Верните «Готово» и сохраните.</p>
+        <ol class="steps">
+          <li><b>Напишите статус с опечаткой</b><p>В <code>App.tsx</code> у третьей карточки замените <code>status="Готово"</code> на <code>status="Готов"</code> и сохраните.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/06-oshibka-status.png" width="1240" height="577" alt="VS Code: строка status=Готов подчёркнута, в Problems ошибка Type Готов is not assignable to type Status | undefined. Did you mean Готово" loading="lazy"><figcaption>Редактор: TypeScript не принимает «Готов» и предлагает «Готово»</figcaption></figure></li>
+          <li><b>Верните «Готово»</b><p>Исправьте опечатку обратно на <code>status="Готово"</code> и сохраните. Счётчик ошибок внизу снова 0.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что написано в ошибке</p>
+
+        <p>Редактор подчеркнул строку 29, ошибка в панели Problems: <code>Type '"Готов"' is not assignable to type 'Status | undefined'. Did you mean '"Готово"'?</code> — «значение "Готов" нельзя присвоить типу Status или undefined. Может быть, имелось в виду "Готово"?». <code>undefined</code> в сообщении появился из-за вопросительного знака: необязательное свойство может быть и не передано. Если бы <code>status</code> оставался типа <code>string</code>, опечатка прошла бы незамеченной, и на карточке появился бы статус «Готов».</p>
 
         <h2 id="s6"><span class="sec">§6</span>Данные идут сверху вниз</h2>
 
         <p>Props передаются в одну сторону: от родителя к ребёнку. В <code>App</code> записано, какие заявки показать, и оттуда данные передаются карточкам. Карточка получает props и только выводит их; изменить их она не может и не должна. Если бы карточка поменяла свой <code>status</code>, в <code>App</code> остался бы прежний статус. Данные на странице разошлись бы с данными в родителе — та же ошибка, что в витрине с ручным обновлением из главы 0.1.</p>
 
-        <p>Поэтому правило React такое: компонент относится к своим props как к значениям только для чтения. Когда карточке нужно что-то изменить — например, по кнопке «Взять в работу» сменить статус, — она сообщает об этом родителю, а родитель меняет свои данные и передаёт карточке новые props. Как хранить изменяемые данные и как компонент сообщает родителю о событии, разобрано в главе 1.4.</p>
+        <p>Поэтому правило React такое: компонент относится к своим props как к значениям только для чтения. Пусть карточке нужно что-то изменить, например сменить статус по кнопке «Взять в работу». Тогда она сообщает об этом родителю. Родитель меняет свои данные и передаёт карточке новые props. Как хранить изменяемые данные и как компонент сообщает родителю о событии, разобрано в главе 1.4.</p>
 
         <p>Остался ещё один повтор: три вызова <code>&lt;RequestCard&gt;</code> в <code>App.tsx</code> записаны вручную, по одному на заявку. Для доски, где заявок десятки, данные хранят списком и выводят карточки из него. Это предмет главы 1.5.</p>
 
@@ -373,7 +401,7 @@ src/App.tsx(19,12): error TS2741: Property 'room' is missing in type '{ title: s
         </details>
         <details>
           <summary>Почему при забытом свойстве <code>room</code> страница открылась, а <code>npm run build</code> — нет?</summary>
-          <p>Сервер разработки Vite не проверяет типы, а только переводит TypeScript в JavaScript, поэтому код запускается, и на месте <code>room</code> оказывается пусто. Команда сборки начинается с <code>tsc -b</code>, которая проверяет типы, находит ошибку и останавливает сборку.</p>
+          <p>Сервер разработки Vite только переводит TypeScript в JavaScript и типы не проверяет, поэтому код запускается, и на месте <code>room</code> оказывается пусто. Команда сборки начинается с <code>tsc -b</code>, которая проверяет типы, находит ошибку и останавливает сборку.</p>
         </details>
         <details>
           <summary>Что означает запись <code>status?: 'Новая' | 'В работе' | 'Готово'</code>?</summary>

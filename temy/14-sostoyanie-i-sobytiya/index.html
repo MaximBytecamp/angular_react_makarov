@@ -90,6 +90,8 @@ npm run dev</pre></figure>
 
         <p>В первой версии обработчик печатает сообщение в консоль браузера, страница при этом не меняется. По сообщению в консоли видно, что щелчок дошёл до функции.</p>
 
+        <p class="phase phase--do"><span>Делаем</span>Кнопка с обработчиком</p>
+
         <ol class="steps">
           <li><b>Добавьте стили кнопки</b><p>Откройте <code>src/index.css</code>, вставьте в самый конец файла правила ниже и сохраните.</p>
             <!--CODE tools/code14/index-knopka.css | zayavki/src/index.css · в конец файла | lines=118-134--><figure class="code"><figcaption><span>zayavki/src/index.css · в конец файла</span></figcaption><pre>.card button {
@@ -140,9 +142,12 @@ npm run dev</pre></figure>
 
 <span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
             <figure class="shot" style="max-width: 1246px"><img src="img/01-knopka-obrabotchik.png" width="1240" height="780" alt="VS Code: RequestCard.tsx с функцией handleClick в строках 11–13 и кнопкой onClick в строке 23" loading="lazy"><figcaption>Так должен выглядеть RequestCard.tsx: функция handleClick перед return, кнопка в конце карточки</figcaption></figure></li>
-          <li><b>Откройте консоль браузера</b><p>В браузере с доской заявок нажмите <kbd>F12</kbd> (на macOS — <kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>J</kbd>) и выберите вкладку <strong>Console</strong>. Нажмите кнопку «Взять в работу» в каждой из трёх карточек.</p>
+          <li><b>Откройте консоль браузера</b><p>В браузере с доской заявок нажмите <kbd>F12</kbd> (на macOS — <kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>J</kbd>) и выберите вкладку <strong>Console</strong>. Консоль остаётся открытой до конца главы.</p></li>
+          <li><b>Нажмите кнопки</b><p>Нажмите «Взять в работу» в каждой из трёх карточек. В консоли появится по сообщению на каждое нажатие.</p>
             <figure class="shot" style="max-width: 1106px"><img src="img/02-konsol-nazhatiya.png" width="1100" height="677" alt="Доска заявок с кнопками Взять в работу, внизу консоль браузера с тремя сообщениями Нажата кнопка в заявке" loading="lazy"><figcaption>Так должен выглядеть результат: под каждой заявкой кнопка, в консоли три сообщения — по одному на нажатие</figcaption></figure></li>
         </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что делает обработчик</p>
 
         <p>В функции <code>handleClick</code> одна команда — <code>console.log</code>. Она печатает в консоль браузера свои аргументы через пробел: строку <code>'Нажата кнопка в заявке:'</code> и значение <code>title</code>. Консоль — панель инструментов разработчика, куда попадают сообщения программы и ошибки; на странице эти сообщения не видны. Справа от каждого сообщения указан файл и строка, где оно напечатано: <code>RequestCard.tsx:12</code>.</p>
 
@@ -157,9 +162,13 @@ npm run dev</pre></figure>
 
         <h2 id="s2"><span class="sec">§2</span>Опыт с обычной переменной</h2>
 
-        <p>Изменяемые данные в JavaScript хранят в переменной, объявленной словом <code>let</code>. Опыт проверяет, можно ли так хранить статус: переменная выводится в разметке и меняется в обработчике. Замените содержимое <code>RequestCard.tsx</code> кодом ниже и сохраните.</p>
+        <p>Изменяемые данные в JavaScript хранят в переменной, объявленной словом <code>let</code>. Опыт проверяет, можно ли так хранить статус: переменная выводится в разметке и меняется в обработчике.</p>
 
-        <!--CODE tools/code14/RequestCard-let.tsx | zayavki/src/components/RequestCard.tsx · опыт--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx · опыт</span></figcaption><pre><span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>
+        <p class="phase phase--do"><span>Делаем</span>Опыт: статус в обычной переменной</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое RequestCard.tsx версией для опыта</b><p>Замените весь текст <code>RequestCard.tsx</code> кодом ниже и сохраните.</p>
+            <!--CODE tools/code14/RequestCard-let.tsx | zayavki/src/components/RequestCard.tsx · опыт--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx · опыт</span></figcaption><pre><span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>
 
 <span class="k">type</span> RequestCardProps = {
   title: string
@@ -189,27 +198,25 @@ npm run dev</pre></figure>
   )
 }
 
-<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE--></li>
+          <li><b>Нажмите кнопку дважды</b><p>Нажмите «Взять в работу» в первой карточке два раза. В консоли новое значение, а на карточке по-прежнему «Новая».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/03-peremennaya-let.png" width="1100" height="662" alt="Доска заявок: у первой карточки статус по-прежнему Новая, в консоли сообщение current = В работе с отметкой 2" loading="lazy"><figcaption>Опыт с переменной: в консоли current = В работе, на карточке по-прежнему «Новая»</figcaption></figure></li>
+          <li><b>Запустите линтер</b><p>Откройте второй терминал: <b>Terminal → New Terminal</b>. Первый занят сервером разработки. Выполните команду:</p>
+            <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>cd zayavki &amp;&amp; npm run lint</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/04-lint-let.png" width="1240" height="312" alt="Терминал VS Code: npm run lint выводит два предупреждения react(immutability) для строки 14 RequestCard.tsx" loading="lazy"><figcaption>Линтер выводит два предупреждения для строки 14 — присваивания в обработчике</figcaption></figure></li>
+        </ol>
 
-        <p>Изменились три места. В строке 11 объявлена переменная <code>current</code> («текущий статус») с начальным значением из props. В обработчике ей присваивается <code>'В работе'</code>, и новое значение печатается в консоль. В разметке на месте статуса стоит <code>{current}</code>. Нажмите дважды «Взять в работу» в первой карточке.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Почему страница не изменилась</p>
 
-        <figure class="shot" style="max-width: 1106px"><img src="img/03-peremennaya-let.png" width="1100" height="662" alt="Доска заявок: у первой карточки статус по-прежнему Новая, в консоли сообщение current = В работе с отметкой 2" loading="lazy"><figcaption>Опыт с переменной: в консоли current = В работе, на карточке по-прежнему «Новая»</figcaption></figure>
+        <p>Изменились три места. В строке 11 объявлена переменная <code>current</code> («текущий статус») с начальным значением из props. В обработчике ей присваивается <code>'В работе'</code>, и новое значение печатается в консоль. В разметке на месте статуса стоит <code>{current}</code>.</p>
 
         <p>В консоли сообщение <code>current = В работе</code>; кружок с цифрой 2 слева означает, что одинаковое сообщение напечатано два раза подряд. Значит, обработчик выполнился и переменная изменилась, но статус на карточке остался «Новая».</p>
 
         <p>Причина в том, как React строит страницу. Разметку карточки возвращает функция <code>RequestCard</code>, и React вызывает её, когда отрисовывает компонент. Вызов функции компонента называется <span class="term">отрисовкой</span> (в документации — render). После отрисовки React переносит полученную разметку в страницу и больше функцию не вызывает, пока не получит сигнал, что данные изменились. Присваивание <code>current = 'В работе'</code> такого сигнала не даёт: переменная поменялась, но функция <code>RequestCard</code> не вызвана заново, и разметка на странице осталась от первой отрисовки.</p>
 
-        <p>Если бы React и вызвал функцию заново, статус всё равно вернулся бы к «Новая»: строка <code>let current = status</code> выполняется при каждом вызове и создаёт переменную с начальным значением. Обычная переменная существует только внутри одного вызова функции.</p>
+        <p>Если бы React и вызвал функцию заново, статус всё равно вернулся бы к «Новая». Строка <code>let current = status</code> выполняется при каждом вызове и создаёт переменную с начальным значением. Обычная переменная существует только внутри одного вызова функции.</p>
 
-        <h3>Что показывает линтер</h3>
-
-        <p>Эту ошибку находит линтер Oxlint, установленный в проект в главе 1.1. Откройте второй терминал (<strong>Terminal → New Terminal</strong>; первый занят сервером разработки) и выполните команду:</p>
-
-        <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>npm run lint</pre></figure>
-
-        <figure class="shot" style="max-width: 1246px"><img src="img/04-lint-let.png" width="1240" height="312" alt="Терминал VS Code: npm run lint выводит два предупреждения react(immutability) для строки 14 RequestCard.tsx" loading="lazy"><figcaption>Линтер выводит два предупреждения для строки 14 — присваивания в обработчике</figcaption></figure>
-
-        <p>Оба предупреждения относятся к строке 14, символ 5 — к присваиванию <code>current = 'В работе'</code>. Первое переводится так: «нельзя присваивать переменной новое значение после завершения отрисовки; это может привести к несогласованному поведению при следующих отрисовках». В конце обоих сообщений подсказка: <code>Consider using state instead</code> — «используйте вместо этого состояние». Состояние разобрано в следующем разделе.</p>
+        <p>Линтер Oxlint, установленный в проект в главе 1.1, находит эту ошибку без запуска страницы. Оба предупреждения относятся к строке 14, символ 5 — к присваиванию <code>current = 'В работе'</code>. Первое переводится так: «нельзя присваивать переменной новое значение после завершения отрисовки; это может привести к несогласованному поведению при следующих отрисовках». В конце обоих сообщений подсказка: <code>Consider using state instead</code> — «используйте вместо этого состояние».</p>
 
         <p class="bridge">Нужна переменная, которая сохраняет значение между вызовами функции и при изменении вызывает отрисовку заново. В React это состояние.</p>
 
@@ -228,6 +235,8 @@ npm run dev</pre></figure>
         <p><code>useState(status)</code> получает начальное значение — здесь статус из props — и возвращает пару: текущее значение и функцию для его изменения. Квадратные скобки слева раскладывают пару по двум переменным, так же как фигурные скобки в главе 1.3 распаковывали объект props. Имена выбирает разработчик; по договорённости вторая переменная называется как первая с приставкой <code>set</code>: <code>current</code> и <code>setCurrent</code>. Слово <code>const</code> означает, что переменной нельзя присвоить другое значение: значение меняется только через <code>setCurrent</code>.</p>
 
         <p>Вызов <code>setCurrent('В работе')</code> делает две вещи. Он сохраняет новое значение в React и сообщает React, что компонент нужно отрисовать заново. При следующем вызове функции <code>RequestCard</code> строка с <code>useState</code> вернёт уже <code>'В работе'</code>; начальное значение используется только при первой отрисовке.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Статус в состоянии</p>
 
         <ol class="steps">
           <li><b>Замените содержимое RequestCard.tsx</b>
@@ -270,9 +279,11 @@ npm run dev</pre></figure>
 
 <span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
             <figure class="shot" style="max-width: 1246px"><img src="img/05-usestate.png" width="1240" height="780" alt="VS Code: RequestCard.tsx с импортом useState в строке 1, const current setCurrent = useState(status) в строке 13 и обработчиком с if и else" loading="lazy"><figcaption>Так должен выглядеть RequestCard.tsx: импорт useState в первой строке, состояние в строке 13</figcaption></figure></li>
-          <li><b>Проверьте кнопки</b><p>Нажмите «Взять в работу» в первой карточке и «Взять в работу», затем «Завершить» во второй.</p>
+          <li><b>Проверьте кнопки</b><p>Обновите страницу (<kbd>F5</kbd>). Нажмите «Взять в работу» в первой карточке и «Завершить» во второй: вторая заявка с начала «В работе».</p>
             <figure class="shot" style="max-width: 1106px"><img src="img/06-sostoyanie-kartochek.png" width="1100" height="651" alt="Доска заявок: первая карточка В работе с кнопкой Завершить, вторая и третья Готово с серыми выключенными кнопками" loading="lazy"><figcaption>Так должна выглядеть страница: первая заявка «В работе», вторая и третья «Готово», их кнопки выключены</figcaption></figure></li>
         </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что изменилось в карточке</p>
 
         <p>Первая строка <code>import { useState } from 'react'</code> подключает хук из библиотеки React. Фигурные скобки в импорте означают, что берётся функция с именем <code>useState</code>: библиотека React содержит много функций, и в файл подключают только нужные.</p>
 
@@ -287,13 +298,20 @@ npm run dev</pre></figure>
           <p>Если сразу после <code>setCurrent('В работе')</code> в том же обработчике напечатать <code>console.log(current)</code>, в консоли будет прежнее значение, «Новая». Вызов <code>setCurrent</code> не меняет переменную <code>current</code> в текущем вызове функции: новое значение она получит при следующей отрисовке. Поэтому в обработчике решение принимается по значению, которое было на экране в момент щелчка.</p>
         </div>
 
-        <h3>Вызов обработчика вместо передачи</h3>
+        <p class="phase phase--do"><span>Делаем</span>Опыт: скобки после имени обработчика</p>
 
-        <p>В §1 говорилось, что после имени обработчика в <code>onClick</code> скобки не ставятся. Если в этой версии карточки написать <code>onClick={handleClick()}</code> и сохранить файл, страница станет пустой, а в консоли появится ошибка.</p>
+        <p>В §1 говорилось, что после имени обработчика в <code>onClick</code> скобки не ставятся. Опыт показывает, что будет, если их поставить.</p>
 
-        <figure class="shot" style="max-width: 1106px"><img src="img/07-vyzov-vmesto-peredachi.png" width="1100" height="302" alt="Пустая страница, в консоли ошибка Uncaught Error: Too many re-renders и предупреждение An error occurred in the RequestCard component" loading="lazy"><figcaption>При onClick={handleClick()} страница пустая, в консоли — Too many re-renders</figcaption></figure>
+        <ol class="steps">
+          <li><b>Добавьте скобки</b><p>В <code>RequestCard.tsx</code> в строке с кнопкой замените <code>onClick={handleClick}</code> на <code>onClick={handleClick()}</code> и сохраните.</p></li>
+          <li><b>Посмотрите на страницу и консоль</b><p>Страница стала пустой, в консоли ошибка.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/07-vyzov-vmesto-peredachi.png" width="1100" height="302" alt="Пустая страница, в консоли ошибка Uncaught Error: Too many re-renders и предупреждение An error occurred in the RequestCard component" loading="lazy"><figcaption>При onClick={handleClick()} страница пустая, в консоли — Too many re-renders</figcaption></figure></li>
+          <li><b>Уберите скобки</b><p>Верните <code>onClick={handleClick}</code> и сохраните. Карточки снова на странице.</p></li>
+        </ol>
 
-        <p>Ошибка <code>Too many re-renders. React limits the number of renders to prevent an infinite loop</code> переводится как «слишком много повторных отрисовок; React ограничивает их число, чтобы не допустить бесконечного цикла». Со скобками <code>handleClick</code> выполняется во время отрисовки и вызывает <code>setCurrent</code>. Вызов <code>setCurrent</code> требует новой отрисовки, в ней снова выполняется <code>handleClick</code>, и цикл не заканчивается. Строка ниже, <code>An error occurred in the &lt;RequestCard&gt; component</code>, указывает компонент, в котором произошла ошибка. Ту же ошибку до запуска показывает редактор: <code>Type 'void' is not assignable to type 'MouseEventHandler&lt;HTMLButtonElement&gt; | undefined'</code> — «результат функции нельзя передать туда, где ожидается обработчик щелчка». Уберите скобки и сохраните.</p>
+        <p class="phase phase--read"><span>Разбираемся</span>Что написано в ошибке</p>
+
+        <p>Ошибка <code>Too many re-renders. React limits the number of renders to prevent an infinite loop</code> переводится как «слишком много повторных отрисовок; React ограничивает их число, чтобы не допустить бесконечного цикла». Со скобками <code>handleClick</code> выполняется во время отрисовки и вызывает <code>setCurrent</code>. Вызов <code>setCurrent</code> требует новой отрисовки, в ней снова выполняется <code>handleClick</code>, и цикл не заканчивается. Строка ниже, <code>An error occurred in the &lt;RequestCard&gt; component</code>, указывает компонент, в котором произошла ошибка. Ту же ошибку до запуска показывает редактор: <code>Type 'void' is not assignable to type 'MouseEventHandler&lt;HTMLButtonElement&gt; | undefined'</code> — «результат функции нельзя передать туда, где ожидается обработчик щелчка».</p>
 
         <p class="bridge">Кнопки работают. Следующий раздел показывает шаги между щелчком и новым статусом на экране.</p>
 
@@ -336,7 +354,7 @@ npm run dev</pre></figure>
           <p class="miss">Мастер звонит и сообщает, что взял заявку, — так карточка вызывает функцию, переданную ей от <code>App</code>.</p>
         </div></div>
 
-        <p>Шапка доски должна показывать «Новых заявок: 1». Для этого числа нужны статусы всех трёх заявок, а сейчас каждый статус хранится внутри своей карточки, и ни <code>App</code>, ни <code>Header</code> к нему доступа не имеют: данные в React передаются только от родителя к ребёнку (глава 1.3, §6). Решение — хранить состояние в ближайшем общем родителе тех компонентов, которым оно нужно. Для карточек и шапки это <code>App</code>. Перенос состояния из дочерних компонентов в родителя называется <span class="term">подъёмом состояния</span> (lifting state up).</p>
+        <p>Шапка доски должна показывать «Новых заявок: 1». Для этого числа нужны статусы всех трёх заявок. Сейчас каждый статус хранится внутри своей карточки, и у <code>App</code> и <code>Header</code> к нему доступа нет: данные в React передаются только от родителя к ребёнку (глава 1.3, §6). Решение — хранить состояние в ближайшем общем родителе тех компонентов, которым оно нужно. Для карточек и шапки это <code>App</code>. Перенос состояния из дочерних компонентов в родителя называется <span class="term">подъёмом состояния</span> (lifting state up).</p>
 
         <p>После подъёма карточка снова получает статус через props, как в главе 1.3. Но менять его она не может: props только для чтения. Поэтому вместе со статусом родитель передаёт карточке функцию — prop <code>onNext</code>. Карточка вызывает её при щелчке, а функция в <code>App</code> меняет состояние. Prop с функцией, через который ребёнок сообщает родителю о событии, по договорённости называют с приставкой <code>on</code>: <code>onNext</code>, <code>onDelete</code>, <code>onSave</code>.</p>
 
@@ -362,6 +380,8 @@ npm run dev</pre></figure>
           </div>
           <p class="scheme__note">Статусы хранятся в <code>App</code>. Шапка получает готовое число, карточки — статус и функцию <code>onNext</code>. Щелчок в карточке вызывает <code>onNext</code>, <code>App</code> меняет состояние и отрисовывается заново вместе с шапкой и карточками.</p>
         </figure>
+
+        <p class="phase phase--do"><span>Делаем</span>Переносим состояние в App</p>
 
         <ol class="steps">
           <li><b>Добавьте стиль счётчика</b><p>В конец <code>src/index.css</code> добавьте правило и сохраните.</p>
@@ -480,6 +500,8 @@ npm run dev</pre></figure>
             <figure class="shot" style="max-width: 1106px"><img src="img/10-schetchik-0.png" width="1100" height="679" alt="Доска заявок: в шапке Новых заявок: 0, первая карточка В работе с кнопкой Завершить" loading="lazy"><figcaption>После щелчка: первая заявка «В работе», в шапке «Новых заявок: 0»</figcaption></figure></li>
         </ol>
 
+        <p class="phase phase--read"><span>Разбираемся</span>Что изменилось в RequestCard.tsx и App.tsx</p>
+
         <h3>Разбор RequestCard.tsx</h3>
 
         <p>Из карточки удалены <code>useState</code> и <code>handleClick</code>: своего состояния у неё больше нет. В типе props два изменения. <code>status: Status</code> снова обязательный, без <code>?</code> и без значения по умолчанию, потому что статус теперь всегда приходит из <code>App</code>. Новое поле <code>onNext: () =&gt; void</code> описывает функцию: пустые скобки — функция без параметров, <code>void</code> после стрелки — функция ничего не возвращает. Кнопка получает эту функцию напрямую: <code>onClick={onNext}</code>. Перед <code>type Status</code> появилось слово <code>export</code>: тип нужен в <code>App.tsx</code>, и его нужно сделать доступным из других файлов.</p>
@@ -488,7 +510,7 @@ npm run dev</pre></figure>
 
         <p>Четвёртая строка импортирует из одного файла два имени: <code>RequestCard</code> — экспорт по умолчанию, без скобок, и <code>Status</code> — именованный экспорт, в фигурных скобках. Слово <code>type</code> перед <code>Status</code> отмечает, что подключается только тип. Описания типов удаляются при переводе TypeScript в JavaScript, и настройки проекта Vite требуют отмечать такие импорты явно; без слова <code>type</code> редактор покажет ошибку TS1484.</p>
 
-        <p>Функция <code>nextStatus</code> записана вне <code>App</code>: состояние и props в ней не используются, она вычисляет следующий статус по текущему. Запись <code>(status: Status): Status</code> означает «принимает статус и возвращает статус». Логика та же, что была в <code>handleClick</code> карточки: из «Новая» — «В работе», из остальных — «Готово».</p>
+        <p>Функция <code>nextStatus</code> записана вне <code>App</code>, потому что состояние и props в ней не используются. Она вычисляет следующий статус по текущему. Запись <code>(status: Status): Status</code> означает «принимает статус и возвращает статус». Логика та же, что была в <code>handleClick</code> карточки: из «Новая» — «В работе», из остальных — «Готово».</p>
 
         <p>Три строки с <code>useState</code> создают три состояния — по одному на заявку. В угловых скобках <code>useState&lt;Status&gt;</code> указан тип значения. Без них TypeScript вывел бы из начального значения <code>'Новая'</code> тип <code>string</code>, то есть любую строку, и передать такое значение в prop <code>status</code> типа <code>Status</code> было бы нельзя. В карточке в §3 угловые скобки не требовались: начальным значением был prop, у которого тип <code>Status</code> уже указан.</p>
 
