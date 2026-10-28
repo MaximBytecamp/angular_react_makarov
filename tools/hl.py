@@ -9,7 +9,7 @@
 Необязательные ключи после второй черты: `read` (блок для чтения, без кнопки
 «копировать»), `lines=3-9` (взять только эти строки файла), `pins=5:1,9:2` (номерные
 метки в конце строк 5 и 9 для пояснений списком .anno; такой блок — только для чтения),
-`mark=12-17` (подсветить изменённые строки, номера по файлу),
+`mark=12-17,20` (подсветить изменённые строки, номера по файлу),
 `bare` (только <pre class="trace__code"> для пошагового разбора .trace; номера строк
 в разборе — как в файле).
 `expand()` заменяет содержимое между комментариями на готовый <figure class="code">,
@@ -82,10 +82,11 @@ def figure(spec: str) -> str:
         code = "\n".join(rows)
     marks = [o[5:] for o in opts if o.startswith("mark=")]
     if marks:
-        a, b = map(int, marks[0].split("-"))
         rows = code.split("\n")
-        for i in range(a - start, b - start + 1):
-            rows[i] = f'<span class="hl">{rows[i]}</span>'
+        for part in marks[0].split(","):
+            a, b = map(int, (part.split("-") + [part])[:2])
+            for i in range(a - start, b - start + 1):
+                rows[i] = f'<span class="hl">{rows[i]}</span>'
         code = "\n".join(rows)
     if "bare" in opts:
         return f'<pre class="trace__code" data-start="{start}">{code}</pre>'

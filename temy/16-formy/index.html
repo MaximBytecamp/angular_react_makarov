@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>1.6 Формы и отправка данных · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .bad { stroke: #B4531F; }
+    .sch .bad-text { fill: #B4531F; }
+    .sch .good { stroke: #1F7A4C; }
+    .sch .good-text { fill: #1F7A4C; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 1 · React: первый проект и первый бот</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 1 · первый проект и первый бот</p>
+          <p class="running__folio">1.6</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">1.6</span>
+          <h1>Формы<br>и отправка данных</h1>
+          <p class="lead">В этой главе форма «Новая заявка» начинает работать. Сначала в данные заявки добавляется категория из выпадающего списка. Затем поля формы подключаются к состоянию React, и опыт показывает, что будет, если подключить их наполовину. После этого кнопка «Отправить заявку» добавляет заявку в начало списка и очищает форму. В конце форма проверяет, что важные поля заполнены, и показывает сообщение об ошибке.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>React</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после главы 1.5 (или архив ниже), запущенный <code>npm run dev</code>, браузер Chrome, Edge или Яндекс Браузер</dd></div>
+          <div><dt>Результат</dt><dd>Заявка из формы появляется в начале списка, форма очищается, пустую заявку отправить нельзя</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Категория в данных заявки</a></li>
+            <li><a href="#s2">Поля под управлением React</a></li>
+            <li><a href="#s3">Отправка заявки</a></li>
+            <li><a href="#s4">Проверка полей</a></li>
+            <li><a href="#s5">Частые ошибки</a></li>
+            <li><a href="#s6">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <div class="starter">
+          <p class="starter__head">Если проекта нет или он в другом состоянии</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в том состоянии, с которого начинается глава, — после главы 1.5. Папки <code>node_modules</code> в архиве нет: её создаёт команда <code>npm install</code> по списку пакетов из <code>package.json</code>.</p>
+            <a class="starter__btn" href="zayavki-nachalo-1-6.zip" download>zayavki-nachalo-1-6.zip <small>19 КБ</small></a>
+            <ol class="starter__steps">
+              <li>Распакуйте архив в папку с проектами курса, например <code>react-kurs</code>. Появится папка <code>zayavki</code>. Если папка с таким именем там уже есть, сначала переименуйте старую, например в <code>zayavki-staraya</code>.</li>
+              <li>Откройте папку курса в VS Code: <b>File → Open Folder</b>.</li>
+              <li>Откройте терминал (<b>Terminal → New Terminal</b>) и выполните три команды по очереди. Последняя запускает сервер разработки; страница открывается по адресу <code>http://localhost:5173/</code>.</li>
+            </ol>
+            <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>cd zayavki
+npm install
+npm run dev</pre></figure>
+          </div>
+        </div>
+
+        <h2 id="s1"><span class="sec">§1</span>Категория в данных заявки</h2>
+
+        <p>В форме есть выпадающий список «Категория»: компьютер, проектор, принтер, интернет. А в данных заявки категории нет — в <code>requests.ts</code> у заявки только номер, название, кабинет, подробности и статус. Прежде чем подключать форму, в данные добавляется поле <code>category</code>, а карточка начинает его показывать.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Добавляем категорию</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое requests.ts</b><p>Откройте <code>src/requests.ts</code>, выделите весь текст (<kbd>Ctrl</kbd>+<kbd>A</kbd>), вставьте код ниже и сохраните. Изменённые строки подсвечены.</p>
+            <!--CODE tools/code16/requests.ts | zayavki/src/requests.ts | mark=3,9,14-19,26,34,42,50,58--><figure class="code"><figcaption><span>zayavki/src/requests.ts</span></figcaption><pre><span class="k">export</span> <span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>
+
+<span class="hl"><span class="k">export</span> <span class="k">type</span> Category = <span class="s">'Компьютер'</span> | <span class="s">'Проектор'</span> | <span class="s">'Принтер'</span> | <span class="s">'Интернет'</span></span>
+
+<span class="k">export</span> <span class="k">type</span> RequestItem = {
+  id: number
+  title: string
+  room: string
+<span class="hl">  category: Category</span>
+  details: string
+  status: Status
+}
+
+<span class="hl"><span class="k">export</span> <span class="k">type</span> NewRequest = {</span>
+<span class="hl">  title: string</span>
+<span class="hl">  room: string</span>
+<span class="hl">  category: Category</span>
+<span class="hl">  details: string</span>
+<span class="hl">}</span>
+
+<span class="k">export</span> <span class="k">const</span> initialRequests: RequestItem[] = [
+  {
+    id: <span class="n">1</span>,
+    title: <span class="s">'Не работает проектор'</span>,
+    room: <span class="s">'214'</span>,
+<span class="hl">    category: <span class="s">'Проектор'</span>,</span>
+    details: <span class="s">'Проектор включается, но изображения на экране нет.'</span>,
+    status: <span class="s">'Новая'</span>,
+  },
+  {
+    id: <span class="n">2</span>,
+    title: <span class="s">'Нет интернета'</span>,
+    room: <span class="s">'305'</span>,
+<span class="hl">    category: <span class="s">'Интернет'</span>,</span>
+    details: <span class="s">'На всех компьютерах в кабинете не открываются сайты.'</span>,
+    status: <span class="s">'В работе'</span>,
+  },
+  {
+    id: <span class="n">3</span>,
+    title: <span class="s">'Замятие бумаги в принтере'</span>,
+    room: <span class="s">'112'</span>,
+<span class="hl">    category: <span class="s">'Принтер'</span>,</span>
+    details: <span class="s">'Принтер пишет «замятие бумаги», лоток пустой.'</span>,
+    status: <span class="s">'Готово'</span>,
+  },
+  {
+    id: <span class="n">4</span>,
+    title: <span class="s">'Не включается компьютер'</span>,
+    room: <span class="s">'214'</span>,
+<span class="hl">    category: <span class="s">'Компьютер'</span>,</span>
+    details: <span class="s">'Компьютер преподавателя не реагирует на кнопку питания.'</span>,
+    status: <span class="s">'Новая'</span>,
+  },
+  {
+    id: <span class="n">5</span>,
+    title: <span class="s">'Не работает мышь'</span>,
+    room: <span class="s">'118'</span>,
+<span class="hl">    category: <span class="s">'Компьютер'</span>,</span>
+    details: <span class="s">'Курсор не двигается, мышь подключена к компьютеру № 7.'</span>,
+    status: <span class="s">'Новая'</span>,
+  },
+]
+
+<span class="k">export</span> <span class="k">function</span> <span class="f">nextStatus</span>(status: Status): Status {
+  <span class="k">if</span> (status === <span class="s">'Новая'</span>) {
+    <span class="k">return</span> <span class="s">'В работе'</span>
+  }
+  <span class="k">return</span> <span class="s">'Готово'</span>
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/00a-requests-category.png" width="1240" height="780" alt="VS Code: requests.ts с типом Category в строке 3, полем category в RequestItem и типом NewRequest" loading="lazy"><figcaption>Так должен выглядеть requests.ts: тип Category в строке 3, тип NewRequest в строках 14–19</figcaption></figure></li>
+          <li><b>Замените содержимое RequestCard.tsx</b><p>Карточка получает категорию и показывает её рядом с кабинетом.</p>
+            <!--CODE tools/code16/RequestCard.tsx | zayavki/src/components/RequestCard.tsx | mark=20-20--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> <span class="k">type</span> { Category, Status } <span class="k">from</span> <span class="s">'../requests'</span>
+
+<span class="k">type</span> RequestCardProps = {
+  title: string
+  room: string
+  category: Category
+  details: string
+  status: Status
+  onNext: () =<span class="t">&gt;</span> void
+  onRemove: () =<span class="t">&gt;</span> void
+}
+
+<span class="k">function</span> <span class="f">RequestCard</span>({ title, room, category, details, status, onNext, onRemove }: RequestCardProps) {
+  <span class="k">const</span> [open, setOpen] = <span class="f">useState</span>(<span class="k">false</span>)
+
+  <span class="k">return</span> (
+    <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+<span class="hl">        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {room} · {category}<span class="t">&lt;/span</span><span class="t">&gt;</span></span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{status}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;h3</span><span class="t">&gt;</span>{title}<span class="t">&lt;/h3</span><span class="t">&gt;</span>
+      {open &amp;&amp; <span class="t">&lt;p</span><span class="t">&gt;</span>{details}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__actions"</span><span class="t">&gt;</span>
+        <span class="t">&lt;button</span> <span class="a">className</span>=<span class="s">"card__more"</span> <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setOpen</span>(!open)}<span class="t">&gt;</span>
+          {open ? <span class="s">'Скрыть'</span> : <span class="s">'Подробнее'</span>}
+        <span class="t">&lt;/button</span><span class="t">&gt;</span>
+        {status === <span class="s">'Готово'</span> ? (
+          <span class="t">&lt;button</span> <span class="a">onClick</span>={onRemove}<span class="t">&gt;</span>Убрать с доски<span class="t">&lt;/button</span><span class="t">&gt;</span>
+        ) : (
+          <span class="t">&lt;button</span> <span class="a">onClick</span>={onNext}<span class="t">&gt;</span>{status === <span class="s">'Новая'</span> ? <span class="s">'Взять в работу'</span> : <span class="s">'Завершить'</span>}<span class="t">&lt;/button</span><span class="t">&gt;</span>
+        )}
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+    <span class="t">&lt;/article</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE--></li>
+          <li><b>Замените содержимое App.tsx</b><p>Изменилась одна строка: карточке передаётся <code>category={r.category}</code>.</p>
+            <!--CODE tools/code16/App-category.tsx | zayavki/src/App.tsx | mark=52--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> { initialRequests, nextStatus, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [requests, setRequests] = <span class="f">useState</span>(initialRequests)
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
+    <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {
+      <span class="k">if</span> (r.id === id) {
+        <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }
+      }
+      <span class="k">return</span> r
+    })
+    <span class="f">setRequests</span>(updated)
+  }
+
+  <span class="k">function</span> <span class="f">handleRemove</span>(id: number) {
+    <span class="f">setRequests</span>(requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+<span class="hl">              <span class="a">category</span>={r.category}</span>
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE--></li>
+          <li><b>Проверьте страницу</b><p>У каждой заявки рядом с кабинетом указана категория: «каб. 214 · Проектор».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/00b-kategorii.png" width="1100" height="938" alt="Доска заявок: в верхней строке каждой карточки кабинет и категория, например каб. 214 · Проектор" loading="lazy"><figcaption>Так должна выглядеть страница: категория в верхней строке каждой карточки</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что добавилось в requests.ts</p>
+
+        <!--CODE tools/code16/requests.ts | requests.ts · строки 3–19 | lines=3-19 pins=3:1,9:2,14:3--><figure class="code" data-read><figcaption><span>requests.ts · строки 3–19</span></figcaption><pre><span class="k">export</span> <span class="k">type</span> Category = <span class="s">'Компьютер'</span> | <span class="s">'Проектор'</span> | <span class="s">'Принтер'</span> | <span class="s">'Интернет'</span>  <span class="pin">1</span>
+
+<span class="k">export</span> <span class="k">type</span> RequestItem = {
+  id: number
+  title: string
+  room: string
+  category: Category  <span class="pin">2</span>
+  details: string
+  status: Status
+}
+
+<span class="k">export</span> <span class="k">type</span> NewRequest = {  <span class="pin">3</span>
+  title: string
+  room: string
+  category: Category
+  details: string
+}</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>«Категория бывает только одной из четырёх». Тип записан так же, как <code>Status</code>: строки через черту <code>|</code>, которая читается как «или». Значения те же, что в выпадающем списке формы.</p></div></li>
+          <li><span class="pin">2</span><div><p>У каждой заявки теперь есть поле <code>category</code>. TypeScript проверит, что оно есть у всех пяти заявок в массиве ниже: если пропустить, в этой строке массива появится красное подчёркивание.</p></div></li>
+          <li><span class="pin">3</span><div><p>«Что приходит из формы». Новый тип <code>NewRequest</code> — заявка, какой её заполняет человек: название, кабинет, категория, подробности. Номера <code>id</code> и статуса тут нет: их назначает доска при добавлении заявки.</p></div></li>
+        </ol>
+
+        <p class="bridge">Данные готовы принять категорию. Следующий шаг — научить форму передавать то, что в неё ввели.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Поля под управлением React</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Где сейчас хранится введённый текст</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Посетитель заполняет заявление сам, ручкой, у себя на коленях. Секретарь не видит, что там написано, пока посетитель не отдаст лист. По-другому: посетитель диктует, а секретарь сразу печатает каждое слово в журнал на экране. Тогда секретарь в любой момент знает, что уже сказано, и может, например, заметить пустую графу.</p>
+          <p class="miss">Секретарь печатает со своей скоростью. В React каждая нажатая клавиша сразу записывается в состояние, и поле показывает то, что записано.</p>
+        </div></div>
+
+        <p>Сейчас форма работает как заявление на коленях. Текст, который набирает пользователь, хранит само поле браузера. В коде формы нет ни одной переменной с этим текстом, поэтому React его не получает. Чтобы заявку можно было добавить в список, текст каждого поля должен лежать в состоянии React.</p>
+
+        <p><span class="term">Управляемое поле</span> (controlled input) — поле ввода, текст которого хранится в состоянии. У него два атрибута:</p>
+        <ul>
+          <li><code>value={title}</code> — «показывай в поле то, что лежит в <code>title</code>»;</li>
+          <li><code>onChange={…}</code> — «когда пользователь меняет текст, вызови эту функцию». Функция записывает новый текст в состояние.</li>
+        </ul>
+
+        <p>Опыт ниже показывает, почему нужны оба.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: value без onChange</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое RequestForm.tsx версией для опыта</b><p>У поля «Что случилось» появились состояние <code>title</code> и атрибут <code>value</code>, а <code>onChange</code> нет. Замените весь текст <code>src/components/RequestForm.tsx</code> и сохраните.</p>
+            <!--CODE tools/code16/RequestForm-value.tsx | zayavki/src/components/RequestForm.tsx · опыт | mark=4-4--><figure class="code"><figcaption><span>zayavki/src/components/RequestForm.tsx · опыт</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+
+<span class="k">function</span> <span class="f">RequestForm</span>() {
+<span class="hl">  <span class="k">const</span> [title] = <span class="f">useState</span>(<span class="s">''</span>)</span>
+
+  <span class="k">return</span> (
+    <span class="t">&lt;form</span> <span class="a">className</span>=<span class="s">"form"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>Новая заявка<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"title"</span><span class="t">&gt;</span>Что случилось<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span> <span class="a">id</span>=<span class="s">"title"</span> <span class="a">type</span>=<span class="s">"text"</span> <span class="a">placeholder</span>=<span class="s">"Например: не работает проектор"</span> <span class="a">value</span>={title} <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"room"</span><span class="t">&gt;</span>Кабинет<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span> <span class="a">id</span>=<span class="s">"room"</span> <span class="a">type</span>=<span class="s">"text"</span> <span class="a">placeholder</span>=<span class="s">"214"</span> <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"category"</span><span class="t">&gt;</span>Категория<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;select</span> <span class="a">id</span>=<span class="s">"category"</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Компьютер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Проектор<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Принтер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Интернет<span class="t">&lt;/option</span><span class="t">&gt;</span>
+      <span class="t">&lt;/select</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"details"</span><span class="t">&gt;</span>Подробности<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;textarea</span> <span class="a">id</span>=<span class="s">"details"</span> <span class="a">rows</span>={<span class="n">3</span>} <span class="t">/&gt;</span>
+
+      <span class="t">&lt;button</span> <span class="a">type</span>=<span class="s">"submit"</span><span class="t">&gt;</span>Отправить заявку<span class="t">&lt;/button</span><span class="t">&gt;</span>
+    <span class="t">&lt;/form</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestForm</pre></figure><!--/CODE--></li>
+          <li><b>Попробуйте набрать текст</b><p>Откройте консоль браузера (<kbd>F12</kbd>, вкладка <strong>Console</strong>) и обновите страницу (<kbd>F5</kbd>). Щёлкните по полю «Что случилось» и наберите любое слово. Поле остаётся пустым, в консоли — ошибка.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/01-value-bez-onchange.png" width="1100" height="826" alt="Доска заявок: поле Что случилось пустое, в консоли ошибка You provided a value prop to a form field without an onChange handler" loading="lazy"><figcaption>Текст в поле не набирается, в консоли: You provided a `value` prop to a form field without an `onChange` handler</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему текст не набирается</p>
+
+        <!--CODE tools/code16/RequestForm-value.tsx | RequestForm.tsx · опыт, строки 4 и 11 | lines=4-11 pins=4:1,11:2--><figure class="code" data-read><figcaption><span>RequestForm.tsx · опыт, строки 4 и 11</span></figcaption><pre>  <span class="k">const</span> [title] = <span class="f">useState</span>(<span class="s">''</span>)  <span class="pin">1</span>
+
+  <span class="k">return</span> (
+    <span class="t">&lt;form</span> <span class="a">className</span>=<span class="s">"form"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>Новая заявка<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"title"</span><span class="t">&gt;</span>Что случилось<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span> <span class="a">id</span>=<span class="s">"title"</span> <span class="a">type</span>=<span class="s">"text"</span> <span class="a">placeholder</span>=<span class="s">"Например: не работает проектор"</span> <span class="a">value</span>={title} <span class="t">/&gt;</span>  <span class="pin">2</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Память для текста поля, начальное значение — пустая строка <code>''</code>. Из пары, которую возвращает <code>useState</code>, взята только первая часть: функции для изменения в опыте нет.</p></div></li>
+          <li><span class="pin">2</span><div><p><code>value={title}</code> говорит: «в поле всегда то, что лежит в <code>title</code>». В <code>title</code> пустая строка, и поменять её некому. Пользователь нажимает клавишу, браузер на мгновение добавляет букву, а React тут же возвращает поле к значению из состояния — к пустой строке.</p></div></li>
+        </ol>
+
+        <p>Сообщение в консоли переводится так: «вы задали полю формы prop <code>value</code> без обработчика <code>onChange</code>. Поле будет только для чтения». Дальше React предлагает два выхода: <code>defaultValue</code>, если поле должно хранить текст само, или <code>onChange</code>. Для доски нужен второй: текст должен попасть в состояние.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Подключаем все поля к состоянию</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое RequestForm.tsx</b><p>В этой версии у каждого поля своё состояние, <code>value</code> и <code>onChange</code>. Под полями — временная строка, которая показывает, что лежит в состоянии. Замените весь текст и сохраните.</p>
+            <!--CODE tools/code16/RequestForm-controlled.tsx | zayavki/src/components/RequestForm.tsx--><figure class="code"><figcaption><span>zayavki/src/components/RequestForm.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> <span class="k">type</span> { Category } <span class="k">from</span> <span class="s">'../requests'</span>
+
+<span class="k">function</span> <span class="f">RequestForm</span>() {
+  <span class="k">const</span> [title, setTitle] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [room, setRoom] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [category, setCategory] = useState&lt;Category&gt;(<span class="s">'Компьютер'</span>)
+  <span class="k">const</span> [details, setDetails] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">return</span> (
+    <span class="t">&lt;form</span> <span class="a">className</span>=<span class="s">"form"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>Новая заявка<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"title"</span><span class="t">&gt;</span>Что случилось<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span>
+        <span class="a">id</span>=<span class="s">"title"</span>
+        <span class="a">type</span>=<span class="s">"text"</span>
+        <span class="a">placeholder</span>=<span class="s">"Например: не работает проектор"</span>
+        <span class="a">value</span>={title}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setTitle</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"room"</span><span class="t">&gt;</span>Кабинет<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span>
+        <span class="a">id</span>=<span class="s">"room"</span>
+        <span class="a">type</span>=<span class="s">"text"</span>
+        <span class="a">placeholder</span>=<span class="s">"214"</span>
+        <span class="a">value</span>={room}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setRoom</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"category"</span><span class="t">&gt;</span>Категория<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;select</span>
+        <span class="a">id</span>=<span class="s">"category"</span>
+        <span class="a">value</span>={category}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setCategory</span>(event.target.value as Category)}
+      <span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Компьютер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Проектор<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Принтер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Интернет<span class="t">&lt;/option</span><span class="t">&gt;</span>
+      <span class="t">&lt;/select</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"details"</span><span class="t">&gt;</span>Подробности<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;textarea</span>
+        <span class="a">id</span>=<span class="s">"details"</span>
+        <span class="a">rows</span>={<span class="n">3</span>}
+        <span class="a">value</span>={details}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setDetails</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;p</span><span class="t">&gt;</span>
+        Сейчас в состоянии: «{title}», каб. {room}, {category}
+      <span class="t">&lt;/p</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;button</span> <span class="a">type</span>=<span class="s">"submit"</span><span class="t">&gt;</span>Отправить заявку<span class="t">&lt;/button</span><span class="t">&gt;</span>
+    <span class="t">&lt;/form</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestForm</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-controlled-kod.png" width="1240" height="780" alt="VS Code: RequestForm.tsx с четырьмя useState в строках 5–8 и полем title с value и onChange" loading="lazy"><figcaption>Так должен выглядеть RequestForm.tsx: четыре состояния в строках 5–8</figcaption></figure></li>
+          <li><b>Заполните форму</b><p>Обновите страницу. Под полями строка «Сейчас в состоянии: «», каб. , Компьютер». Наберите в поле «Что случилось» текст «Не печатает принтер», в поле «Кабинет» — 118, в списке выберите «Принтер». Строка под полями меняется с каждой буквой.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/04-controlled-nabrano.png" width="1100" height="938" alt="Форма заполнена: Не печатает принтер, 118, Принтер; под полями строка Сейчас в состоянии: Не печатает принтер, каб. 118, Принтер" loading="lazy"><figcaption>Строка под полями показывает то же, что набрано: текст лежит в состоянии</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как буква попадает в состояние</p>
+
+        <!--CODE tools/code16/RequestForm-controlled.tsx | RequestForm.tsx · по строкам | pins=5:1,7:2,19:3,20:4,36:5,53:6--><figure class="code" data-read><figcaption><span>RequestForm.tsx · по строкам</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> <span class="k">type</span> { Category } <span class="k">from</span> <span class="s">'../requests'</span>
+
+<span class="k">function</span> <span class="f">RequestForm</span>() {
+  <span class="k">const</span> [title, setTitle] = <span class="f">useState</span>(<span class="s">''</span>)  <span class="pin">1</span>
+  <span class="k">const</span> [room, setRoom] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [category, setCategory] = useState&lt;Category&gt;(<span class="s">'Компьютер'</span>)  <span class="pin">2</span>
+  <span class="k">const</span> [details, setDetails] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">return</span> (
+    <span class="t">&lt;form</span> <span class="a">className</span>=<span class="s">"form"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>Новая заявка<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"title"</span><span class="t">&gt;</span>Что случилось<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span>
+        <span class="a">id</span>=<span class="s">"title"</span>
+        <span class="a">type</span>=<span class="s">"text"</span>
+        <span class="a">placeholder</span>=<span class="s">"Например: не работает проектор"</span>
+        <span class="a">value</span>={title}  <span class="pin">3</span>
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setTitle</span>(event.target.value)}  <span class="pin">4</span>
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"room"</span><span class="t">&gt;</span>Кабинет<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span>
+        <span class="a">id</span>=<span class="s">"room"</span>
+        <span class="a">type</span>=<span class="s">"text"</span>
+        <span class="a">placeholder</span>=<span class="s">"214"</span>
+        <span class="a">value</span>={room}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setRoom</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"category"</span><span class="t">&gt;</span>Категория<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;select</span>
+        <span class="a">id</span>=<span class="s">"category"</span>
+        <span class="a">value</span>={category}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setCategory</span>(event.target.value as Category)}  <span class="pin">5</span>
+      <span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Компьютер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Проектор<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Принтер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Интернет<span class="t">&lt;/option</span><span class="t">&gt;</span>
+      <span class="t">&lt;/select</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"details"</span><span class="t">&gt;</span>Подробности<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;textarea</span>
+        <span class="a">id</span>=<span class="s">"details"</span>
+        <span class="a">rows</span>={<span class="n">3</span>}
+        <span class="a">value</span>={details}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setDetails</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;p</span><span class="t">&gt;</span>
+        Сейчас в состоянии: «{title}», каб. {room}, {category}  <span class="pin">6</span>
+      <span class="t">&lt;/p</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;button</span> <span class="a">type</span>=<span class="s">"submit"</span><span class="t">&gt;</span>Отправить заявку<span class="t">&lt;/button</span><span class="t">&gt;</span>
+    <span class="t">&lt;/form</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestForm</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Память для поля «Что случилось», в начале пустая. Так же ниже — для кабинета и подробностей.</p></div></li>
+          <li><span class="pin">2</span><div><p>Память для категории. Начальное значение — «Компьютер», первый вариант списка. <code>&lt;Category&gt;</code> говорит TypeScript, что здесь лежит одна из четырёх категорий.</p></div></li>
+          <li><span class="pin">3</span><div><p>«Показывай в поле содержимое <code>title</code>».</p></div></li>
+          <li><span class="pin">4</span><div><p>«Когда текст в поле меняется, запиши его в <code>title</code>». React вызывает стрелочную функцию с параметром <code>event</code>. Это <span class="term">объект события</span>: в нём браузер описывает, что произошло. <code>event.target</code> — поле, где это случилось. <code>event.target.value</code> — текст, который в нём сейчас набран.</p></div></li>
+          <li><span class="pin">5</span><div><p>То же для списка. В поле <code>value</code> у списка лежит строка, а в память можно положить только одну из четырёх категорий. Запись <code>as Category</code> говорит TypeScript: «здесь точно категория». Это верно, потому что вариантов в списке только четыре и все они из типа <code>Category</code>.</p></div></li>
+          <li><span class="pin">6</span><div><p>Временная строка: показывает, что сейчас в состоянии. Она нужна только для проверки и в следующей версии формы исчезнет.</p></div></li>
+        </ol>
+
+        <p>Пошаговый разбор ниже показывает, что происходит, когда пользователь нажимает одну клавишу в поле «Что случилось».</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Нажата клавиша «Н» в пустом поле</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code16/RequestForm-controlled.tsx | | bare lines=4-57--><pre class="trace__code" data-start="4"><span class="k">function</span> <span class="f">RequestForm</span>() {
+  <span class="k">const</span> [title, setTitle] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [room, setRoom] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [category, setCategory] = useState&lt;Category&gt;(<span class="s">'Компьютер'</span>)
+  <span class="k">const</span> [details, setDetails] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">return</span> (
+    <span class="t">&lt;form</span> <span class="a">className</span>=<span class="s">"form"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>Новая заявка<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"title"</span><span class="t">&gt;</span>Что случилось<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span>
+        <span class="a">id</span>=<span class="s">"title"</span>
+        <span class="a">type</span>=<span class="s">"text"</span>
+        <span class="a">placeholder</span>=<span class="s">"Например: не работает проектор"</span>
+        <span class="a">value</span>={title}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setTitle</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"room"</span><span class="t">&gt;</span>Кабинет<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span>
+        <span class="a">id</span>=<span class="s">"room"</span>
+        <span class="a">type</span>=<span class="s">"text"</span>
+        <span class="a">placeholder</span>=<span class="s">"214"</span>
+        <span class="a">value</span>={room}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setRoom</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"category"</span><span class="t">&gt;</span>Категория<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;select</span>
+        <span class="a">id</span>=<span class="s">"category"</span>
+        <span class="a">value</span>={category}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setCategory</span>(event.target.value as Category)}
+      <span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Компьютер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Проектор<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Принтер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Интернет<span class="t">&lt;/option</span><span class="t">&gt;</span>
+      <span class="t">&lt;/select</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"details"</span><span class="t">&gt;</span>Подробности<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;textarea</span>
+        <span class="a">id</span>=<span class="s">"details"</span>
+        <span class="a">rows</span>={<span class="n">3</span>}
+        <span class="a">value</span>={details}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setDetails</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;p</span><span class="t">&gt;</span>
+        Сейчас в состоянии: «{title}», каб. {room}, {category}
+      <span class="t">&lt;/p</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;button</span> <span class="a">type</span>=<span class="s">"submit"</span><span class="t">&gt;</span>Отправить заявку<span class="t">&lt;/button</span><span class="t">&gt;</span>
+    <span class="t">&lt;/form</span><span class="t">&gt;</span></pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="5,19"><b>Поле пустое</b>
+                  <p>В памяти <code>title</code> пустая строка, и поле показывает её.</p>
+                  <div class="vars"><span class="var"><i>title</i><span>''</span></span></div>
+                  <div class="dom"><div><i>&lt;input id="title"&gt;</i><span>(пусто)</span></div></div></li>
+                <li data-lines="20"><b>Нажата клавиша — вызван onChange</b>
+                  <p>Пользователь нажимает «Н». Браузер сообщает о событии, React вызывает функцию из <code>onChange</code> и передаёт ей объект события.</p>
+                  <div class="vars"><span class="var var--new"><i>event.target.value</i><span>'Н'</span></span></div></li>
+                <li data-lines="20"><b>Текст уходит в память</b>
+                  <p><code>setTitle('Н')</code> записывает букву в память и просит React перерисовать форму.</p>
+                  <div class="vars"><span class="var var--new"><i>память React</i><span>'Н'</span></span></div></li>
+                <li data-lines="5"><b>Форма отрисовывается заново</b>
+                  <p>React вызывает <code>RequestForm</code> ещё раз. <code>useState</code> возвращает значение из памяти.</p>
+                  <div class="vars"><span class="var var--new"><i>title</i><span>'Н'</span></span></div></li>
+                <li data-lines="19,53"><b>Поле и строка показывают «Н»</b>
+                  <p><code>value={title}</code> выводит в поле «Н», строка под полями — тоже. Так повторяется на каждой клавише.</p>
+                  <div class="dom"><div class="is-new"><i>&lt;input id="title"&gt;</i><span>Н</span></div><div class="is-new"><i>&lt;p&gt;</i><span>Сейчас в состоянии: «Н», каб. , Компьютер</span></div></div></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p class="bridge">Текст всех полей лежит в состоянии формы. Следующий шаг — по кнопке «Отправить заявку» передать его в <code>App</code> и добавить заявку в список.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Отправка заявки</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что браузер делает при отправке формы</p>
+
+        <p>Кнопка «Отправить заявку» записана с <code>type="submit"</code>. Нажатие на неё вызывает у формы <span class="term">событие отправки</span> (submit). Без нашего кода браузер на это событие отправляет данные формы по адресу из её настроек и загружает страницу заново. Так работали сайты до JavaScript: каждое отправленное заявление — новая страница с сервера. Для доски это значит, что страница перезагрузится, а состояние React — заявки, статусы, введённый текст — вернётся к начальному.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Отправка формы: действие браузера и обработчик React</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 250" role="img" aria-label="Нажатие кнопки вызывает событие submit. Без preventDefault браузер перезагружает страницу и состояние теряется. С preventDefault перезагрузки нет, и код добавляет заявку">
+              <rect x="20" y="95" width="170" height="56" fill="#161A2E"/><text class="mono on-dark" x="36" y="119">нажата кнопка</text><text class="soft" x="36" y="139" style="fill:#c8d0e0">type="submit"</text>
+              <rect x="240" y="95" width="170" height="56" fill="#D6F0F9"/><text class="mono" x="256" y="119">событие submit</text><text class="soft" x="256" y="139">у формы</text>
+              <path d="M190 123 H 232"/><path d="M224 117 L 232 123 L 224 129"/>
+              <path class="bad" d="M410 110 C 450 110, 450 50, 490 50"/><path class="bad" d="M482 44 L 490 50 L 482 56"/>
+              <rect x="490" y="22" width="250" height="56" fill="#F7E2D4"/><text class="mono bad-text" x="506" y="46">страница загружается</text><text class="soft" x="506" y="66">заново, состояние теряется</text>
+              <text class="soft bad-text" x="420" y="38">без preventDefault</text>
+              <path class="good" d="M410 136 C 450 136, 450 196, 490 196"/><path class="good" d="M482 190 L 490 196 L 482 202"/>
+              <rect x="490" y="168" width="250" height="56" fill="#D4EEDF"/><text class="mono good-text" x="506" y="192">handleSubmit</text><text class="soft" x="506" y="212">добавляет заявку в список</text>
+              <text class="soft good-text" x="420" y="238">event.preventDefault()</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Оранжевым — что делает браузер сам. Зелёным — путь, когда обработчик формы вызывает <code>event.preventDefault()</code>: перезагрузки нет, и заявку добавляет код.</p>
+        </figure>
+
+        <p><code>event.preventDefault()</code> — «не выполняй действие по умолчанию». Его вызывают первой строкой обработчика отправки, и браузер не перезагружает страницу. Дальше обработчик передаёт данные формы в <code>App</code> через prop-функцию <code>onAdd</code>. Так же в главе 1.4 карточка сообщала о щелчке через <code>onNext</code>.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Подключаем отправку</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое RequestForm.tsx</b><p>Добавлены prop <code>onAdd</code>, функция <code>handleSubmit</code> и <code>onSubmit</code> у формы; временная строка убрана. Замените весь текст и сохраните.</p>
+            <!--CODE tools/code16/RequestForm-submit.tsx | zayavki/src/components/RequestForm.tsx | mark=1-8,14-21,24--><figure class="code"><figcaption><span>zayavki/src/components/RequestForm.tsx</span></figcaption><pre><span class="hl"><span class="k">import</span> { useState, <span class="k">type</span> SubmitEvent } <span class="k">from</span> <span class="s">'react'</span></span>
+<span class="hl"><span class="k">import</span> <span class="k">type</span> { Category, NewRequest } <span class="k">from</span> <span class="s">'../requests'</span></span>
+<span class="hl"></span>
+<span class="hl"><span class="k">type</span> RequestFormProps = {</span>
+<span class="hl">  onAdd: (request: NewRequest) =<span class="t">&gt;</span> void</span>
+<span class="hl">}</span>
+<span class="hl"></span>
+<span class="hl"><span class="k">function</span> <span class="f">RequestForm</span>({ onAdd }: RequestFormProps) {</span>
+  <span class="k">const</span> [title, setTitle] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [room, setRoom] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [category, setCategory] = useState&lt;Category&gt;(<span class="s">'Компьютер'</span>)
+  <span class="k">const</span> [details, setDetails] = <span class="f">useState</span>(<span class="s">''</span>)
+
+<span class="hl">  <span class="k">function</span> <span class="f">handleSubmit</span>(event: SubmitEvent<span class="t">&lt;HTMLFormElement</span><span class="t">&gt;</span>) {</span>
+<span class="hl">    event.<span class="f">preventDefault</span>()</span>
+<span class="hl">    <span class="f">onAdd</span>({ title, room, category, details })</span>
+<span class="hl">    <span class="f">setTitle</span>(<span class="s">''</span>)</span>
+<span class="hl">    <span class="f">setRoom</span>(<span class="s">''</span>)</span>
+<span class="hl">    <span class="f">setCategory</span>(<span class="s">'Компьютер'</span>)</span>
+<span class="hl">    <span class="f">setDetails</span>(<span class="s">''</span>)</span>
+<span class="hl">  }</span>
+
+  <span class="k">return</span> (
+<span class="hl">    <span class="t">&lt;form</span> <span class="a">className</span>=<span class="s">"form"</span> <span class="a">onSubmit</span>={handleSubmit}<span class="t">&gt;</span></span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>Новая заявка<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"title"</span><span class="t">&gt;</span>Что случилось<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span>
+        <span class="a">id</span>=<span class="s">"title"</span>
+        <span class="a">type</span>=<span class="s">"text"</span>
+        <span class="a">placeholder</span>=<span class="s">"Например: не работает проектор"</span>
+        <span class="a">value</span>={title}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setTitle</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"room"</span><span class="t">&gt;</span>Кабинет<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span>
+        <span class="a">id</span>=<span class="s">"room"</span>
+        <span class="a">type</span>=<span class="s">"text"</span>
+        <span class="a">placeholder</span>=<span class="s">"214"</span>
+        <span class="a">value</span>={room}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setRoom</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"category"</span><span class="t">&gt;</span>Категория<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;select</span>
+        <span class="a">id</span>=<span class="s">"category"</span>
+        <span class="a">value</span>={category}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setCategory</span>(event.target.value as Category)}
+      <span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Компьютер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Проектор<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Принтер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Интернет<span class="t">&lt;/option</span><span class="t">&gt;</span>
+      <span class="t">&lt;/select</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"details"</span><span class="t">&gt;</span>Подробности<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;textarea</span>
+        <span class="a">id</span>=<span class="s">"details"</span>
+        <span class="a">rows</span>={<span class="n">3</span>}
+        <span class="a">value</span>={details}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setDetails</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;button</span> <span class="a">type</span>=<span class="s">"submit"</span><span class="t">&gt;</span>Отправить заявку<span class="t">&lt;/button</span><span class="t">&gt;</span>
+    <span class="t">&lt;/form</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestForm</pre></figure><!--/CODE-->
+            <p>После сохранения <code>App.tsx</code> подчеркнётся красным: форме теперь нужен prop <code>onAdd</code>. Это исправит следующий шаг.</p></li>
+          <li><b>Замените содержимое App.tsx</b><p>Добавлена функция <code>handleAdd</code>, форма получает её в <code>onAdd</code>.</p>
+            <!--CODE tools/code16/App.tsx | zayavki/src/App.tsx | mark=5,28-31,41,57--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="hl"><span class="k">import</span> { initialRequests, nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> RequestItem, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span></span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [requests, setRequests] = <span class="f">useState</span>(initialRequests)
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
+    <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {
+      <span class="k">if</span> (r.id === id) {
+        <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }
+      }
+      <span class="k">return</span> r
+    })
+    <span class="f">setRequests</span>(updated)
+  }
+
+<span class="hl">  <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {</span>
+<span class="hl">    <span class="k">const</span> created: RequestItem = { ...data, id: Date.<span class="f">now</span>(), status: <span class="s">'Новая'</span> }</span>
+<span class="hl">    <span class="f">setRequests</span>([created, ...requests])</span>
+<span class="hl">  }</span>
+
+  <span class="k">function</span> <span class="f">handleRemove</span>(id: number) {
+    <span class="f">setRequests</span>(requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+<span class="hl">        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span></span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+<span class="hl">              <span class="a">category</span>={r.category}</span>
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-app-handleadd.png" width="1240" height="780" alt="VS Code: App.tsx, функция handleAdd в строках 28–31, счётчик ошибок 0" loading="lazy"><figcaption>Так должен выглядеть App.tsx: handleAdd в строках 28–31, ошибок внизу 0</figcaption></figure></li>
+          <li><b>Заполните форму</b><p>Обновите страницу (<kbd>F5</kbd>). Заполните поля: «Не печатает принтер», кабинет 118, категория «Принтер», подробности «Принтер в коридоре мигает красной лампой.».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/06-forma-zapolnena.png" width="1100" height="938" alt="Форма заполнена: Не печатает принтер, 118, Принтер, подробности; в шапке Новых заявок: 3" loading="lazy"><figcaption>Форма заполнена, в шапке «Новых заявок: 3»</figcaption></figure></li>
+          <li><b>Отправьте заявку</b><p>Нажмите «Отправить заявку». Новая заявка появилась первой в списке, в шапке «Новых заявок: 4», поля формы очистились. Страница не перезагружалась: остальные заявки и фильтр на месте.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/07-novaya-zayavka.png" width="1100" height="1073" alt="Доска заявок: первой в списке карточка каб. 118 · Принтер, Не печатает принтер; в шапке Новых заявок: 4; поля формы пустые" loading="lazy"><figcaption>Так должна выглядеть страница: новая заявка первая, в шапке 4, форма пустая</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что делает форма при отправке</p>
+
+        <!--CODE tools/code16/RequestForm-submit.tsx | RequestForm.tsx · строки 1–24 | lines=1-24 pins=1:1,5:2,14:3,15:4,16:5,17:6,24:7--><figure class="code" data-read><figcaption><span>RequestForm.tsx · строки 1–24</span></figcaption><pre><span class="k">import</span> { useState, <span class="k">type</span> SubmitEvent } <span class="k">from</span> <span class="s">'react'</span>  <span class="pin">1</span>
+<span class="k">import</span> <span class="k">type</span> { Category, NewRequest } <span class="k">from</span> <span class="s">'../requests'</span>
+
+<span class="k">type</span> RequestFormProps = {
+  onAdd: (request: NewRequest) =<span class="t">&gt;</span> void  <span class="pin">2</span>
+}
+
+<span class="k">function</span> <span class="f">RequestForm</span>({ onAdd }: RequestFormProps) {
+  <span class="k">const</span> [title, setTitle] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [room, setRoom] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [category, setCategory] = useState&lt;Category&gt;(<span class="s">'Компьютер'</span>)
+  <span class="k">const</span> [details, setDetails] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">function</span> <span class="f">handleSubmit</span>(event: SubmitEvent<span class="t">&lt;HTMLFormElement</span><span class="t">&gt;</span>) {  <span class="pin">3</span>
+    event.<span class="f">preventDefault</span>()  <span class="pin">4</span>
+    <span class="f">onAdd</span>({ title, room, category, details })  <span class="pin">5</span>
+    <span class="f">setTitle</span>(<span class="s">''</span>)  <span class="pin">6</span>
+    <span class="f">setRoom</span>(<span class="s">''</span>)
+    <span class="f">setCategory</span>(<span class="s">'Компьютер'</span>)
+    <span class="f">setDetails</span>(<span class="s">''</span>)
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;form</span> <span class="a">className</span>=<span class="s">"form"</span> <span class="a">onSubmit</span>={handleSubmit}<span class="t">&gt;</span>  <span class="pin">7</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Кроме <code>useState</code> из React берётся тип <code>SubmitEvent</code> — описание события отправки. Слово <code>type</code> отмечает, что это только тип.</p></div></li>
+          <li><span class="pin">2</span><div><p>«Форме нужна функция <code>onAdd</code>». Её даст <code>App</code>. Форма вызовет её с новой заявкой типа <code>NewRequest</code>; <code>void</code> значит, что функция ничего не возвращает.</p></div></li>
+          <li><span class="pin">3</span><div><p>Обработчик отправки. В скобках — объект события, <code>&lt;HTMLFormElement&gt;</code> уточняет, что событие пришло от формы.</p></div></li>
+          <li><span class="pin">4</span><div><p>«Не перезагружай страницу». Без этой строки браузер загрузил бы страницу заново, и новая заявка исчезла бы вместе со всем состоянием.</p></div></li>
+          <li><span class="pin">5</span><div><p>«Отдай заявку в <code>App</code>». В фигурных скобках собирается объект из четырёх полей. Запись <code>{ title, room, … }</code> — короткая форма <code>{ title: title, room: room, … }</code>: если имя поля и имя переменной совпадают, его пишут один раз.</p></div></li>
+          <li><span class="pin">6</span><div><p>Очистка формы: в каждое состояние записывается начальное значение. Поля показывают состояние, поэтому тоже становятся пустыми.</p></div></li>
+          <li><span class="pin">7</span><div><p>«При отправке формы вызови <code>handleSubmit</code>». Обработчик подключается к самой форме. Форма отправляется и кнопкой, и клавишей <kbd>Enter</kbd> в однострочном поле, и обработчик срабатывает в обоих случаях.</p></div></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как App добавляет заявку</p>
+
+        <!--CODE tools/code16/App.tsx | App.tsx · строки 28–31 | read lines=28-31--><figure class="code" data-read><figcaption><span>App.tsx · строки 28–31</span></figcaption><pre>  <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    <span class="k">const</span> created: RequestItem = { ...data, id: Date.<span class="f">now</span>(), status: <span class="s">'Новая'</span> }
+    <span class="f">setRequests</span>([created, ...requests])
+  }</pre></figure><!--/CODE-->
+
+        <p>Строка 29 собирает полную заявку из того, что пришло из формы. <code>...data</code> копирует четыре поля формы. Так же оператор расширения копировал поля заявки в главе 1.5. К ним добавляются <code>id</code> и статус «Новая».</p>
+
+        <p><code>Date.now()</code> возвращает число миллисекунд, прошедших с 1 января 1970 года, например <code>1793210000000</code>. Каждую миллисекунду это число растёт, поэтому у двух заявок, отправленных в разные моменты, номера разные. Номер нужен для ключа <code>key</code> и для кнопок «Взять в работу» и «Убрать с доски».</p>
+
+        <p>Строка 30 строит новый массив: <code>[created, ...requests]</code>. Внутри квадратных скобок три точки делают то же, что в фигурных: перекладывают все элементы старого массива в новый. Новая заявка стоит первой, за ней — прежние. Старый массив не меняется, как требует правило из главы 1.5.</p>
+
+        <p class="arr__label">requests — прежний массив</p>
+        <div class="arr"><span data-i="0">id 1</span><span data-i="1">id 2</span><span data-i="2">id 3</span><span data-i="3">id 4</span><span data-i="4">id 5</span></div>
+        <p class="arr__label">[created, ...requests] — новый массив, новая заявка первой</p>
+        <div class="arr"><span data-i="0" class="is-new">новая</span><span data-i="1">id 1</span><span data-i="2">id 2</span><span data-i="3">id 3</span><span data-i="4">id 4</span><span data-i="5">id 5</span></div>
+
+        <p>Пошаговый разбор ниже проходит весь путь от нажатия кнопки до новой карточки на доске.</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">От кнопки «Отправить» до новой карточки</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code16/RequestForm-submit.tsx | | bare lines=8-24--><pre class="trace__code" data-start="8"><span class="k">function</span> <span class="f">RequestForm</span>({ onAdd }: RequestFormProps) {
+  <span class="k">const</span> [title, setTitle] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [room, setRoom] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [category, setCategory] = useState&lt;Category&gt;(<span class="s">'Компьютер'</span>)
+  <span class="k">const</span> [details, setDetails] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">function</span> <span class="f">handleSubmit</span>(event: SubmitEvent<span class="t">&lt;HTMLFormElement</span><span class="t">&gt;</span>) {
+    event.<span class="f">preventDefault</span>()
+    <span class="f">onAdd</span>({ title, room, category, details })
+    <span class="f">setTitle</span>(<span class="s">''</span>)
+    <span class="f">setRoom</span>(<span class="s">''</span>)
+    <span class="f">setCategory</span>(<span class="s">'Компьютер'</span>)
+    <span class="f">setDetails</span>(<span class="s">''</span>)
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;form</span> <span class="a">className</span>=<span class="s">"form"</span> <span class="a">onSubmit</span>={handleSubmit}<span class="t">&gt;</span></pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="9-12"><b>В форме набраны данные</b>
+                  <p>Четыре состояния формы хранят то, что ввёл пользователь.</p>
+                  <div class="vars"><span class="var"><i>title</i><span>'Не печатает принтер'</span></span><span class="var"><i>room</i><span>'118'</span></span><span class="var"><i>category</i><span>'Принтер'</span></span></div></li>
+                <li data-lines="24,14"><b>Нажата кнопка — вызван handleSubmit</b>
+                  <p>Кнопка с <code>type="submit"</code> вызывает событие отправки у формы. Форма вызывает <code>handleSubmit</code>.</p></li>
+                <li data-lines="15"><b>Перезагрузка отменена</b>
+                  <p><code>event.preventDefault()</code> — страница остаётся на месте вместе со всем состоянием.</p></li>
+                <li data-lines="16"><b>Заявка уходит в App</b>
+                  <p>Форма вызывает <code>onAdd</code> — это функция <code>handleAdd</code> из <code>App</code>. Она получает объект из четырёх полей.</p>
+                  <div class="obj"><b>data</b><div>title: 'Не печатает принтер'</div><div>room: '118'</div><div>category: 'Принтер'</div><div>details: 'Принтер в коридоре мигает…'</div></div></li>
+                <li data-lines="16"><b>App добавляет номер и статус</b>
+                  <p>В <code>App</code>: <code>{ ...data, id: Date.now(), status: 'Новая' }</code>, затем <code>setRequests([created, ...requests])</code>. В массиве теперь шесть заявок, новая первая.</p>
+                  <div class="arr"><span data-i="0" class="is-new">новая</span><span data-i="1">id 1</span><span data-i="2">id 2</span><span data-i="3">id 3</span><span data-i="4">id 4</span><span data-i="5">id 5</span></div></li>
+                <li data-lines="17-20"><b>Форма очищается</b>
+                  <p>Четыре состояния получают начальные значения, поля становятся пустыми.</p>
+                  <div class="vars"><span class="var var--new"><i>title</i><span>''</span></span><span class="var var--new"><i>room</i><span>''</span></span><span class="var var--new"><i>category</i><span>'Компьютер'</span></span></div></li>
+                <li data-lines="8"><b>Страница обновляется</b>
+                  <p>React перерисовывает <code>App</code> и форму. Шапка считает новые заявки — их стало 4, первая карточка — новая заявка.</p>
+                  <div class="minis"><span class="mini is-new"><small>каб. 118 · Принтер</small><b>Не печатает принтер</b><em>Новая</em></span><span class="mini"><small>каб. 214 · Проектор</small><b>Не работает проектор</b><em>Новая</em></span></div></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: пустая заявка</p>
+
+        <ol class="steps">
+          <li><b>Отправьте пустую форму</b><p>Не заполняя поля, нажмите «Отправить заявку». Первой в списке появилась карточка без названия и без номера кабинета: «каб. · Компьютер».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/08-pustaya-zayavka.png" width="1100" height="1179" alt="Доска заявок: первая карточка без заголовка, в верхней строке каб. · Компьютер" loading="lazy"><figcaption>Пустая заявка добавлена в список: название и кабинет пустые</figcaption></figure></li>
+        </ol>
+
+        <p class="bridge">Форма отправляет всё, что в ней есть, даже пустоту. Мастер по такой заявке не поймёт, куда идти. Следующий шаг — проверять поля перед отправкой.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Проверка полей</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что проверять</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В окошке приёма заявлений сотрудник сначала смотрит, заполнены ли обязательные графы. Если нет графы «Кабинет», заявление возвращают с пометкой, что дописать, и в журнал его не записывают.</p>
+          <p class="miss">Сотрудник может перечитать заявление и через минуту. Форма проверяет поля в момент нажатия кнопки, до того как заявка попадёт в список.</p>
+        </div></div>
+
+        <p>Без названия и кабинета заявку не выполнить, поэтому эти два поля обязательные. Пустым считается и поле из одних пробелов. Если поле пустое, под полями появляется сообщение, и заявка в <code>App</code> не уходит. Сообщение — ещё одно состояние формы: строка с текстом ошибки, пустая, пока ошибки нет.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Добавляем проверку</p>
+
+        <ol class="steps">
+          <li><b>Добавьте стиль сообщения</b><p>Откройте <code>src/index.css</code>, вставьте правило в самый конец файла и сохраните.</p>
+            <!--CODE tools/code16/index.css | zayavki/src/index.css · в конец файла | lines=191-198--><figure class="code"><figcaption><span>zayavki/src/index.css · в конец файла</span></figcaption><pre>.form__error {
+  <span class="a">margin</span>: <span class="n">0</span> <span class="n">0</span> <span class="n">8px</span>;
+  <span class="a">padding</span>: <span class="n">8px</span>;
+  <span class="a">border-radius</span>: <span class="n">6px</span>;
+  <span class="a">background</span>: <span class="n">#fde8e8</span>;
+  <span class="a">color</span>: <span class="n">#b42318</span>;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+}</pre></figure><!--/CODE--></li>
+          <li><b>Замените содержимое RequestForm.tsx</b><p>Изменённые строки подсвечены.</p>
+            <!--CODE tools/code16/RequestForm.tsx | zayavki/src/components/RequestForm.tsx | mark=13,17-21,26,71--><figure class="code"><figcaption><span>zayavki/src/components/RequestForm.tsx</span></figcaption><pre><span class="k">import</span> { useState, <span class="k">type</span> SubmitEvent } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> <span class="k">type</span> { Category, NewRequest } <span class="k">from</span> <span class="s">'../requests'</span>
+
+<span class="k">type</span> RequestFormProps = {
+  onAdd: (request: NewRequest) =<span class="t">&gt;</span> void
+}
+
+<span class="k">function</span> <span class="f">RequestForm</span>({ onAdd }: RequestFormProps) {
+  <span class="k">const</span> [title, setTitle] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [room, setRoom] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [category, setCategory] = useState&lt;Category&gt;(<span class="s">'Компьютер'</span>)
+  <span class="k">const</span> [details, setDetails] = <span class="f">useState</span>(<span class="s">''</span>)
+<span class="hl">  <span class="k">const</span> [error, setError] = <span class="f">useState</span>(<span class="s">''</span>)</span>
+
+  <span class="k">function</span> <span class="f">handleSubmit</span>(event: SubmitEvent<span class="t">&lt;HTMLFormElement</span><span class="t">&gt;</span>) {
+    event.<span class="f">preventDefault</span>()
+<span class="hl">    <span class="k">if</span> (title.<span class="f">trim</span>() === <span class="s">''</span> || room.<span class="f">trim</span>() === <span class="s">''</span>) {</span>
+<span class="hl">      <span class="f">setError</span>(<span class="s">'Заполните поля «Что случилось» и «Кабинет».'</span>)</span>
+<span class="hl">      <span class="k">return</span></span>
+<span class="hl">    }</span>
+<span class="hl">    <span class="f">onAdd</span>({ title: title.<span class="f">trim</span>(), room: room.<span class="f">trim</span>(), category, details: details.<span class="f">trim</span>() })</span>
+    <span class="f">setTitle</span>(<span class="s">''</span>)
+    <span class="f">setRoom</span>(<span class="s">''</span>)
+    <span class="f">setCategory</span>(<span class="s">'Компьютер'</span>)
+    <span class="f">setDetails</span>(<span class="s">''</span>)
+<span class="hl">    <span class="f">setError</span>(<span class="s">''</span>)</span>
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;form</span> <span class="a">className</span>=<span class="s">"form"</span> <span class="a">onSubmit</span>={handleSubmit}<span class="t">&gt;</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>Новая заявка<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"title"</span><span class="t">&gt;</span>Что случилось<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span>
+        <span class="a">id</span>=<span class="s">"title"</span>
+        <span class="a">type</span>=<span class="s">"text"</span>
+        <span class="a">placeholder</span>=<span class="s">"Например: не работает проектор"</span>
+        <span class="a">value</span>={title}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setTitle</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"room"</span><span class="t">&gt;</span>Кабинет<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span>
+        <span class="a">id</span>=<span class="s">"room"</span>
+        <span class="a">type</span>=<span class="s">"text"</span>
+        <span class="a">placeholder</span>=<span class="s">"214"</span>
+        <span class="a">value</span>={room}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setRoom</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"category"</span><span class="t">&gt;</span>Категория<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;select</span>
+        <span class="a">id</span>=<span class="s">"category"</span>
+        <span class="a">value</span>={category}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setCategory</span>(event.target.value as Category)}
+      <span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Компьютер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Проектор<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Принтер<span class="t">&lt;/option</span><span class="t">&gt;</span>
+        <span class="t">&lt;option</span><span class="t">&gt;</span>Интернет<span class="t">&lt;/option</span><span class="t">&gt;</span>
+      <span class="t">&lt;/select</span><span class="t">&gt;</span>
+
+      <span class="t">&lt;label</span> <span class="a">htmlFor</span>=<span class="s">"details"</span><span class="t">&gt;</span>Подробности<span class="t">&lt;/label</span><span class="t">&gt;</span>
+      <span class="t">&lt;textarea</span>
+        <span class="a">id</span>=<span class="s">"details"</span>
+        <span class="a">rows</span>={<span class="n">3</span>}
+        <span class="a">value</span>={details}
+        <span class="a">onChange</span>={(event) =<span class="t">&gt;</span> <span class="f">setDetails</span>(event.target.value)}
+      <span class="t">/&gt;</span>
+
+<span class="hl">      {error !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"form__error"</span><span class="t">&gt;</span>{error}<span class="t">&lt;/p</span><span class="t">&gt;</span>}</span>
+
+      <span class="t">&lt;button</span> <span class="a">type</span>=<span class="s">"submit"</span><span class="t">&gt;</span>Отправить заявку<span class="t">&lt;/button</span><span class="t">&gt;</span>
+    <span class="t">&lt;/form</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestForm</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/09-forma-proverka.png" width="1240" height="780" alt="VS Code: RequestForm.tsx, функция handleSubmit с проверкой title.trim() и room.trim() в строках 15–27" loading="lazy"><figcaption>Так должен выглядеть RequestForm.tsx: проверка в начале handleSubmit</figcaption></figure></li>
+          <li><b>Отправьте поле из пробелов</b><p>Обновите страницу (<kbd>F5</kbd>). В поле «Что случилось» наберите три пробела, кабинет оставьте пустым и нажмите «Отправить заявку». Под полями появилось сообщение, список не изменился.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/10-oshibka.png" width="1100" height="938" alt="Форма с сообщением Заполните поля Что случилось и Кабинет на розовом фоне; в шапке Новых заявок: 3" loading="lazy"><figcaption>Сообщение под полями, в шапке по-прежнему 3: заявка не добавлена</figcaption></figure></li>
+          <li><b>Заполните поля и отправьте</b><p>Допишите в поле «Что случилось» «Не открывается сайт колледжа», кабинет 305, категория «Интернет». Нажмите «Отправить заявку». Сообщение исчезло, заявка первая в списке.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/11-posle-oshibki.png" width="1100" height="1073" alt="Доска заявок: первой карточка каб. 305 · Интернет, Не открывается сайт колледжа; сообщения об ошибке нет" loading="lazy"><figcaption>После исправления: сообщения нет, новая заявка первая</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как работает проверка</p>
+
+        <!--CODE tools/code16/RequestForm.tsx | RequestForm.tsx · строки 13–26 и 71 | lines=13-26 pins=13:1,17:2,18:3,19:4,21:5,26:6--><figure class="code" data-read><figcaption><span>RequestForm.tsx · строки 13–26 и 71</span></figcaption><pre>  <span class="k">const</span> [error, setError] = <span class="f">useState</span>(<span class="s">''</span>)  <span class="pin">1</span>
+
+  <span class="k">function</span> <span class="f">handleSubmit</span>(event: SubmitEvent<span class="t">&lt;HTMLFormElement</span><span class="t">&gt;</span>) {
+    event.<span class="f">preventDefault</span>()
+    <span class="k">if</span> (title.<span class="f">trim</span>() === <span class="s">''</span> || room.<span class="f">trim</span>() === <span class="s">''</span>) {  <span class="pin">2</span>
+      <span class="f">setError</span>(<span class="s">'Заполните поля «Что случилось» и «Кабинет».'</span>)  <span class="pin">3</span>
+      <span class="k">return</span>  <span class="pin">4</span>
+    }
+    <span class="f">onAdd</span>({ title: title.<span class="f">trim</span>(), room: room.<span class="f">trim</span>(), category, details: details.<span class="f">trim</span>() })  <span class="pin">5</span>
+    <span class="f">setTitle</span>(<span class="s">''</span>)
+    <span class="f">setRoom</span>(<span class="s">''</span>)
+    <span class="f">setCategory</span>(<span class="s">'Компьютер'</span>)
+    <span class="f">setDetails</span>(<span class="s">''</span>)
+    <span class="f">setError</span>(<span class="s">''</span>)  <span class="pin">6</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Память для текста ошибки. Пустая строка — ошибки нет.</p></div></li>
+          <li><span class="pin">2</span><div><p>«Если название пустое или кабинет пустой…». <code>trim()</code> убирает пробелы в начале и в конце: из <code>'   '</code> получается <code>''</code>. Знак <code>||</code> — «или»: условие выполнено, если пусто хотя бы одно поле.</p></div></li>
+          <li><span class="pin">3</span><div><p>«…запиши текст ошибки». Форма перерисуется, и сообщение появится под полями.</p></div></li>
+          <li><span class="pin">4</span><div><p><code>return</code> — «на этом закончить». Строки ниже не выполняются: заявка не уходит в <code>App</code>, поля не очищаются, и пользователь не теряет набранное.</p></div></li>
+          <li><span class="pin">5</span><div><p>Заявка уходит в <code>App</code> уже без лишних пробелов: <code>title.trim()</code> вместо <code>title</code>. Так «   Не открывается сайт колледжа» станет «Не открывается сайт колледжа».</p></div></li>
+          <li><span class="pin">6</span><div><p>После удачной отправки сообщение об ошибке стирается.</p></div></li>
+        </ol>
+
+        <p>Строка 71 выводит сообщение: <code>{error !== '' &amp;&amp; &lt;p className="form__error"&gt;{error}&lt;/p&gt;}</code>. Это условный вывод из главы 1.5: абзац есть, когда <code>error</code> не пустая строка, и его нет, когда пустая.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Проверка в handleSubmit: два пути</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 210" role="img" aria-label="handleSubmit проверяет, пусты ли название и кабинет. Если пусто — записать ошибку и закончить. Если заполнено — отправить заявку в App, очистить форму и ошибку">
+              <rect x="20" y="78" width="200" height="56" fill="#161A2E"/><text class="mono on-dark" x="36" y="102">handleSubmit</text><text class="soft" x="36" y="122" style="fill:#c8d0e0">preventDefault()</text>
+              <rect x="270" y="78" width="200" height="56" fill="#D6F0F9"/><text class="mono" x="286" y="102">title.trim() === ''</text><text class="soft" x="286" y="122">|| room.trim() === ''</text>
+              <path d="M220 106 H 262"/><path d="M254 100 L 262 106 L 254 112"/>
+              <path class="bad" d="M470 94 C 500 94, 500 44, 530 44"/><path class="bad" d="M522 38 L 530 44 L 522 50"/>
+              <rect x="530" y="16" width="210" height="56" fill="#F7E2D4"/><text class="mono bad-text" x="546" y="40">да: setError(…)</text><text class="soft" x="546" y="60">return — стоп</text>
+              <path class="good" d="M470 118 C 500 118, 500 168, 530 168"/><path class="good" d="M522 162 L 530 168 L 522 174"/>
+              <rect x="530" y="140" width="210" height="56" fill="#D4EEDF"/><text class="mono good-text" x="546" y="164">нет: onAdd(…)</text><text class="soft" x="546" y="184">очистить поля и ошибку</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Оранжевый путь — хотя бы одно обязательное поле пустое: заявка не отправляется, набранный текст остаётся в полях. Зелёный — поля заполнены: заявка уходит в <code>App</code>, форма очищается.</p>
+        </figure>
+
+        <p>Доска заявок готова: заявки добавляются из формы, меняют статус, убираются и фильтруются. Пока все данные живут только в памяти вкладки браузера: после перезагрузки страницы на доске снова пять заявок из <code>requests.ts</code>.</p>
+
+        <div class="starter starter--finish">
+          <p class="starter__head">Проект после главы</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в состоянии конца главы: категория в данных, управляемая форма с проверкой полей, добавление заявки в начало списка. По нему можно сверить свой код. Распаковка и запуск — как у архива в начале главы.</p>
+            <a class="starter__btn" href="zayavki-konec-1-6.zip" download>zayavki-konec-1-6.zip <small>20 КБ</small></a>
+          </div>
+        </div>
+
+        <h2 id="s5"><span class="sec">§5</span>Частые ошибки</h2>
+
+        <p>Сообщения ниже получены в проекте <code>zayavki</code>: ошибки типов — командой <code>tsc -b</code>, ошибки React — в консоли браузера.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>В поле не набирается текст. Консоль: <code>You provided a `value` prop to a form field without an `onChange` handler.</code></td><td>У поля есть <code>value</code>, но нет <code>onChange</code></td><td>Добавить <code>onChange={(event) =&gt; setTitle(event.target.value)}</code></td></tr>
+              <tr><td>После нажатия «Отправить» страница мигает, новая заявка не появляется, все статусы вернулись к начальным</td><td>Браузер перезагрузил страницу: в обработчике нет <code>event.preventDefault()</code></td><td>Вызвать <code>event.preventDefault()</code> первой строкой <code>handleSubmit</code></td></tr>
+              <tr><td>Форма не отправляется: новой карточки нет, ошибок в консоли нет</td><td>Обработчик подключён к кнопке через <code>onClick</code>, а кнопка без <code>type="submit"</code>, или <code>onSubmit</code> не записан у <code>&lt;form&gt;</code></td><td>Записать <code>onSubmit={handleSubmit}</code> у формы, у кнопки — <code>type="submit"</code></td></tr>
+              <tr><td><code>Property 'onAdd' is missing in type '{}' but required in type 'RequestFormProps'.</code></td><td>Форме нужна функция <code>onAdd</code>, а <code>App</code> её не передал</td><td>Записать <code>&lt;RequestForm onAdd={handleAdd} /&gt;</code></td></tr>
+              <tr><td><code>Argument of type 'string' is not assignable to parameter of type 'SetStateAction&lt;Category&gt;'.</code></td><td>В <code>setCategory</code> передана строка из списка без уточнения типа</td><td>Записать <code>setCategory(event.target.value as Category)</code></td></tr>
+              <tr><td><code>Property 'category' is missing in type '{ … }' but required in type 'RequestItem'.</code></td><td>У одной из заявок в <code>requests.ts</code> нет поля <code>category</code></td><td>Добавить заявке <code>category: 'Компьютер'</code> или другую категорию</td></tr>
+              <tr><td>Новая заявка не видна в списке</td><td>Выбран фильтр, которому новая заявка не подходит, например «Готово»</td><td>Нажать «Все» или «Новая»</td></tr>
+              <tr><td>Поля не очищаются после отправки</td><td>В <code>handleSubmit</code> нет вызовов <code>setTitle('')</code> и других</td><td>После <code>onAdd(…)</code> записать в каждое состояние начальное значение</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s6"><span class="sec">§6</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Что такое управляемое поле и какие у него два атрибута?</summary>
+          <p>Поле ввода, текст которого хранится в состоянии React. <code>value</code> показывает в поле значение из состояния, <code>onChange</code> вызывает функцию, которая записывает новый текст в состояние.</p>
+        </details>
+        <details>
+          <summary>Почему поле с <code>value</code>, но без <code>onChange</code>, нельзя изменить?</summary>
+          <p>Поле всегда показывает значение из состояния. Изменить это значение некому, и React возвращает поле к нему после каждой нажатой клавиши.</p>
+        </details>
+        <details>
+          <summary>Что делает <code>event.preventDefault()</code> в обработчике отправки?</summary>
+          <p>Отменяет действие браузера по умолчанию — отправку формы с перезагрузкой страницы. Без него страница загрузится заново, и состояние React вернётся к начальному.</p>
+        </details>
+        <details>
+          <summary>Почему обработчик отправки подключают к форме через <code>onSubmit</code>?</summary>
+          <p>Форма отправляется и кнопкой, и клавишей <kbd>Enter</kbd> в однострочном поле. Обработчик у формы срабатывает в обоих случаях.</p>
+        </details>
+        <details>
+          <summary>Что получится из <code>[created, ...requests]</code>, если в <code>requests</code> пять заявок?</summary>
+          <p>Новый массив из шести заявок: первой <code>created</code>, за ней пять прежних по порядку. Массив <code>requests</code> не изменится.</p>
+        </details>
+        <details>
+          <summary>Зачем в проверке <code>title.trim() === ''</code> нужен <code>trim()</code>?</summary>
+          <p><code>trim()</code> убирает пробелы по краям. Поле из одних пробелов без <code>trim()</code> прошло бы проверку, и на доске появилась бы заявка без названия.</p>
+        </details>
+        <details>
+          <summary>Сделайте поле «Подробности» тоже обязательным. Что нужно изменить?</summary>
+          <p>Дописать в условие <code>handleSubmit</code> ещё одну проверку и поправить текст сообщения:</p><ol><li><code>if (title.trim() === '' || room.trim() === '' || details.trim() === '')</code>;</li><li>текст ошибки: «Заполните поля «Что случилось», «Кабинет» и «Подробности».»;</li><li>проверить: заявка без подробностей не добавляется, сообщение появляется.</li></ol>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Состояние поля</b><code>const [title, setTitle] = useState('')</code></div>
+          <div><b>Управляемое поле</b><code>&lt;input value={title} onChange={(event) =&gt; setTitle(event.target.value)} /&gt;</code></div>
+          <div><b>Список</b><code>&lt;select value={category} onChange={…}&gt;</code></div>
+          <div><b>Отправка</b><code>&lt;form onSubmit={handleSubmit}&gt;</code></div>
+          <div><b>Без перезагрузки</b><code>event.preventDefault()</code></div>
+          <div><b>Пустое поле</b><code>title.trim() === ''</code></div>
+          <div><b>Добавить в начало</b><code>setRequests([created, ...requests])</code></div>
+          <div><b>Уникальный номер</b><code>Date.now()</code></div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>Текст полей формы хранят в состоянии: у управляемого поля <code>value</code> берёт значение из состояния, а <code>onChange</code> записывает в него каждое изменение. Поле с <code>value</code>, но без <code>onChange</code>, становится только для чтения. Отправку обрабатывают у самой формы через <code>onSubmit</code>; первой строкой обработчика вызывают <code>event.preventDefault()</code>, иначе браузер перезагрузит страницу. Данные формы передают родителю через prop-функцию, родитель добавляет номер и статус и строит новый массив <code>[created, ...requests]</code>. Перед отправкой обязательные поля проверяют с <code>trim()</code>; при ошибке записывают текст сообщения в состояние и выходят из обработчика через <code>return</code>. Доска заявок принимает новые заявки из формы, но хранит их только до перезагрузки страницы.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://react.dev/reference/react-dom/components/input" target="_blank" rel="noreferrer">react.dev — &lt;input&gt;: controlling an input with a state variable</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/select" target="_blank" rel="noreferrer">react.dev — &lt;select&gt;</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/form" target="_blank" rel="noreferrer">react.dev — &lt;form&gt;</a></li>
+          <li><a href="https://react.dev/learn/responding-to-events#preventing-default-behavior" target="_blank" rel="noreferrer">react.dev — Preventing default behavior</a></li>
+          <li><a href="https://react.dev/learn/updating-arrays-in-state#adding-to-an-array" target="_blank" rel="noreferrer">react.dev — Updating Arrays in State: adding to an array</a></li>
+          <li><a href="https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/String/Trim" target="_blank" rel="noreferrer">MDN — String.prototype.trim()</a></li>
+          <li><a href="https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Date/now" target="_blank" rel="noreferrer">MDN — Date.now()</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../15-spiski-i-usloviya/index.html">← 1.5 Списки, ключи, условный вывод</a>
+          <a href="../../index.html">Оглавление →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

@@ -660,3 +660,12 @@ details.more summary::before { content: "Подробнее · "; font: 600 10.5
 .dom div.is-new { border-color: var(--ng); box-shadow: 3px 3px 0 var(--ng-pale); }
 .dom div.is-dim { border-style: dashed; color: var(--ink-faint); }
 .dom > div { margin: 0; }
+
+/* Объект: имя сверху, поля строками; два объекта рядом — «было → стало». */
+.obj-pair { display: grid; grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr); align-items: center; gap: 6px; }
+.obj-pair > span { text-align: center; font: 700 20px/1 var(--mono); color: var(--ng); }
+.obj { border: 2px solid var(--ink); background: #fff; font: 500 13px/1.5 var(--mono); }
+.obj > b { display: block; padding: 4px 9px; background: var(--ink); color: var(--acc-bright); font-weight: 700; }
+.obj > div { padding: 3px 9px; border-top: 1px solid var(--rule); }
+.obj > div.is-new { background: var(--ng-pale); }
+@media (max-width: 640px) { .obj-pair { grid-template-columns: 1fr; } .obj-pair > span { transform: rotate(90deg); } }

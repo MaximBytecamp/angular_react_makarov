@@ -49,7 +49,9 @@ React+Vite, PocketBase, n8n в Docker, Ollama / GigaChat, Telegram Bot API, GitH
 - 1.5 `temy/15-spiski-i-usloviya` — массив заявок в `src/requests.ts`, `map` и `key`, опыт с изменением
   массива на месте, новый массив через `map` и `{ ...r }`, `filter`, условный вывод (`&&`, тернарный),
   удаление, фильтр по статусу, опыт с `key={index}`.
-- 1.6 — формы и отправка данных (готовится).
+- 1.6 `temy/16-formy` — категория в данных (`Category`, `NewRequest`), управляемые поля (`value` + `onChange`,
+  опыт без `onChange`), отправка (`onSubmit`, `preventDefault`, `[created, ...requests]`, `Date.now()`),
+  проверка полей с `trim()` и сообщением об ошибке. Тип события — `SubmitEvent` (`FormEvent` в @types/react помечен устаревшим).
 
 ## Архивы проекта и разбор кода
 

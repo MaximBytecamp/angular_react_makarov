@@ -41,6 +41,12 @@ AFTER_15 = {
     "requests.ts": "code15/requests.ts", "components/RequestCard.tsx": "code15/RequestCard.tsx",
 }
 
+AFTER_16 = {
+    **AFTER_15, "App.tsx": "code16/App.tsx", "index.css": "code16/index.css",
+    "requests.ts": "code16/requests.ts", "components/RequestCard.tsx": "code16/RequestCard.tsx",
+    "components/RequestForm.tsx": "code16/RequestForm.tsx",
+}
+
 ARCHIVES = [
     ("11-node-npm-vite", "zayavki-konec-1-1.zip", AFTER_11),
     ("12-jsx-i-komponenty", "zayavki-nachalo-1-2.zip", AFTER_11),
@@ -51,6 +57,8 @@ ARCHIVES = [
     ("14-sostoyanie-i-sobytiya", "zayavki-konec-1-4.zip", AFTER_14),
     ("15-spiski-i-usloviya", "zayavki-nachalo-1-5.zip", AFTER_14),
     ("15-spiski-i-usloviya", "zayavki-konec-1-5.zip", AFTER_15),
+    ("16-formy", "zayavki-nachalo-1-6.zip", AFTER_15),
+    ("16-formy", "zayavki-konec-1-6.zip", AFTER_16),
 ]
 
 
