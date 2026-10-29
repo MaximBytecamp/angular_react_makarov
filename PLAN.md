@@ -81,3 +81,9 @@ Dockerfile, n8n 2.45.4, Ollama + qwen2.5:3b из GGUF с Hugging Face; кноп�
   командой `superuser upsert`, коллекция requests через панель, правила: list/view пусто, create `status = "Новая"`,
   update без title/room/details (категорию можно править — ошибки модели), delete `status = "Готово"`; проверка из консоли.
   Съёмка `tools/shots_22.py` (перед кадрами VS Code открыть App.tsx — иначе видны ошибки прошлого сеанса).
+- 2.3 `temy/23-zagruzka` — `api.ts` (`callApi`: сеть → «Сервер заявок не отвечает», `!response.ok` → «код N»; `fetchRequests`
+  с `?sort=-created`, затем `createRequest`/`updateStatus`/`deleteRequest`), `storage.ts` удалён, `id: string`; эффект загрузки
+  с флажком `ignore` (два запроса в Network из-за StrictMode), опыты: заявка пропадает после F5, PocketBase остановлен
+  (вечная загрузка → `try/catch`, `error`, кнопка «Повторить» через зависимость `attempt`), действие без сервера → `notice`;
+  функция обновления `setRequests((list) => …)`. Код `tools/code23`, съёмка `shots_23.py` (база перед съёмкой приводится
+  к пяти «Новая»; задержка ответа — `page.route`), обрезка `crop_23.py`. После главы в базе 6 заявок.

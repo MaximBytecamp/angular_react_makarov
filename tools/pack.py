@@ -54,6 +54,12 @@ AFTER_17 = {
 
 AFTER_21 = {**AFTER_17, "App.tsx": "code21/App.tsx"}
 
+# В главе 2.3 storage.ts удалён: заявки хранятся в PocketBase.
+AFTER_23 = {k: v for k, v in AFTER_21.items() if k != "storage.ts"} | {
+    "App.tsx": "code23/App.tsx", "index.css": "code23/index.css",
+    "requests.ts": "code23/requests.ts", "api.ts": "code23/api.ts",
+}
+
 ARCHIVES = [
     ("11-node-npm-vite", "zayavki-konec-1-1.zip", AFTER_11),
     ("12-jsx-i-komponenty", "zayavki-nachalo-1-2.zip", AFTER_11),
@@ -70,6 +76,8 @@ ARCHIVES = [
     ("17-sohranenie-i-otpravka", "zayavki-konec-1-7.zip", AFTER_17),
     ("21-effekty", "zayavki-nachalo-2-1.zip", AFTER_17),
     ("21-effekty", "zayavki-konec-2-1.zip", AFTER_21),
+    ("23-zagruzka", "zayavki-nachalo-2-3.zip", AFTER_21),
+    ("23-zagruzka", "zayavki-konec-2-3.zip", AFTER_23),
 ]
 
 

@@ -1,0 +1,1348 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>2.3 Загрузка данных: загрузка и ошибка · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; stroke-dasharray: 6 4; }
+    .sch .ng-text { fill: #C2185B; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 2 · Данные с сервера и ИИ-диспетчер</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 2 · данные с сервера и ИИ-диспетчер</p>
+          <p class="running__folio">2.3</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">2.3</span>
+          <h1>Загрузка данных:<br>загрузка и ошибка</h1>
+          <p class="lead">В этой главе доска заявок перестаёт хранить заявки в localStorage и берёт их из PocketBase, который запущен в главе 2.2. Запросы к серверу собраны в отдельном файле <code>api.ts</code>. Список загружается эффектом из главы 2.1. Пока ответа нет, доска пишет «Загрузка заявок…». Если сервер не ответил, она показывает ошибку и кнопку «Повторить». В конце главы добавление, смена статуса и удаление заявок тоже уходят на сервер, и все браузеры видят одни и те же заявки.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>React, работа с сервером</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после главы 2.1 и PocketBase с коллекцией <code>requests</code> после главы 2.2 (пять заявок, правила доступа настроены)</dd></div>
+          <div><dt>Результат</dt><dd>Доска показывает заявки из PocketBase, сообщает о загрузке и ошибке, все изменения сохраняются в базе</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Три состояния загрузки</a></li>
+            <li><a href="#s2">Файл запросов api.ts</a></li>
+            <li><a href="#s3">Загрузка в эффекте</a></li>
+            <li><a href="#s4">Когда сервер не ответил</a></li>
+            <li><a href="#s5">Изменения на сервере</a></li>
+            <li><a href="#s6">Частые ошибки</a></li>
+            <li><a href="#s7">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <div class="starter">
+          <p class="starter__head">Если проекта нет или он в другом состоянии</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в том состоянии, с которого начинается глава, — после главы 2.1 (в главе 2.2 код доски не менялся). PocketBase архив не заменяет: он должен работать в Docker с коллекцией и правилами из главы 2.2.</p>
+            <a class="starter__btn" href="zayavki-nachalo-2-3.zip" download>zayavki-nachalo-2-3.zip <small>21 КБ</small></a>
+            <p class="starter__lock">Архив закрыт паролем. После нажатия на кнопку введите пароль — его сообщает преподаватель.</p>
+            <ol class="starter__steps">
+              <li>Распакуйте архив в папку <code>react-kurs</code>. Если папка <code>zayavki</code> там уже есть, сначала переименуйте старую.</li>
+              <li>Проверьте, что PocketBase запущен: в папке <code>avtomatizaciya</code> команда <code>docker compose ps</code> показывает <code>avtomatizaciya-pocketbase-1</code> в состоянии Up.</li>
+              <li>Выполните три команды в терминале VS Code.</li>
+            </ol>
+            <figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>cd zayavki
+npm install
+npm run dev</pre></figure>
+          </div>
+        </div>
+
+        <h2 id="s1"><span class="sec">§1</span>Три состояния загрузки</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что видно, пока ответа нет</p>
+
+        <p>В главе 1.7 список заявок брался из localStorage. Это хранилище внутри браузера, и чтение из него занимает доли миллисекунды: список готов уже к первой отрисовке. Сервер устроен иначе. Запрос уходит по сети, PocketBase ищет записи в базе и присылает ответ. На это уходят миллисекунды на своём компьютере и секунды на медленном мобильном интернете. А ответа может и не быть: сервер выключен или сеть пропала.</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В приложении доставки после заказа экран не пустой: на нём «Готовим заказ». Когда курьер забрал заказ, экран показывает, что везут. Если ресторан закрыт, приложение пишет «Ресторан не отвечает» и даёт кнопку «Попробовать снова». Покупатель всегда понимает, что происходит.</p>
+          <p class="miss">В приложении доставки статус присылает ресторан. На доске состояние задаёт её собственный код: переменные <code>loading</code> и <code>error</code>.</p>
+        </div></div>
+
+        <p>Поэтому у списка, который приходит с сервера, три <span class="term">состояния загрузки</span>:</p>
+        <ul>
+          <li><b>загрузка</b> — запрос отправлен, ответа ещё нет. Доска пишет «Загрузка заявок…»;</li>
+          <li><b>ошибка</b> — ответа не будет или сервер отказал. Доска пишет, что случилось, и показывает кнопку «Повторить»;</li>
+          <li><b>данные</b> — ответ пришёл, доска показывает карточки.</li>
+        </ul>
+
+        <p>Запрос к серверу — тоже действие «вне отрисовки», как заголовок вкладки в главе 2.1. Его отправляет эффект после первой отрисовки. На схеме — что происходит от открытия страницы до карточек.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Загрузка заявок: от первой отрисовки до карточек</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 300" role="img" aria-label="Первая отрисовка показывает надпись Загрузка заявок; эффект отправляет запрос к PocketBase; если пришёл ответ 200, список сохраняется в состоянии и доска показывает пять карточек; если сервер не ответил, сохраняется текст ошибки и доска показывает ошибку и кнопку Повторить">
+              <rect x="20" y="20" width="200" height="74" fill="#ffffff"/><text x="34" y="44">1. Первая отрисовка</text><text class="soft" x="34" y="64">loading = true</text><text class="soft" x="34" y="82">«Загрузка заявок…»</text>
+              <rect x="280" y="20" width="200" height="74" fill="#161A2E"/><text class="on-dark" x="294" y="44">2. Эффект</text><text class="soft" x="294" y="64" style="fill:#c8d0e0">fetchRequests()</text><text class="soft" x="294" y="82" style="fill:#c8d0e0">GET …/records</text>
+              <rect x="540" y="20" width="200" height="74" fill="#D6F0F9"/><text x="554" y="44">3. PocketBase</text><text class="soft" x="554" y="64">ищет записи</text><text class="soft" x="554" y="82">в коллекции requests</text>
+              <path d="M220 57 H 272"/><path d="M264 51 L 272 57 L 264 63"/>
+              <path d="M480 57 H 532"/><path d="M524 51 L 532 57 L 524 63"/>
+              <path d="M640 94 V 140 H 520 V 170"/><path d="M514 162 L 520 170 L 526 162"/>
+              <rect x="400" y="170" width="240" height="110" fill="#D4EEDF"/><text x="414" y="194">4а. Ответ 200</text><text class="soft" x="414" y="216">setRequests(список)</text><text class="soft" x="414" y="234">setLoading(false)</text><text class="soft" x="414" y="262">→ пять карточек</text>
+              <rect x="80" y="170" width="260" height="110" fill="#F9DDE8"/><text x="94" y="194">4б. Сервер не ответил</text><text class="soft" x="94" y="216">setError(текст)</text><text class="soft" x="94" y="234">setLoading(false)</text><text class="soft" x="94" y="262">→ ошибка и «Повторить»</text>
+              <path class="ng" d="M380 94 V 140 H 210 V 162"/><path d="M204 162 L 210 170 L 216 162" style="stroke:#C2185B"/>
+              <text class="soft ng-text" x="222" y="132">сеть недоступна</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Чёрная стрелка — запрос дошёл и сервер ответил. Пунктир — ответа нет. В обоих случаях <code>loading</code> становится <code>false</code>, и доска перестаёт писать «Загрузка заявок…».</p>
+        </figure>
+
+        <p>Из схемы видно, что состояний у доски теперь больше: кроме списка заявок, ей нужно помнить, идёт ли загрузка и какая случилась ошибка.</p>
+
+        <p class="bridge">Запросы к PocketBase будут нужны в нескольких местах: загрузить список, добавить, изменить, удалить. Их собирают в отдельный файл.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Файл запросов api.ts</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Создаём файл с функцией загрузки</p>
+
+        <ol class="steps">
+          <li><b>Создайте файл</b><p>В папке <code>zayavki/src</code> создайте файл <code>api.ts</code>. Вставьте код и сохраните. Остальной проект пока не меняется: файл ещё никто не использует.</p>
+            <!--CODE tools/code23/api-load.ts | zayavki/src/api.ts--><figure class="code"><figcaption><span>zayavki/src/api.ts</span></figcaption><pre><span class="k">import</span> <span class="k">type</span> { RequestItem } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">const</span> API_URL = <span class="s">'http://localhost:8090/api/collections/requests/records'</span>
+
+async <span class="k">function</span> <span class="f">callApi</span>(url: string, options?: RequestInit): Promise<span class="t">&lt;Response</span><span class="t">&gt;</span> {
+  <span class="k">let</span> response: Response
+  try {
+    response = await <span class="f">fetch</span>(url, options)
+  } catch {
+    throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">'Сервер заявок не отвечает. Проверьте, что PocketBase запущен.'</span>)
+  }
+  <span class="k">if</span> (!response.ok) {
+    throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">`Сервер отклонил запрос: код ${response.status}.`</span>)
+  }
+  <span class="k">return</span> response
+}
+
+<span class="k">export</span> async <span class="k">function</span> <span class="f">fetchRequests</span>(): Promise<span class="t">&lt;RequestItem</span>[]<span class="t">&gt;</span> {
+  <span class="k">const</span> response = await <span class="f">callApi</span>(<span class="s">`${API_URL}?sort=-created`</span>)
+  <span class="k">const</span> data = await response.<span class="f">json</span>()
+  <span class="k">return</span> data.items
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-api-ts.png" width="1240" height="780" alt="VS Code: в папке src новый файл api.ts с функциями callApi и fetchRequests" loading="lazy"><figcaption>Новый файл src/api.ts</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что записано в api.ts</p>
+
+        <!--CODE tools/code23/api-load.ts | api.ts · по строкам | pins=3:1,5:2,8:3,10:4,12:5,15:6,19:7,21:8--><figure class="code" data-read><figcaption><span>api.ts · по строкам</span></figcaption><pre><span class="k">import</span> <span class="k">type</span> { RequestItem } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">const</span> API_URL = <span class="s">'http://localhost:8090/api/collections/requests/records'</span>  <span class="pin">1</span>
+
+async <span class="k">function</span> <span class="f">callApi</span>(url: string, options?: RequestInit): Promise<span class="t">&lt;Response</span><span class="t">&gt;</span> {  <span class="pin">2</span>
+  <span class="k">let</span> response: Response
+  try {
+    response = await <span class="f">fetch</span>(url, options)  <span class="pin">3</span>
+  } catch {
+    throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">'Сервер заявок не отвечает. Проверьте, что PocketBase запущен.'</span>)  <span class="pin">4</span>
+  }
+  <span class="k">if</span> (!response.ok) {  <span class="pin">5</span>
+    throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">`Сервер отклонил запрос: код ${response.status}.`</span>)
+  }
+  <span class="k">return</span> response  <span class="pin">6</span>
+}
+
+<span class="k">export</span> async <span class="k">function</span> <span class="f">fetchRequests</span>(): Promise<span class="t">&lt;RequestItem</span>[]<span class="t">&gt;</span> {
+  <span class="k">const</span> response = await <span class="f">callApi</span>(<span class="s">`${API_URL}?sort=-created`</span>)  <span class="pin">7</span>
+  <span class="k">const</span> data = await response.<span class="f">json</span>()
+  <span class="k">return</span> data.items  <span class="pin">8</span>
+}</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Адрес коллекции заявок в API PocketBase — тот же, что открывался в браузере в главе 2.2. Он записан один раз в константе, чтобы не повторять его в каждой функции.</p></div></li>
+          <li><span class="pin">2</span><div><p><code>callApi</code> — общая функция для всех запросов. Она принимает адрес и <code>options</code> — настройки запроса: метод, заголовки, тело. Тип настроек <code>RequestInit</code> встроен в TypeScript. Знак <code>?</code> после имени означает, что настройки можно не передавать: тогда это запрос GET. Функция возвращает ответ сервера, тип <code>Response</code>.</p></div></li>
+          <li><span class="pin">3</span><div><p>Отправить запрос и дождаться ответа. Если сервер выключен или сеть недоступна, ответа нет совсем, и <code>fetch</code> завершается ошибкой. Эту ошибку ловит <code>catch</code>, как в <code>notify.ts</code> из главы 1.7.</p></div></li>
+          <li><span class="pin">4</span><div><p><code>throw new Error('…')</code> — <span class="term">выбросить ошибку</span> с понятным текстом. <code>throw</code> останавливает функцию и передаёт ошибку тому, кто её вызвал. Ошибка поднимается по цепочке вызовов, пока её не поймает какой-нибудь <code>catch</code>. Здесь вместо технического «Failed to fetch» дальше уходит фраза для человека.</p></div></li>
+          <li><span class="pin">5</span><div><p>Ответ пришёл, но это может быть отказ: 403, 404, 400 из главы 2.2. При таком ответе <code>fetch</code> ошибку не выбрасывает. Он возвращает ответ с кодом. <code>response.ok</code> равно <code>true</code> для кодов от 200 до 299 — «запрос выполнен». <code>!</code> перед ним — «не». Если запрос не выполнен, функция выбрасывает ошибку с кодом.</p></div></li>
+          <li><span class="pin">6</span><div><p>Сюда функция доходит, только если ответ пришёл и код хороший.</p></div></li>
+          <li><span class="pin">7</span><div><p><code>fetchRequests</code> — загрузить список заявок. К адресу добавлено <code>?sort=-created</code>: «отсортировать по времени создания, минус — от новых к старым». Новая заявка окажется вверху, как раньше на доске.</p></div></li>
+          <li><span class="pin">8</span><div><p><code>response.json()</code> превращает текст ответа в объект. В ответе PocketBase, как на кадре главы 2.2, есть служебные поля <code>page</code>, <code>perPage</code>, <code>totalItems</code>, а сами заявки лежат в <code>items</code>. Функция возвращает только их.</p></div></li>
+        </ol>
+
+        <p>Слово <code>export</code> стоит только у <code>fetchRequests</code>: остальные файлы проекта будут вызывать её, а <code>callApi</code> нужна только внутри <code>api.ts</code>. Неудачи бывают двух видов, и <code>callApi</code> превращает обе в ошибку с понятным текстом:</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что случилось</th><th>Что делает fetch</th><th>Какую ошибку выбрасывает callApi</th></tr></thead>
+            <tbody>
+              <tr><td>PocketBase выключен, сети нет</td><td>Ответа нет, <code>fetch</code> выбрасывает ошибку</td><td>«Сервер заявок не отвечает. Проверьте, что PocketBase запущен.» (строка 10)</td></tr>
+              <tr><td>Правило отказало (403, 404, 400)</td><td>Возвращает ответ, <code>response.ok</code> — <code>false</code></td><td>«Сервер отклонил запрос: код 403.» (строка 13)</td></tr>
+              <tr><td>Запрос выполнен (200)</td><td>Возвращает ответ, <code>response.ok</code> — <code>true</code></td><td>Никакую: функция возвращает ответ</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="bridge">Функция загрузки готова. Теперь доска должна вызвать её после первой отрисовки, а данные из localStorage больше не нужны.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Загрузка в эффекте</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Доска берёт заявки с сервера</p>
+
+        <ol class="steps">
+          <li><b>Удалите storage.ts</b><p>Заявки больше не хранятся в localStorage. В проводнике щёлкните правой кнопкой по <code>src/storage.ts</code> и выберите <strong>Delete</strong>, затем подтвердите удаление. VS Code подчеркнёт <code>App.tsx</code> красным: он ещё ссылается на удалённый файл. Это исправит шаг 3.</p></li>
+          <li><b>Замените requests.ts</b><p>У записей PocketBase <code>id</code> — строка из 15 символов, поэтому тип <code>id</code> меняется на <code>string</code>. Список <code>initialRequests</code> удалён: начальные заявки теперь лежат в базе. Изменённая строка подсвечена.</p>
+            <!--CODE tools/code23/requests.ts | zayavki/src/requests.ts | mark=6--><figure class="code"><figcaption><span>zayavki/src/requests.ts</span></figcaption><pre><span class="k">export</span> <span class="k">type</span> Status = <span class="s">'Новая'</span> | <span class="s">'В работе'</span> | <span class="s">'Готово'</span>
+
+<span class="k">export</span> <span class="k">type</span> Category = <span class="s">'Компьютер'</span> | <span class="s">'Проектор'</span> | <span class="s">'Принтер'</span> | <span class="s">'Интернет'</span>
+
+<span class="k">export</span> <span class="k">type</span> RequestItem = {
+<span class="hl">  id: string</span>
+  title: string
+  room: string
+  category: Category
+  details: string
+  status: Status
+}
+
+<span class="k">export</span> <span class="k">type</span> NewRequest = {
+  title: string
+  room: string
+  category: Category
+  details: string
+}
+
+<span class="k">export</span> <span class="k">function</span> <span class="f">nextStatus</span>(status: Status): Status {
+  <span class="k">if</span> (status === <span class="s">'Новая'</span>) {
+    <span class="k">return</span> <span class="s">'В работе'</span>
+  }
+  <span class="k">return</span> <span class="s">'Готово'</span>
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-requests-ts.png" width="1240" height="780" alt="VS Code: requests.ts с id: string и без initialRequests; в проводнике нет файла storage.ts" loading="lazy"><figcaption>requests.ts: id — строка; в папке src нет storage.ts</figcaption></figure></li>
+          <li><b>Замените App.tsx</b><p>Замените содержимое <code>src/App.tsx</code>. Изменённые строки подсвечены: импорт <code>fetchRequests</code>, пустой начальный список, состояние <code>loading</code>, эффект загрузки и надпись «Загрузка заявок…». В <code>handleAdd</code> номер новой заявки превращается в строку: <code>String(Date.now())</code>.</p>
+            <!--CODE tools/code23/App-load.tsx | zayavki/src/App.tsx | mark=6,14-15,22-35,59,66,70-71,81-82,100-101--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> { nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> RequestItem, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span>
+<span class="hl"><span class="k">import</span> { fetchRequests } <span class="k">from</span> <span class="s">'./api'</span></span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+<span class="hl">  <span class="k">const</span> [requests, setRequests] = useState<span class="t">&lt;RequestItem</span>[]<span class="t">&gt;</span>([])</span>
+<span class="hl">  <span class="k">const</span> [loading, setLoading] = <span class="f">useState</span>(<span class="k">true</span>)</span>
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+<span class="hl">  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {</span>
+<span class="hl">    <span class="k">let</span> ignore = <span class="k">false</span></span>
+<span class="hl">    async <span class="k">function</span> <span class="f">load</span>() {</span>
+<span class="hl">      <span class="k">const</span> list = await <span class="f">fetchRequests</span>()</span>
+<span class="hl">      <span class="k">if</span> (!ignore) {</span>
+<span class="hl">        <span class="f">setRequests</span>(list)</span>
+<span class="hl">        <span class="f">setLoading</span>(<span class="k">false</span>)</span>
+<span class="hl">      }</span>
+<span class="hl">    }</span>
+<span class="hl">    <span class="f">load</span>()</span>
+<span class="hl">    <span class="k">return</span> () =<span class="t">&gt;</span> {</span>
+<span class="hl">      ignore = <span class="k">true</span></span>
+<span class="hl">    }</span>
+<span class="hl">  }, [])</span>
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+  }, [newCount])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">if</span> (notice === <span class="s">''</span>) {
+      <span class="k">return</span>
+    }
+    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)
+    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)
+  }, [notice])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">function</span> <span class="f">handleKey</span>(event: KeyboardEvent) {
+      <span class="k">if</span> (event.key === <span class="s">'Escape'</span>) {
+        <span class="f">setFilter</span>(<span class="s">'Все'</span>)
+      }
+    }
+    window.<span class="f">addEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+    <span class="k">return</span> () =<span class="t">&gt;</span> window.<span class="f">removeEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+  }, [])
+
+<span class="hl">  <span class="k">function</span> <span class="f">handleNext</span>(id: string) {</span>
+    <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {
+      <span class="k">if</span> (r.id === id) {
+        <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }
+      }
+      <span class="k">return</span> r
+    })
+<span class="hl">    <span class="f">setRequests</span>(updated)</span>
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+<span class="hl">    <span class="k">const</span> created: RequestItem = { ...data, id: <span class="f">String</span>(Date.<span class="f">now</span>()), status: <span class="s">'Новая'</span> }</span>
+<span class="hl">    <span class="f">setRequests</span>([created, ...requests])</span>
+    <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+    <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+    <span class="k">if</span> (sent) {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+    } <span class="k">else</span> {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+    }
+  }
+
+<span class="hl">  <span class="k">function</span> <span class="f">handleRemove</span>(id: string) {</span>
+<span class="hl">    <span class="f">setRequests</span>(requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))</span>
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+<span class="hl">          {loading &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявок…<span class="t">&lt;/p</span><span class="t">&gt;</span>}</span>
+<span class="hl">          {!loading &amp;&amp; visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}</span>
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-app-load.png" width="1240" height="780" alt="VS Code: App.tsx со стейтом loading и эффектом загрузки: let ignore, async function load, await fetchRequests, return с ignore = true" loading="lazy"><figcaption>App.tsx: эффект загрузки, строки 22–35</figcaption></figure></li>
+          <li><b>Откройте доску</b><p>Проверьте, что PocketBase запущен (в Docker Desktop контейнер <code>avtomatizaciya-pocketbase-1</code> работает). Откройте <code>http://localhost:5173/</code> и обновите страницу (<kbd>F5</kbd>). На доске пять заявок из базы, все со статусом «Новая». Сверху — последняя созданная в главе 2.2, «Не работает мышь».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/04-doska-server.png" width="1100" height="938" alt="Доска заявок: пять заявок из PocketBase, сверху Не работает мышь, все со статусом Новая, Новых заявок: 5" loading="lazy"><figcaption>Доска показывает заявки из PocketBase</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что записано в эффекте</p>
+
+        <!--CODE tools/code23/App-load.tsx | App.tsx · строки 14–35 | lines=14-35 pins=14:1,15:2,22:3,23:4,24:5,25:6,26:7,31:8,32:9,35:10--><figure class="code" data-read><figcaption><span>App.tsx · строки 14–35</span></figcaption><pre>  <span class="k">const</span> [requests, setRequests] = useState<span class="t">&lt;RequestItem</span>[]<span class="t">&gt;</span>([])  <span class="pin">1</span>
+  <span class="k">const</span> [loading, setLoading] = <span class="f">useState</span>(<span class="k">true</span>)  <span class="pin">2</span>
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {  <span class="pin">3</span>
+    <span class="k">let</span> ignore = <span class="k">false</span>  <span class="pin">4</span>
+    async <span class="k">function</span> <span class="f">load</span>() {  <span class="pin">5</span>
+      <span class="k">const</span> list = await <span class="f">fetchRequests</span>()  <span class="pin">6</span>
+      <span class="k">if</span> (!ignore) {  <span class="pin">7</span>
+        <span class="f">setRequests</span>(list)
+        <span class="f">setLoading</span>(<span class="k">false</span>)
+      }
+    }
+    <span class="f">load</span>()  <span class="pin">8</span>
+    <span class="k">return</span> () =<span class="t">&gt;</span> {  <span class="pin">9</span>
+      ignore = <span class="k">true</span>
+    }
+  }, [])  <span class="pin">10</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Список заявок в начале пустой: <code>[]</code>. Раньше начальное значение давала функция <code>loadRequests</code> из localStorage. <code>&lt;RequestItem[]&gt;</code> подсказывает TypeScript, что в пустом массиве будут заявки.</p></div></li>
+          <li><span class="pin">2</span><div><p><code>loading</code> — «идёт загрузка». В начале <code>true</code>: страница открылась, а ответа ещё нет.</p></div></li>
+          <li><span class="pin">3</span><div><p>Эффект с пустым массивом зависимостей: он запускается один раз после первой отрисовки, как подписка на клавишу Esc в главе 2.1.</p></div></li>
+          <li><span class="pin">4</span><div><p>Флажок «результат этого запуска больше не нужен». Пока он <code>false</code>, ответ сервера попадёт в состояние. Зачем он, показывает пошаговый разбор ниже.</p></div></li>
+          <li><span class="pin">5</span><div><p>Внутри эффекта объявлена асинхронная функция <code>load</code>. Саму функцию эффекта сделать <code>async</code> нельзя: она может вернуть только функцию очистки или ничего, а <code>async</code>-функция всегда возвращает обещание ответа. Поэтому <code>await</code> живёт во внутренней функции.</p></div></li>
+          <li><span class="pin">6</span><div><p>Дождаться списка с сервера.</p></div></li>
+          <li><span class="pin">7</span><div><p>Если флажок не поднят, сохранить список и выключить загрузку. Обе смены состояния — после <code>await</code>, то есть уже после отрисовки, поэтому правило линтера из главы 2.1 про смену состояния в эффекте здесь не срабатывает.</p></div></li>
+          <li><span class="pin">8</span><div><p>Запустить <code>load</code>. Эффект на этом заканчивается и возвращает очистку, а ответ сервера <code>load</code> обработает позже.</p></div></li>
+          <li><span class="pin">9</span><div><p>Функция очистки поднимает флажок: «ответ этого запуска не нужен».</p></div></li>
+          <li><span class="pin">10</span><div><p>Пустой массив: повторно эффект не запускается.</p></div></li>
+        </ol>
+
+        <p>В режиме разработки React запускает эффект дважды: запускает, сразу очищает и запускает снова (глава 2.1, StrictMode). Значит, запросов к серверу тоже два. Проверим это на вкладке Network.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: запросы на вкладке Network</p>
+
+        <ol class="steps">
+          <li><b>Откройте вкладку Network</b><p>Нажмите <kbd>F12</kbd> и откройте вкладку <strong>Network</strong> — журнал всех запросов страницы. В строке фильтров нажмите <strong>Fetch/XHR</strong>: останутся только запросы, отправленные кодом страницы.</p></li>
+          <li><b>Замедлите ответ</b><p>В списке <strong>No throttling</strong> выберите <strong>3G</strong> — так браузер изобразит медленный мобильный интернет. Обновите страницу (<kbd>F5</kbd>). Пока ответ идёт, на доске надпись «Загрузка заявок…», а в журнале — два запроса <code>records?sort=-created</code> в состоянии pending, «ожидает ответа».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/05-zagruzka.png" width="1100" height="1068" alt="Доска с надписью Загрузка заявок…, внизу вкладка Network: два запроса records?sort=-created со статусом pending" loading="lazy"><figcaption>Ответ ещё не пришёл: «Загрузка заявок…», оба запроса ждут ответа. На кадре сервер задерживал ответ сам, поэтому в списке скорости — No throttling</figcaption></figure></li>
+          <li><b>Верните скорость</b><p>Выберите в списке снова <strong>No throttling</strong> и обновите страницу. Оба запроса завершились с кодом 200, на доске пять карточек.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/06-network-dva.png" width="1100" height="1068" alt="Доска с пятью заявками, во вкладке Network два запроса records?sort=-created со статусом 200, инициатор api.ts:8" loading="lazy"><figcaption>Два запроса со статусом 200: эффект запустился дважды</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Какой ответ попадает на доску</p>
+
+        <p>Ответов два, а список должен сохраниться один раз. Флажок <code>ignore</code> отбрасывает ответ запуска, который React уже очистил. У каждого запуска эффекта свой флажок: <code>let ignore</code> создаётся заново при каждом запуске, а очистка поднимает флажок только своего запуска.</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Два запуска эффекта и один сохранённый ответ</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code23/App-load.tsx | | bare lines=22-35--><pre class="trace__code" data-start="22">  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">let</span> ignore = <span class="k">false</span>
+    async <span class="k">function</span> <span class="f">load</span>() {
+      <span class="k">const</span> list = await <span class="f">fetchRequests</span>()
+      <span class="k">if</span> (!ignore) {
+        <span class="f">setRequests</span>(list)
+        <span class="f">setLoading</span>(<span class="k">false</span>)
+      }
+    }
+    <span class="f">load</span>()
+    <span class="k">return</span> () =<span class="t">&gt;</span> {
+      ignore = <span class="k">true</span>
+    }
+  }, [])</pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="22"><b>Первая отрисовка</b>
+                  <p>Список пустой, <code>loading</code> — <code>true</code>. На доске «Загрузка заявок…». После отрисовки React запускает эффект.</p>
+                  <div class="vars"><span class="var"><i>requests</i><span>[]</span></span><span class="var"><i>loading</i><span>true</span></span></div></li>
+                <li data-lines="23,31"><b>Запуск А</b>
+                  <p>Создан флажок А, функция <code>load</code> отправила запрос А.</p>
+                  <div class="vars"><span class="var var--new"><i>ignore А</i><span>false</span></span></div></li>
+                <li data-lines="32-34"><b>Очистка А</b>
+                  <p>StrictMode сразу очищает эффект: флажок А поднят. Запрос А уже отправлен, отменить его нельзя.</p>
+                  <div class="vars"><span class="var"><i>ignore А</i><span>true</span></span></div></li>
+                <li data-lines="23,31"><b>Запуск Б</b>
+                  <p>Эффект запускается снова: новый флажок Б, запрос Б.</p>
+                  <div class="vars"><span class="var"><i>ignore А</i><span>true</span></span><span class="var var--new"><i>ignore Б</i><span>false</span></span></div></li>
+                <li data-lines="26"><b>Пришёл ответ А</b>
+                  <p>Флажок А поднят: <code>!ignore</code> — <code>false</code>, состояние не меняется.</p></li>
+                <li data-lines="26-29"><b>Пришёл ответ Б</b>
+                  <p>Флажок Б опущен: список сохраняется, загрузка выключается. React отрисовывает пять карточек.</p>
+                  <div class="vars"><span class="var var--new"><i>requests</i><span>5 заявок</span></span><span class="var var--new"><i>loading</i><span>false</span></span></div></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p>В собранном для пользователей приложении эффект запускается один раз, и запрос тоже один. Флажок нужен и там. Если зависимость эффекта изменится, пока ответ ещё идёт, старый ответ может прийти позже нового и затереть его. Флажок отбрасывает ответы запусков, которые уже не нужны.</p>
+
+        <p>Доска показывает заявки из базы. Но изменения пока остаются только в памяти браузера: <code>handleAdd</code>, <code>handleNext</code> и <code>handleRemove</code> меняют состояние и ничего не отправляют на сервер. Это видно по опыту.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: заявка без сервера</p>
+
+        <ol class="steps">
+          <li><b>Добавьте заявку</b><p>Закройте DevTools. Заполните форму: «Не печатает принтер», кабинет 112, категория «Принтер». Нажмите <strong>Отправить заявку</strong>. Заявка появилась сверху.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/07-dobavlena-lokalno.png" width="1100" height="1122" alt="Доска: сверху новая заявка Не печатает принтер, каб. 112, Новых заявок: 6" loading="lazy"><figcaption>Новая заявка на доске, новых — 6</figcaption></figure></li>
+          <li><b>Обновите страницу</b><p>Нажмите <kbd>F5</kbd>. Новой заявки нет, снова пять.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/08-posle-f5.png" width="1100" height="938" alt="Доска после обновления: пять заявок, Не печатает принтер пропала, Новых заявок: 5" loading="lazy"><figcaption>После F5 заявка пропала: в базу она не попала</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему заявка пропала</p>
+
+        <p>После обновления страницы доска заново загружает список с сервера, а в базе новой заявки нет. <code>handleAdd</code> положил её только в состояние, то есть в память открытой вкладки. Раньше это исправлял localStorage, теперь хранилище одно — PocketBase. Добавление, смену статуса и удаление тоже нужно отправлять на сервер. Это сделает §5.</p>
+
+        <p class="bridge">Сначала нужно разобраться с запросом, на который сервер не ответил: в коде загрузки этот случай пока не обработан.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Когда сервер не ответил</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: PocketBase выключен</p>
+
+        <ol class="steps">
+          <li><b>Остановите PocketBase</b><p>Откройте второй терминал (<strong>Terminal → New Terminal</strong>): в первом работает <code>npm run dev</code>. Выполните команды. <code>stop</code> останавливает контейнер, данные в томе остаются.</p>
+            <figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>cd avtomatizaciya
+docker compose stop pocketbase</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/09-stop.png" width="1240" height="187" alt="Терминал: docker compose stop pocketbase, Container avtomatizaciya-pocketbase-1 Stopped" loading="lazy"><figcaption>Контейнер PocketBase остановлен</figcaption></figure></li>
+          <li><b>Обновите доску с открытой консолью</b><p>Нажмите <kbd>F12</kbd>, откройте вкладку <strong>Console</strong> и обновите страницу (<kbd>F5</kbd>). Надпись «Загрузка заявок…» не исчезает. В консоли красные ошибки.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/10-vechnaya-zagruzka.png" width="1100" height="918" alt="Доска с надписью Загрузка заявок…; в консоли GET localhost:8090 net::ERR_CONNECTION_REFUSED дважды и Uncaught (in promise) Error: Сервер заявок не отвечает дважды" loading="lazy"><figcaption>Загрузка не заканчивается; в консоли ERR_CONNECTION_REFUSED и Uncaught (in promise) Error</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему загрузка не заканчивается</p>
+
+        <p><code>net::ERR_CONNECTION_REFUSED</code> — «в соединении отказано»: по адресу <code>localhost:8090</code> никто не принимает запросы. <code>fetch</code> выбросил ошибку, <code>callApi</code> поймал её и выбросил свою, с понятным текстом. Дальше ошибка поднялась в <code>load</code>, а там её никто не ловит: в эффекте нет <code>try</code> и <code>catch</code>. Браузер пишет об этом <code>Uncaught (in promise) Error</code> — «непойманная ошибка в асинхронной функции». Функция <code>load</code> остановилась на строке с <code>await</code>, и <code>setLoading(false)</code> не выполнился. Для доски загрузка так и идёт. Ошибок по две — по одной на каждый запуск эффекта.</p>
+
+        <p>Студент, который открыл доску, консоль не видит. Ему ошибку нужно показать на странице и дать способ попробовать снова.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Ошибка на странице и кнопка «Повторить»</p>
+
+        <ol class="steps">
+          <li><b>Добавьте стили блока ошибки</b><p>Замените содержимое <code>src/index.css</code>. В конец файла добавлены стили блока <code>.load-error</code>.</p>
+            <!--CODE tools/code23/index.css | zayavki/src/index.css | mark=210-230--><figure class="code"><figcaption><span>zayavki/src/index.css</span></figcaption><pre>:root {
+  <span class="a">font-family</span>: system-ui, <span class="s">'Segoe UI'</span>, Roboto, sans-serif;
+  <span class="a">color</span>: <span class="n">#1f2430</span>;
+  <span class="a">background</span>: <span class="n">#f6f7f9</span>;
+}
+
+body {
+  <span class="a">margin</span>: <span class="n">0</span>;
+}
+
+.header {
+  <span class="a">padding</span>: <span class="n">24px</span> <span class="n">20px</span>;
+  <span class="a">background</span>: <span class="n">#1f2430</span>;
+  <span class="a">color</span>: <span class="n">#ffffff</span>;
+  <span class="a">text-align</span>: center;
+}
+
+.header h1 {
+  <span class="a">margin</span>: <span class="n">0</span> <span class="n">0</span> <span class="n">4px</span>;
+}
+
+.header p {
+  <span class="a">margin</span>: <span class="n">0</span>;
+  <span class="a">color</span>: <span class="n">#b8c0d4</span>;
+}
+
+.board {
+  <span class="a">display</span>: grid;
+  <span class="a">grid-template-columns</span>: <span class="n">320px</span> <span class="n">1fr</span>;
+  <span class="a">gap</span>: <span class="n">24px</span>;
+  <span class="a">max-width</span>: <span class="n">960px</span>;
+  <span class="a">margin</span>: <span class="n">0</span> auto;
+  <span class="a">padding</span>: <span class="n">24px</span> <span class="n">20px</span>;
+}
+
+.form {
+  <span class="a">display</span>: flex;
+  <span class="a">flex-direction</span>: column;
+  <span class="a">gap</span>: <span class="n">6px</span>;
+  <span class="a">padding</span>: <span class="n">16px</span>;
+  <span class="a">background</span>: <span class="n">#ffffff</span>;
+  <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#dde1ea</span>;
+  <span class="a">border-radius</span>: <span class="n">8px</span>;
+}
+
+.form h2,
+.list h2 {
+  <span class="a">margin</span>: <span class="n">0</span> <span class="n">0</span> <span class="n">8px</span>;
+  <span class="a">font-size</span>: <span class="n">20px</span>;
+}
+
+.form input,
+.form select,
+.form textarea {
+  <span class="a">margin-bottom</span>: <span class="n">8px</span>;
+  <span class="a">padding</span>: <span class="n">8px</span>;
+  <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#c4cad8</span>;
+  <span class="a">border-radius</span>: <span class="n">6px</span>;
+  <span class="a">font</span>: inherit;
+}
+
+.form button {
+  <span class="a">padding</span>: <span class="n">10px</span>;
+  <span class="a">border</span>: <span class="n">0</span>;
+  <span class="a">border-radius</span>: <span class="n">6px</span>;
+  <span class="a">background</span>: <span class="n">#2f6fde</span>;
+  <span class="a">color</span>: <span class="n">#ffffff</span>;
+  <span class="a">font</span>: inherit;
+  <span class="a">cursor</span>: pointer;
+}
+
+.list {
+  <span class="a">display</span>: flex;
+  <span class="a">flex-direction</span>: column;
+  <span class="a">gap</span>: <span class="n">12px</span>;
+}
+
+.card {
+  <span class="a">padding</span>: <span class="n">14px</span> <span class="n">16px</span>;
+  <span class="a">background</span>: <span class="n">#ffffff</span>;
+  <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#dde1ea</span>;
+  <span class="a">border-radius</span>: <span class="n">8px</span>;
+}
+
+.card__top {
+  <span class="a">display</span>: flex;
+  <span class="a">justify-content</span>: space-between;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+}
+
+.card__room {
+  <span class="a">color</span>: <span class="n">#5b6478</span>;
+}
+
+.card__status {
+  <span class="a">padding</span>: <span class="n">2px</span> <span class="n">8px</span>;
+  <span class="a">border-radius</span>: <span class="n">10px</span>;
+  <span class="a">background</span>: <span class="n">#e3ecff</span>;
+  <span class="a">color</span>: <span class="n">#2f6fde</span>;
+}
+
+.card h3 {
+  <span class="a">margin</span>: <span class="n">8px</span> <span class="n">0</span> <span class="n">4px</span>;
+  <span class="a">font-size</span>: <span class="n">18px</span>;
+}
+
+.card p {
+  <span class="a">margin</span>: <span class="n">0</span>;
+  <span class="a">color</span>: <span class="n">#3d4557</span>;
+}
+
+@media (max-width: <span class="n">700px</span>) {
+  .board {
+    <span class="a">grid-template-columns</span>: <span class="n">1fr</span>;
+  }
+}
+
+.card button {
+  <span class="a">margin-top</span>: <span class="n">12px</span>;
+  <span class="a">padding</span>: <span class="n">6px</span> <span class="n">12px</span>;
+  <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#2f6fde</span>;
+  <span class="a">border-radius</span>: <span class="n">6px</span>;
+  <span class="a">background</span>: <span class="n">#ffffff</span>;
+  <span class="a">color</span>: <span class="n">#2f6fde</span>;
+  <span class="a">font</span>: inherit;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+  <span class="a">cursor</span>: pointer;
+}
+
+.card <span class="a">button</span>:disabled {
+  <span class="a">border-color</span>: <span class="n">#c4cad8</span>;
+  <span class="a">color</span>: <span class="n">#8a93a6</span>;
+  <span class="a">cursor</span>: default;
+}
+
+.header__count {
+  <span class="a">display</span>: inline-block;
+  <span class="a">margin-top</span>: <span class="n">12px</span>;
+  <span class="a">padding</span>: <span class="n">3px</span> <span class="n">12px</span>;
+  <span class="a">border-radius</span>: <span class="n">12px</span>;
+  <span class="a">background</span>: <span class="n">#2f6fde</span>;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+}
+
+.card__actions {
+  <span class="a">display</span>: flex;
+  <span class="a">gap</span>: <span class="n">8px</span>;
+  <span class="a">margin-top</span>: <span class="n">12px</span>;
+}
+
+.card__actions button {
+  <span class="a">margin-top</span>: <span class="n">0</span>;
+}
+
+.card__actions .card__more {
+  <span class="a">border-color</span>: <span class="n">#c4cad8</span>;
+  <span class="a">color</span>: <span class="n">#3d4557</span>;
+}
+
+.empty {
+  <span class="a">padding</span>: <span class="n">24px</span>;
+  <span class="a">border</span>: <span class="n">1px</span> dashed <span class="n">#c4cad8</span>;
+  <span class="a">border-radius</span>: <span class="n">8px</span>;
+  <span class="a">color</span>: <span class="n">#5b6478</span>;
+  <span class="a">text-align</span>: center;
+}
+
+.filters {
+  <span class="a">display</span>: flex;
+  <span class="a">flex-wrap</span>: wrap;
+  <span class="a">gap</span>: <span class="n">6px</span>;
+}
+
+.filters button {
+  <span class="a">padding</span>: <span class="n">5px</span> <span class="n">12px</span>;
+  <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#c4cad8</span>;
+  <span class="a">border-radius</span>: <span class="n">16px</span>;
+  <span class="a">background</span>: <span class="n">#ffffff</span>;
+  <span class="a">color</span>: <span class="n">#3d4557</span>;
+  <span class="a">font</span>: inherit;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+  <span class="a">cursor</span>: pointer;
+}
+
+.filters button.active {
+  <span class="a">border-color</span>: <span class="n">#2f6fde</span>;
+  <span class="a">background</span>: <span class="n">#2f6fde</span>;
+  <span class="a">color</span>: <span class="n">#ffffff</span>;
+}
+
+.form__error {
+  <span class="a">margin</span>: <span class="n">0</span> <span class="n">0</span> <span class="n">8px</span>;
+  <span class="a">padding</span>: <span class="n">8px</span>;
+  <span class="a">border-radius</span>: <span class="n">6px</span>;
+  <span class="a">background</span>: <span class="n">#fde8e8</span>;
+  <span class="a">color</span>: <span class="n">#b42318</span>;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+}
+
+.notice {
+  <span class="a">margin</span>: <span class="n">0</span>;
+  <span class="a">padding</span>: <span class="n">10px</span> <span class="n">12px</span>;
+  <span class="a">border-left</span>: <span class="n">4px</span> solid <span class="n">#2f6fde</span>;
+  <span class="a">border-radius</span>: <span class="n">6px</span>;
+  <span class="a">background</span>: <span class="n">#e3ecff</span>;
+  <span class="a">color</span>: <span class="n">#1f2430</span>;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+}
+
+<span class="hl">.load-error {</span>
+<span class="hl">  <span class="a">padding</span>: <span class="n">16px</span>;</span>
+<span class="hl">  <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#f3b8b8</span>;</span>
+<span class="hl">  <span class="a">border-radius</span>: <span class="n">8px</span>;</span>
+<span class="hl">  <span class="a">background</span>: <span class="n">#fde8e8</span>;</span>
+<span class="hl">  <span class="a">color</span>: <span class="n">#b42318</span>;</span>
+<span class="hl">}</span>
+<span class="hl"></span>
+<span class="hl">.load-error p {</span>
+<span class="hl">  <span class="a">margin</span>: <span class="n">0</span> <span class="n">0</span> <span class="n">10px</span>;</span>
+<span class="hl">}</span>
+<span class="hl"></span>
+<span class="hl">.load-error button {</span>
+<span class="hl">  <span class="a">padding</span>: <span class="n">6px</span> <span class="n">14px</span>;</span>
+<span class="hl">  <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#b42318</span>;</span>
+<span class="hl">  <span class="a">border-radius</span>: <span class="n">6px</span>;</span>
+<span class="hl">  <span class="a">background</span>: <span class="n">#ffffff</span>;</span>
+<span class="hl">  <span class="a">color</span>: <span class="n">#b42318</span>;</span>
+<span class="hl">  <span class="a">font</span>: inherit;</span>
+<span class="hl">  <span class="a">cursor</span>: pointer;</span>
+<span class="hl">}</span></pre></figure><!--/CODE--></li>
+          <li><b>Замените App.tsx</b><p>Изменённые строки подсвечены: состояния <code>error</code> и <code>attempt</code>, <code>try</code> и <code>catch</code> в эффекте, функция <code>retry</code> и блок ошибки с кнопкой.</p>
+            <!--CODE tools/code23/App-error.tsx | zayavki/src/App.tsx | mark=16-17,27-36,45,69-73,117-123--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> { nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> RequestItem, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span>
+<span class="k">import</span> { fetchRequests } <span class="k">from</span> <span class="s">'./api'</span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [requests, setRequests] = useState<span class="t">&lt;RequestItem</span>[]<span class="t">&gt;</span>([])
+  <span class="k">const</span> [loading, setLoading] = <span class="f">useState</span>(<span class="k">true</span>)
+<span class="hl">  <span class="k">const</span> [error, setError] = <span class="f">useState</span>(<span class="s">''</span>)</span>
+<span class="hl">  <span class="k">const</span> [attempt, setAttempt] = <span class="f">useState</span>(<span class="n">0</span>)</span>
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">let</span> ignore = <span class="k">false</span>
+    async <span class="k">function</span> <span class="f">load</span>() {
+<span class="hl">      try {</span>
+<span class="hl">        <span class="k">const</span> list = await <span class="f">fetchRequests</span>()</span>
+<span class="hl">        <span class="k">if</span> (!ignore) {</span>
+<span class="hl">          <span class="f">setRequests</span>(list)</span>
+<span class="hl">        }</span>
+<span class="hl">      } catch (e) {</span>
+<span class="hl">        <span class="k">if</span> (!ignore) {</span>
+<span class="hl">          <span class="f">setError</span>((e as Error).message)</span>
+<span class="hl">        }</span>
+<span class="hl">      }</span>
+      <span class="k">if</span> (!ignore) {
+        <span class="f">setLoading</span>(<span class="k">false</span>)
+      }
+    }
+    <span class="f">load</span>()
+    <span class="k">return</span> () =<span class="t">&gt;</span> {
+      ignore = <span class="k">true</span>
+    }
+<span class="hl">  }, [attempt])</span>
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+  }, [newCount])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">if</span> (notice === <span class="s">''</span>) {
+      <span class="k">return</span>
+    }
+    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)
+    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)
+  }, [notice])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">function</span> <span class="f">handleKey</span>(event: KeyboardEvent) {
+      <span class="k">if</span> (event.key === <span class="s">'Escape'</span>) {
+        <span class="f">setFilter</span>(<span class="s">'Все'</span>)
+      }
+    }
+    window.<span class="f">addEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+    <span class="k">return</span> () =<span class="t">&gt;</span> window.<span class="f">removeEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+  }, [])
+
+<span class="hl">  <span class="k">function</span> <span class="f">retry</span>() {</span>
+<span class="hl">    <span class="f">setError</span>(<span class="s">''</span>)</span>
+<span class="hl">    <span class="f">setLoading</span>(<span class="k">true</span>)</span>
+<span class="hl">    <span class="f">setAttempt</span>(attempt + <span class="n">1</span>)</span>
+<span class="hl">  }</span>
+
+  <span class="k">function</span> <span class="f">handleNext</span>(id: string) {
+    <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {
+      <span class="k">if</span> (r.id === id) {
+        <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }
+      }
+      <span class="k">return</span> r
+    })
+    <span class="f">setRequests</span>(updated)
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    <span class="k">const</span> created: RequestItem = { ...data, id: <span class="f">String</span>(Date.<span class="f">now</span>()), status: <span class="s">'Новая'</span> }
+    <span class="f">setRequests</span>([created, ...requests])
+    <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+    <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+    <span class="k">if</span> (sent) {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+    } <span class="k">else</span> {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+    }
+  }
+
+  <span class="k">function</span> <span class="f">handleRemove</span>(id: string) {
+    <span class="f">setRequests</span>(requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {loading &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявок…<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+<span class="hl">          {error !== <span class="s">''</span> &amp;&amp; (</span>
+<span class="hl">            <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"load-error"</span><span class="t">&gt;</span></span>
+<span class="hl">              <span class="t">&lt;p</span><span class="t">&gt;</span>{error}<span class="t">&lt;/p</span><span class="t">&gt;</span></span>
+<span class="hl">              <span class="t">&lt;button</span> <span class="a">onClick</span>={retry}<span class="t">&gt;</span>Повторить<span class="t">&lt;/button</span><span class="t">&gt;</span></span>
+<span class="hl">            <span class="t">&lt;/div</span><span class="t">&gt;</span></span>
+<span class="hl">          )}</span>
+<span class="hl">          {!loading &amp;&amp; error === <span class="s">''</span> &amp;&amp; visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}</span>
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/11-app-error.png" width="1240" height="780" alt="VS Code: App.tsx с эффектом загрузки: try, await fetchRequests, catch (e) с setError, setLoading(false), зависимость [attempt]" loading="lazy"><figcaption>Эффект загрузки с try и catch, зависимость [attempt]</figcaption></figure></li>
+          <li><b>Обновите доску</b><p>PocketBase всё ещё выключен. Закройте DevTools и обновите страницу (<kbd>F5</kbd>). Вместо вечной загрузки — сообщение и кнопка <strong>Повторить</strong>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/12-oshibka.png" width="1100" height="634" alt="Доска: в разделе Заявки розовый блок Сервер заявок не отвечает. Проверьте, что PocketBase запущен. и кнопка Повторить" loading="lazy"><figcaption>Ошибка загрузки на странице</figcaption></figure></li>
+          <li><b>Запустите PocketBase</b><p>Во втором терминале выполните команду.</p>
+            <figure class="code"><figcaption><span>Терминал · папка avtomatizaciya</span></figcaption><pre>docker compose start pocketbase</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/13-start.png" width="1240" height="187" alt="Терминал: docker compose start pocketbase, Container avtomatizaciya-pocketbase-1 Started" loading="lazy"><figcaption>PocketBase снова работает</figcaption></figure></li>
+          <li><b>Нажмите «Повторить»</b><p>Страницу не обновляйте — нажмите кнопку <strong>Повторить</strong>. Доска снова загрузила пять заявок.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/14-povtorit.png" width="1100" height="938" alt="Доска после нажатия Повторить: пять заявок, блока ошибки нет" loading="lazy"><figcaption>После «Повторить» заявки загружены</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как ловится ошибка и как работает «Повторить»</p>
+
+        <!--CODE tools/code23/App-error.tsx | App.tsx · строки 24–45 и 69–73 | lines=24-45 pins=27:1,32:2,34:3,37:4,45:5--><figure class="code" data-read><figcaption><span>App.tsx · строки 24–45 и 69–73</span></figcaption><pre>  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">let</span> ignore = <span class="k">false</span>
+    async <span class="k">function</span> <span class="f">load</span>() {
+      try {  <span class="pin">1</span>
+        <span class="k">const</span> list = await <span class="f">fetchRequests</span>()
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setRequests</span>(list)
+        }
+      } catch (e) {  <span class="pin">2</span>
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setError</span>((e as Error).message)  <span class="pin">3</span>
+        }
+      }
+      <span class="k">if</span> (!ignore) {  <span class="pin">4</span>
+        <span class="f">setLoading</span>(<span class="k">false</span>)
+      }
+    }
+    <span class="f">load</span>()
+    <span class="k">return</span> () =<span class="t">&gt;</span> {
+      ignore = <span class="k">true</span>
+    }
+  }, [attempt])  <span class="pin">5</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p><code>try</code> — «попробуй выполнить». Если внутри блока выброшена ошибка, выполнение сразу переходит в <code>catch</code>.</p></div></li>
+          <li><span class="pin">2</span><div><p><code>catch (e)</code> ловит ошибку, <code>e</code> — сама ошибка. Здесь её поймает <code>load</code>: та, что выбросил <code>callApi</code>, поднялась через <code>fetchRequests</code> сюда.</p></div></li>
+          <li><span class="pin">3</span><div><p>Сохранить текст ошибки в состоянии. Для TypeScript тип ошибки неизвестен: выбросить можно что угодно, даже число. Запись <code>e as Error</code> говорит ему: «это объект ошибки». Так можно писать, потому что <code>callApi</code> всегда выбрасывает <code>new Error(…)</code>. У объекта ошибки есть поле <code>message</code> — текст, переданный в скобках.</p></div></li>
+          <li><span class="pin">4</span><div><p>Эта строка стоит после <code>try</code> и <code>catch</code> и выполняется в обоих случаях: пришёл список или случилась ошибка. Загрузка закончилась.</p></div></li>
+          <li><span class="pin">5</span><div><p>Эффект зависит от <code>attempt</code> — номера попытки. Внутри эффекта <code>attempt</code> не читается. Он нужен только затем, чтобы эффект запустился снова, когда номер изменится.</p></div></li>
+        </ol>
+
+        <!--CODE tools/code23/App-error.tsx | App.tsx · функция retry | lines=69-73--><figure class="code"><figcaption><span>App.tsx · функция retry</span></figcaption><pre>  <span class="k">function</span> <span class="f">retry</span>() {
+    <span class="f">setError</span>(<span class="s">''</span>)
+    <span class="f">setLoading</span>(<span class="k">true</span>)
+    <span class="f">setAttempt</span>(attempt + <span class="n">1</span>)
+  }</pre></figure><!--/CODE-->
+
+        <p>Кнопка «Повторить» вызывает <code>retry</code>. Функция стирает ошибку, снова включает загрузку и увеличивает номер попытки. Зависимость <code>attempt</code> изменилась (была 0, стала 1), поэтому после отрисовки React запускает эффект загрузки ещё раз. Так же в главе 2.1 эффект заголовка запускался при каждом новом <code>newCount</code>.</p>
+
+        <p>Что показывает список заявок, зависит от трёх переменных состояния. В таблице — все сочетания, которые встречаются на доске.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Момент</th><th><code>loading</code></th><th><code>error</code></th><th><code>requests</code></th><th>Что на доске</th></tr></thead>
+            <tbody>
+              <tr><td>Страница открылась, ответа нет</td><td><code>true</code></td><td><code>''</code></td><td><code>[]</code></td><td>«Загрузка заявок…»</td></tr>
+              <tr><td>Сервер не ответил</td><td><code>false</code></td><td>текст ошибки</td><td><code>[]</code></td><td>Ошибка и кнопка «Повторить»</td></tr>
+              <tr><td>Нажата «Повторить»</td><td><code>true</code></td><td><code>''</code></td><td><code>[]</code></td><td>«Загрузка заявок…»</td></tr>
+              <tr><td>Список пришёл</td><td><code>false</code></td><td><code>''</code></td><td>5 заявок</td><td>Пять карточек</td></tr>
+              <tr><td>Фильтр без подходящих заявок</td><td><code>false</code></td><td><code>''</code></td><td>5 заявок</td><td>«Заявок с таким статусом нет»</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Поэтому надпись «Заявок с таким статусом нет» показывается только при трёх условиях сразу: загрузка закончилась, ошибки нет, подходящих заявок нет (строка 123). Без первых двух условий она появлялась бы во время загрузки и рядом с ошибкой.</p>
+
+        <p class="bridge">Загрузка обработана во всех трёх состояниях. Осталось отправлять на сервер изменения: новую заявку, новый статус и удаление.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Изменения на сервере</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Добавление, статус и удаление через PocketBase</p>
+
+        <ol class="steps">
+          <li><b>Дополните api.ts</b><p>Замените содержимое <code>src/api.ts</code>. Добавлены три функции: создать, изменить статус, удалить.</p>
+            <!--CODE tools/code23/api.ts | zayavki/src/api.ts | mark=1,23-44--><figure class="code"><figcaption><span>zayavki/src/api.ts</span></figcaption><pre><span class="hl"><span class="k">import</span> <span class="k">type</span> { NewRequest, RequestItem, Status } <span class="k">from</span> <span class="s">'./requests'</span></span>
+
+<span class="k">const</span> API_URL = <span class="s">'http://localhost:8090/api/collections/requests/records'</span>
+
+async <span class="k">function</span> <span class="f">callApi</span>(url: string, options?: RequestInit): Promise<span class="t">&lt;Response</span><span class="t">&gt;</span> {
+  <span class="k">let</span> response: Response
+  try {
+    response = await <span class="f">fetch</span>(url, options)
+  } catch {
+    throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">'Сервер заявок не отвечает. Проверьте, что PocketBase запущен.'</span>)
+  }
+  <span class="k">if</span> (!response.ok) {
+    throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">`Сервер отклонил запрос: код ${response.status}.`</span>)
+  }
+  <span class="k">return</span> response
+}
+
+<span class="k">export</span> async <span class="k">function</span> <span class="f">fetchRequests</span>(): Promise<span class="t">&lt;RequestItem</span>[]<span class="t">&gt;</span> {
+  <span class="k">const</span> response = await <span class="f">callApi</span>(<span class="s">`${API_URL}?sort=-created`</span>)
+  <span class="k">const</span> data = await response.<span class="f">json</span>()
+  <span class="k">return</span> data.items
+}
+<span class="hl"></span>
+<span class="hl"><span class="k">export</span> async <span class="k">function</span> <span class="f">createRequest</span>(data: NewRequest): Promise<span class="t">&lt;RequestItem</span><span class="t">&gt;</span> {</span>
+<span class="hl">  <span class="k">const</span> response = await <span class="f">callApi</span>(API_URL, {</span>
+<span class="hl">    method: <span class="s">'POST'</span>,</span>
+<span class="hl">    headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },</span>
+<span class="hl">    body: JSON.<span class="f">stringify</span>({ ...data, status: <span class="s">'Новая'</span> }),</span>
+<span class="hl">  })</span>
+<span class="hl">  <span class="k">return</span> response.<span class="f">json</span>()</span>
+<span class="hl">}</span>
+<span class="hl"></span>
+<span class="hl"><span class="k">export</span> async <span class="k">function</span> <span class="f">updateStatus</span>(id: string, status: Status): Promise<span class="t">&lt;RequestItem</span><span class="t">&gt;</span> {</span>
+<span class="hl">  <span class="k">const</span> response = await <span class="f">callApi</span>(<span class="s">`${API_URL}/${id}`</span>, {</span>
+<span class="hl">    method: <span class="s">'PATCH'</span>,</span>
+<span class="hl">    headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },</span>
+<span class="hl">    body: JSON.<span class="f">stringify</span>({ status }),</span>
+<span class="hl">  })</span>
+<span class="hl">  <span class="k">return</span> response.<span class="f">json</span>()</span>
+<span class="hl">}</span>
+<span class="hl"></span>
+<span class="hl"><span class="k">export</span> async <span class="k">function</span> <span class="f">deleteRequest</span>(id: string): Promise<span class="t">&lt;void</span><span class="t">&gt;</span> {</span>
+<span class="hl">  await <span class="f">callApi</span>(<span class="s">`${API_URL}/${id}`</span>, { method: <span class="s">'DELETE'</span> })</span>
+<span class="hl">}</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/15-api-full.png" width="1240" height="780" alt="VS Code: api.ts с функциями fetchRequests, createRequest, updateStatus и deleteRequest" loading="lazy"><figcaption>api.ts: четыре функции запросов</figcaption></figure></li>
+          <li><b>Замените App.tsx</b><p>Изменённые строки подсвечены: импорт новых функций и три обработчика — <code>handleNext</code>, <code>handleAdd</code>, <code>handleRemove</code>. В карточку теперь передаётся и статус заявки (строка 140).</p>
+            <!--CODE tools/code23/App.tsx | zayavki/src/App.tsx | mark=6,75-81,85-96,100-106,140--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> { nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> RequestItem, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span>
+<span class="hl"><span class="k">import</span> { createRequest, deleteRequest, fetchRequests, updateStatus } <span class="k">from</span> <span class="s">'./api'</span></span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [requests, setRequests] = useState<span class="t">&lt;RequestItem</span>[]<span class="t">&gt;</span>([])
+  <span class="k">const</span> [loading, setLoading] = <span class="f">useState</span>(<span class="k">true</span>)
+  <span class="k">const</span> [error, setError] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [attempt, setAttempt] = <span class="f">useState</span>(<span class="n">0</span>)
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">let</span> ignore = <span class="k">false</span>
+    async <span class="k">function</span> <span class="f">load</span>() {
+      try {
+        <span class="k">const</span> list = await <span class="f">fetchRequests</span>()
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setRequests</span>(list)
+        }
+      } catch (e) {
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setError</span>((e as Error).message)
+        }
+      }
+      <span class="k">if</span> (!ignore) {
+        <span class="f">setLoading</span>(<span class="k">false</span>)
+      }
+    }
+    <span class="f">load</span>()
+    <span class="k">return</span> () =<span class="t">&gt;</span> {
+      ignore = <span class="k">true</span>
+    }
+  }, [attempt])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+  }, [newCount])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">if</span> (notice === <span class="s">''</span>) {
+      <span class="k">return</span>
+    }
+    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)
+    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)
+  }, [notice])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">function</span> <span class="f">handleKey</span>(event: KeyboardEvent) {
+      <span class="k">if</span> (event.key === <span class="s">'Escape'</span>) {
+        <span class="f">setFilter</span>(<span class="s">'Все'</span>)
+      }
+    }
+    window.<span class="f">addEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+    <span class="k">return</span> () =<span class="t">&gt;</span> window.<span class="f">removeEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+  }, [])
+
+  <span class="k">function</span> <span class="f">retry</span>() {
+    <span class="f">setError</span>(<span class="s">''</span>)
+    <span class="f">setLoading</span>(<span class="k">true</span>)
+    <span class="f">setAttempt</span>(attempt + <span class="n">1</span>)
+  }
+
+<span class="hl">  async <span class="k">function</span> <span class="f">handleNext</span>(id: string, status: Status) {</span>
+<span class="hl">    try {</span>
+<span class="hl">      <span class="k">const</span> updated = await <span class="f">updateStatus</span>(id, <span class="f">nextStatus</span>(status))</span>
+<span class="hl">      <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> list.<span class="f">map</span>((r) =<span class="t">&gt;</span> (r.id === id ? updated : r)))</span>
+<span class="hl">    } catch (e) {</span>
+<span class="hl">      <span class="f">setNotice</span>((e as Error).message)</span>
+<span class="hl">    }</span>
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+<span class="hl">    try {</span>
+<span class="hl">      <span class="k">const</span> created = await <span class="f">createRequest</span>(data)</span>
+<span class="hl">      <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> [created, ...list])</span>
+<span class="hl">      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)</span>
+<span class="hl">      <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)</span>
+<span class="hl">      <span class="k">if</span> (sent) {</span>
+<span class="hl">        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)</span>
+<span class="hl">      } <span class="k">else</span> {</span>
+<span class="hl">        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)</span>
+<span class="hl">      }</span>
+<span class="hl">    } catch (e) {</span>
+<span class="hl">      <span class="f">setNotice</span>((e as Error).message)</span>
+    }
+  }
+
+<span class="hl">  async <span class="k">function</span> <span class="f">handleRemove</span>(id: string) {</span>
+<span class="hl">    try {</span>
+<span class="hl">      await <span class="f">deleteRequest</span>(id)</span>
+<span class="hl">      <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> list.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))</span>
+<span class="hl">    } catch (e) {</span>
+<span class="hl">      <span class="f">setNotice</span>((e as Error).message)</span>
+<span class="hl">    }</span>
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {loading &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявок…<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {error !== <span class="s">''</span> &amp;&amp; (
+            <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"load-error"</span><span class="t">&gt;</span>
+              <span class="t">&lt;p</span><span class="t">&gt;</span>{error}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+              <span class="t">&lt;button</span> <span class="a">onClick</span>={retry}<span class="t">&gt;</span>Повторить<span class="t">&lt;/button</span><span class="t">&gt;</span>
+            <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          )}
+          {!loading &amp;&amp; error === <span class="s">''</span> &amp;&amp; visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+<span class="hl">              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id, r.status)}</span>
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/16-app-final.png" width="1240" height="780" alt="VS Code: App.tsx с асинхронными handleNext, handleAdd, handleRemove: await updateStatus, createRequest, deleteRequest и setRequests с функцией list" loading="lazy"><figcaption>Обработчики отправляют изменения на сервер</figcaption></figure></li>
+          <li><b>Добавьте заявку и возьмите её в работу</b><p>Обновите доску (<kbd>F5</kbd>). Добавьте ту же заявку: «Не печатает принтер», кабинет 112, «Принтер». У новой заявки нажмите <strong>Взять в работу</strong>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/17-dobavlena-server.png" width="1100" height="1122" alt="Доска: сообщение Заявка добавлена, уведомление отправлено; сверху Не печатает принтер со статусом В работе и кнопкой Завершить; ниже пять заявок" loading="lazy"><figcaption>Заявка добавлена и взята в работу</figcaption></figure></li>
+          <li><b>Обновите страницу</b><p>Нажмите <kbd>F5</kbd>. Заявка на месте, статус «В работе» сохранился.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/18-server-posle-f5.png" width="1100" height="1073" alt="Доска после обновления: Не печатает принтер со статусом В работе вверху, всего шесть заявок" loading="lazy"><figcaption>После F5 заявка и её статус остались</figcaption></figure></li>
+          <li><b>Посмотрите коллекцию в панели</b><p>Откройте панель PocketBase <code>http://localhost:8090/_/</code>, коллекцию <code>requests</code>, и нажмите кнопку обновления рядом с её названием. Записей шесть, сверху — новая. Её же увидит любой другой браузер, который откроет доску.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/19-panel.png" width="1280" height="800" alt="Панель PocketBase, коллекция requests: шесть записей, первая Не печатает принтер, 112, Принтер; внизу Total: 6" loading="lazy"><figcaption>Новая заявка в базе: Total 6</figcaption></figure></li>
+          <li><b>Опыт: действие без сервера</b><p>Во втором терминале остановите PocketBase командой <code>docker compose stop pocketbase</code>. На доске у любой заявки нажмите <strong>Взять в работу</strong>. Статус не изменился, вверху сообщение об ошибке. Через 5 секунд оно исчезнет — это таймер из главы 2.1.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/20-oshibka-deystviya.png" width="1100" height="900" alt="Доска: сообщение Сервер заявок не отвечает. Проверьте, что PocketBase запущен.; статусы заявок не изменились" loading="lazy"><figcaption>Сервер не ответил: статус не изменился, вверху сообщение</figcaption></figure></li>
+          <li><b>Запустите PocketBase</b><p>Выполните <code>docker compose start pocketbase</code> во втором терминале.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Новые функции api.ts</p>
+
+        <!--CODE tools/code23/api.ts | api.ts · строки 24–44 | lines=24-44 pins=26:1,28:2,34:3,37:4,43:5--><figure class="code" data-read><figcaption><span>api.ts · строки 24–44</span></figcaption><pre><span class="k">export</span> async <span class="k">function</span> <span class="f">createRequest</span>(data: NewRequest): Promise<span class="t">&lt;RequestItem</span><span class="t">&gt;</span> {
+  <span class="k">const</span> response = await <span class="f">callApi</span>(API_URL, {
+    method: <span class="s">'POST'</span>,  <span class="pin">1</span>
+    headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },
+    body: JSON.<span class="f">stringify</span>({ ...data, status: <span class="s">'Новая'</span> }),  <span class="pin">2</span>
+  })
+  <span class="k">return</span> response.<span class="f">json</span>()
+}
+
+<span class="k">export</span> async <span class="k">function</span> <span class="f">updateStatus</span>(id: string, status: Status): Promise<span class="t">&lt;RequestItem</span><span class="t">&gt;</span> {
+  <span class="k">const</span> response = await <span class="f">callApi</span>(<span class="s">`${API_URL}/${id}`</span>, {  <span class="pin">3</span>
+    method: <span class="s">'PATCH'</span>,
+    headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },
+    body: JSON.<span class="f">stringify</span>({ status }),  <span class="pin">4</span>
+  })
+  <span class="k">return</span> response.<span class="f">json</span>()
+}
+
+<span class="k">export</span> async <span class="k">function</span> <span class="f">deleteRequest</span>(id: string): Promise<span class="t">&lt;void</span><span class="t">&gt;</span> {
+  await <span class="f">callApi</span>(<span class="s">`${API_URL}/${id}`</span>, { method: <span class="s">'DELETE'</span> })  <span class="pin">5</span>
+}</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p><code>POST</code> на адрес коллекции — «создать запись», как в консоли в главе 2.2.</p></div></li>
+          <li><span class="pin">2</span><div><p>Тело запроса — поля формы и статус «Новая». Без статуса правило Create из главы 2.2 (<code>@request.body.status = "Новая"</code>) отклонило бы запрос с кодом 400. В ответ PocketBase присылает созданную запись с <code>id</code>, функция её возвращает.</p></div></li>
+          <li><span class="pin">3</span><div><p><code>PATCH</code> на адрес одной записи — «изменить запись». Адрес собирается из адреса коллекции, косой черты и <code>id</code>.</p></div></li>
+          <li><span class="pin">4</span><div><p>В теле только новый статус: <code>{ status }</code> — короткая запись <code>{ status: status }</code>. Полей title, room и details в запросе нет, поэтому правило Update его пропускает.</p></div></li>
+          <li><span class="pin">5</span><div><p><code>DELETE</code> — «удалить запись». Правило Delete разрешает удалять только заявки со статусом «Готово», а кнопка «Убрать с доски» и показывается только у них. На удаление PocketBase отвечает кодом 204 — «выполнено, ответ пустой». Читать в нём нечего, поэтому <code>response.json()</code> здесь не вызывается.</p></div></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Обработчики ждут ответа сервера</p>
+
+        <p>Каждый обработчик сначала отправляет запрос, а состояние меняет после <code>await</code>, когда ответ уже пришёл. Если сервер отказал, <code>catch</code> показывает текст ошибки в сообщении <code>notice</code>, а доска остаётся как была. Так доска не показывает изменения, которых в базе нет. Новая заявка берётся из ответа сервера: в ней <code>id</code>, который дал PocketBase, поэтому <code>String(Date.now())</code> больше не нужен.</p>
+
+        <!--CODE tools/code23/App.tsx | App.tsx · строки 75–82 | lines=75-82 pins=77:1,78:2,80:3--><figure class="code" data-read><figcaption><span>App.tsx · строки 75–82</span></figcaption><pre>  async <span class="k">function</span> <span class="f">handleNext</span>(id: string, status: Status) {
+    try {
+      <span class="k">const</span> updated = await <span class="f">updateStatus</span>(id, <span class="f">nextStatus</span>(status))  <span class="pin">1</span>
+      <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> list.<span class="f">map</span>((r) =<span class="t">&gt;</span> (r.id === id ? updated : r)))  <span class="pin">2</span>
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)  <span class="pin">3</span>
+    }
+  }</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Отправить новый статус и дождаться записи из базы.</p></div></li>
+          <li><span class="pin">2</span><div><p>Заменить в списке одну заявку на ту, что прислал сервер. Запись <code>r.id === id ? updated : r</code> — тернарный оператор из главы 1.4. Если <code>id</code> совпал, в список идёт запись с сервера, иначе прежняя заявка. В <code>setRequests</code> передана функция — её разбор ниже.</p></div></li>
+          <li><span class="pin">3</span><div><p>Сервер не ответил или отказал: показать текст ошибки в сообщении над списком.</p></div></li>
+        </ol>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Два бухгалтера одновременно переписали отчёт со стола, каждый исправил в своей копии одну строку и положил копию обратно. На столе осталась последняя копия, и исправление первого бухгалтера пропало. Если же каждый берёт со стола текущий отчёт в момент, когда вносит правку, сохраняются обе правки.</p>
+          <p class="miss">Бухгалтеры могут договориться. В React порядок задаёт сам React: функции обновления выполняются по очереди, и каждая получает результат предыдущей.</p>
+        </div></div>
+
+        <p>Запись <code>setRequests((list) =&gt; …)</code> называется <span class="term">функцией обновления</span>. React вызывает её и передаёт в <code>list</code> текущий список — с учётом всех изменений, сделанных к этому моменту. А <code>requests</code> в обработчике — список в момент нажатия. Пока шёл запрос, список мог измениться: например, ответ на нажатие по другой карточке пришёл раньше. Пошаговый разбор показывает два быстрых нажатия «Взять в работу» у разных заявок.</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Два нажатия подряд: старый список и функция обновления</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code23/App.tsx | | bare lines=75-82--><pre class="trace__code" data-start="75">  async <span class="k">function</span> <span class="f">handleNext</span>(id: string, status: Status) {
+    try {
+      <span class="k">const</span> updated = await <span class="f">updateStatus</span>(id, <span class="f">nextStatus</span>(status))
+      <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> list.<span class="f">map</span>((r) =<span class="t">&gt;</span> (r.id === id ? updated : r)))
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }</pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="75"><b>Два нажатия</b>
+                  <p>Мастер нажал «Взять в работу» у заявки «Мышь», затем сразу у заявки «Компьютер». Оба вызова <code>handleNext</code> видят один и тот же <code>requests</code>, где обе заявки — «Новая».</p>
+                  <div class="vars"><span class="var"><i>Мышь</i><span>Новая</span></span><span class="var"><i>Компьютер</i><span>Новая</span></span></div></li>
+                <li data-lines="77"><b>Ответ про мышь</b>
+                  <p>Сервер вернул «Мышь» со статусом «В работе». Функция обновления получила текущий список и заменила в нём одну заявку.</p>
+                  <div class="vars"><span class="var var--new"><i>Мышь</i><span>В работе</span></span><span class="var"><i>Компьютер</i><span>Новая</span></span></div></li>
+                <li data-lines="78"><b>Ответ про компьютер</b>
+                  <p>Функция обновления снова получила текущий список, уже с мышью «В работе», и заменила в нём компьютер. Сохранились оба изменения.</p>
+                  <div class="vars"><span class="var"><i>Мышь</i><span>В работе</span></span><span class="var var--new"><i>Компьютер</i><span>В работе</span></span></div></li>
+                <li data-lines="78"><b>Если бы использовался requests</b>
+                  <p>Запись <code>setRequests(requests.map(…))</code> во втором вызове взяла бы список момента нажатия, где мышь ещё «Новая». Мышь вернулась бы на доске в «Новая», хотя в базе она «В работе». Расхождение исчезло бы только после F5.</p>
+                  <div class="vars"><span class="var"><i>Мышь</i><span>Новая (неверно)</span></span><span class="var"><i>Компьютер</i><span>В работе</span></span></div></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p>Правило из этого разбора: если новое состояние вычисляется из прежнего и между нажатием и сменой состояния есть <code>await</code>, в <code>set</code>-функцию передают функцию обновления. В <code>handleAdd</code> и <code>handleRemove</code> она записана так же: <code>(list) =&gt; [created, ...list]</code> и <code>(list) =&gt; list.filter(…)</code>.</p>
+
+        <p>Уведомление в Telegram через n8n из модуля 1 осталось. <code>handleAdd</code> вызывает <code>sendRequest</code>, когда заявка уже сохранена в базе, и передаёт её с <code>id</code> от PocketBase.</p>
+
+        <div class="starter starter--finish">
+          <p class="starter__head">Проект после главы</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в состоянии конца главы: <code>api.ts</code> с четырьмя запросами к PocketBase, <code>App.tsx</code> с загрузкой, ошибкой и кнопкой «Повторить», без <code>storage.ts</code>. Распаковка и запуск — как у архива в начале главы.</p>
+            <a class="starter__btn" href="zayavki-konec-2-3.zip" download>zayavki-konec-2-3.zip <small>21 КБ</small></a>
+            <p class="starter__lock">Архив закрыт паролем. После нажатия на кнопку введите пароль — его сообщает преподаватель.</p>
+          </div>
+        </div>
+
+        <p class="bridge">Код загрузки занял в <code>App.tsx</code> четыре переменных состояния и длинный эффект. В главе 2.4 он переедет в собственный хук.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Частые ошибки</h2>
+
+        <p>Сообщения получены в проекте <code>zayavki</code>: ошибки типов — командой <code>npx tsc -b</code>, остальные — в браузере с PocketBase 0.40.6.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>«Загрузка заявок…» не исчезает, в консоли <code>Uncaught (in promise) Error: Сервер заявок не отвечает…</code></td><td>В эффекте нет <code>try</code> и <code>catch</code>, <code>setLoading(false)</code> не выполняется</td><td>Добавить <code>try</code>, <code>catch</code> и <code>setLoading(false)</code> после них, как в §4</td></tr>
+              <tr><td>В консоли <code>GET http://localhost:8090/… net::ERR_CONNECTION_REFUSED</code></td><td>PocketBase не запущен</td><td>Запустить Docker Desktop и выполнить <code>docker compose start pocketbase</code> в папке <code>avtomatizaciya</code></td></tr>
+              <tr><td>На доске «Сервер отклонил запрос: код 403.»</td><td>У List/Search rule стоит замок: читать могут только суперпользователи</td><td>Снять замок с правил List/Search и View, как в главе 2.2</td></tr>
+              <tr><td>«Сервер отклонил запрос: код 400.» при добавлении заявки</td><td>Тело запроса не прошло правило Create или проверку поля: нет статуса «Новая», категории нет в вариантах Select</td><td>Сверить <code>createRequest</code> и варианты поля <code>category</code> в панели</td></tr>
+              <tr><td>«Сервер отклонил запрос: код 404.» при смене статуса или удалении</td><td>Запись не прошла правило Update или Delete, или её уже удалили в другом браузере</td><td>Обновить страницу; проверить правила коллекции</td></tr>
+              <tr><td><code>error TS2307: Cannot find module './storage' or its corresponding type declarations.</code></td><td><code>storage.ts</code> удалён, а <code>App.tsx</code> его ещё импортирует</td><td>Заменить <code>App.tsx</code> кодом из §3</td></tr>
+              <tr><td><code>error TS2322: Type 'number' is not assignable to type 'string'.</code></td><td>В <code>RequestItem</code> поле <code>id</code> — строка, а новой заявке дан номер <code>Date.now()</code></td><td>Брать заявку из ответа <code>createRequest</code>; на время §3 — <code>String(Date.now())</code></td></tr>
+              <tr><td>Заявка появилась на доске, а после F5 пропала</td><td>Обработчик меняет только состояние и не отправляет запрос</td><td>Вызывать функции из <code>api.ts</code>, как в §5</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s7"><span class="sec">§7</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Какие три состояния бывают у списка, который загружается с сервера?</summary>
+          <p>Загрузка — ответа ещё нет. Ошибка — ответа не будет или сервер отказал. Данные — ответ пришёл, список можно показать.</p>
+        </details>
+        <details>
+          <summary>Почему <code>fetch</code> не выбрасывает ошибку при ответе 404 и как <code>callApi</code> её всё-таки замечает?</summary>
+          <p>Ответ 404 — это ответ: сервер работает и сообщил код. <code>fetch</code> выбрасывает ошибку, только когда ответа нет совсем. <code>callApi</code> проверяет <code>response.ok</code> и сама выбрасывает ошибку, если код не от 200 до 299.</p>
+        </details>
+        <details>
+          <summary>Почему функцию эффекта не делают <code>async</code>, а объявляют внутри неё функцию <code>load</code>?</summary>
+          <p>Функция эффекта может вернуть только функцию очистки или ничего. <code>async</code>-функция всегда возвращает обещание ответа, поэтому <code>await</code> переносят во внутреннюю функцию и вызывают её.</p>
+        </details>
+        <details>
+          <summary>Что делает флажок <code>ignore</code>?</summary>
+          <p>Очистка эффекта поднимает флажок своего запуска. Ответ, который пришёл для очищенного запуска, не попадает в состояние. В режиме разработки так отбрасывается первый из двух ответов.</p>
+        </details>
+        <details>
+          <summary>Зачем в зависимостях эффекта <code>attempt</code>, если внутри эффекта он не используется?</summary>
+          <p>Чтобы эффект запускался заново при каждом нажатии «Повторить»: <code>retry</code> увеличивает <code>attempt</code>, зависимость изменилась — React запускает эффект.</p>
+        </details>
+        <details>
+          <summary>Почему в <code>handleNext</code> пишут <code>setRequests((list) =&gt; …)</code>, а не <code>setRequests(requests.map(…))</code>?</summary>
+          <p>Между нажатием и сменой состояния стоит <code>await</code>. За это время список мог измениться, а <code>requests</code> в обработчике — список момента нажатия. Функция обновления получает текущий список, и чужие изменения не теряются.</p>
+        </details>
+        <details>
+          <summary>Добавьте в блок ошибки загрузки число попыток: «Попытка 2». Какую переменную показать и где?</summary>
+          <p>Переменную <code>attempt</code>: первая загрузка идёт при <code>attempt</code>, равном 0, поэтому номер попытки — <code>attempt + 1</code>. В блоке <code>.load-error</code> после текста ошибки: <code>&lt;p&gt;Попытка {attempt + 1}&lt;/p&gt;</code>.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Ответ выполнен</b><code>response.ok</code> — коды 200–299</div>
+          <div><b>Выбросить ошибку</b><code>throw new Error('текст')</code></div>
+          <div><b>Поймать ошибку</b><code>try { … } catch (e) { (e as Error).message }</code></div>
+          <div><b>Загрузка в эффекте</b><code>let ignore = false</code> · <code>async function load()</code> · <code>return () =&gt; { ignore = true }</code></div>
+          <div><b>Повторить загрузку</b><code>setAttempt(attempt + 1)</code>, в зависимостях <code>[attempt]</code></div>
+          <div><b>Функция обновления</b><code>setRequests((list) =&gt; [created, ...list])</code></div>
+          <div><b>Сортировка PocketBase</b><code>?sort=-created</code> — новые сверху</div>
+          <div><b>Остановить, запустить</b><code>docker compose stop pocketbase</code>, <code>start</code></div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>Доска больше не хранит заявки в localStorage: список загружается из PocketBase, а добавление, смена статуса и удаление отправляются на сервер. Запросы собраны в файле <code>api.ts</code>. Общая функция <code>callApi</code> превращает в ошибку с понятным текстом оба вида неудач: сервер не ответил и сервер отказал. Загрузку отправляет эффект после первой отрисовки. Внутри него асинхронная функция <code>load</code>, а флажок <code>ignore</code> отбрасывает ответы очищенных запусков. У списка три состояния — загрузка, ошибка и данные. Их хранят переменные <code>loading</code>, <code>error</code> и <code>requests</code>, кнопка «Повторить» меняет зависимость <code>attempt</code> и запускает эффект снова. Обработчики меняют состояние только после ответа сервера и передают в <code>setRequests</code> функцию обновления, чтобы не потерять изменения, сделанные за время запроса.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://react.dev/reference/react/useEffect#fetching-data-with-effects" target="_blank" rel="noreferrer">react.dev — useEffect: Fetching data with Effects</a></li>
+          <li><a href="https://react.dev/learn/synchronizing-with-effects#fetching-data" target="_blank" rel="noreferrer">react.dev — Synchronizing with Effects: Fetching data</a></li>
+          <li><a href="https://react.dev/reference/react/useState#updating-state-based-on-the-previous-state" target="_blank" rel="noreferrer">react.dev — useState: Updating state based on the previous state</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Response/ok" target="_blank" rel="noreferrer">MDN — Response: ok property</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/throw" target="_blank" rel="noreferrer">MDN — throw</a></li>
+          <li><a href="https://pocketbase.io/docs/api-records/" target="_blank" rel="noreferrer">pocketbase.io — API Records</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../22-pocketbase/index.html">← 2.2 PocketBase: коллекции и правила доступа</a>
+          <a href="../../index.html">Оглавление →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>
