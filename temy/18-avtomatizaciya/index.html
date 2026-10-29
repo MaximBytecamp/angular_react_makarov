@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>Автоматизация модуля 1 · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; }
+    .sch .ng-text { fill: #C2185B; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 1 · React: первый проект и первый бот</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 1 · автоматизация</p>
+          <p class="running__folio">А1</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">А1</span>
+          <h1>Заявка → n8n<br>→ Telegram</h1>
+          <p class="lead">На этой странице доска заявок начинает сообщать ответственному о каждой новой заявке в Telegram. Сервис автоматизации n8n запускается на компьютере в Docker одной командой. Затем через @BotFather создаётся бот Telegram, а в n8n собирается процесс из двух блоков: «принять заявку» и «отправить сообщение в Telegram». Код доски менять не нужно: в главе 1.7 он уже отправляет заявку на адрес n8n.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>Автоматизация, n8n, Telegram</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после главы 1.7, Docker Desktop, Telegram на телефоне или компьютере, браузер Chrome, Edge или Яндекс Браузер</dd></div>
+          <div><dt>Результат</dt><dd>Новая заявка с доски приходит сообщением от бота в Telegram, токен бота хранится только в n8n</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>На этой странице</b>
+          <ol>
+            <li><a href="#s1">Как устроена автоматизация</a></li>
+            <li><a href="#s2">Docker и n8n</a></li>
+            <li><a href="#s3">Бот в Telegram</a></li>
+            <li><a href="#s4">Процесс в n8n</a></li>
+            <li><a href="#s5">Проверка: заявка в Telegram</a></li>
+            <li><a href="#s6">Частые ошибки</a></li>
+            <li><a href="#s7">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <div class="starter">
+          <p class="starter__head">Готовые файлы для этой страницы</p>
+          <div class="starter__body">
+            <p>В архиве папка <code>avtomatizaciya</code> с двумя файлами: <code>compose.yaml</code> запускает n8n, <code>zayavka-telegram.json</code> — шаблон процесса для вставки в n8n. Оба файла также приведены на странице, их можно скопировать оттуда. Проект доски после главы 1.7 — в <a href="../17-sohranenie-i-otpravka/zayavki-konec-1-7.zip">архиве главы 1.7</a>.</p>
+            <a class="starter__btn" href="avtomatizaciya.zip" download>avtomatizaciya.zip <small>1 КБ</small></a>
+          </div>
+        </div>
+
+        <h2 id="s1"><span class="sec">§1</span>Как устроена автоматизация</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Кто что делает</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В колледже есть окошко приёма заявок и дежурный мастер с телефоном. Посетитель оставляет заявку в окошке, сотрудник окошка звонит мастеру и пересказывает её. Посетитель не знает номер мастера и не звонит ему сам. Доска заявок — окошко, n8n — сотрудник, который звонит, Telegram — телефон мастера.</p>
+          <p class="miss">Сотрудник окошка решает сам, кому позвонить. n8n делает только то, что записано в процессе: принять заявку и отправить сообщение в заданный чат.</p>
+        </div></div>
+
+        <p>Новые инструменты этой страницы:</p>
+        <ul>
+          <li><span class="term">n8n</span> (читается «эн-эйт-эн») — сервис автоматизации. В нём процессы собираются из блоков мышью: «когда пришло то-то, сделай то-то». Блоки называются <span class="term">узлами</span> (nodes), а процесс — workflow.</li>
+          <li><span class="term">Вебхук</span> (webhook) — адрес, по которому процесс n8n принимает запросы. Доска отправляет заявку на адрес <code>http://localhost:5678/webhook/zayavka</code>, и процесс запускается.</li>
+          <li><span class="term">Бот Telegram</span> — учётная запись Telegram, которой управляет программа. Программа пишет от имени бота через Bot API — набор адресов на серверах Telegram.</li>
+          <li><span class="term">Токен бота</span> — пароль, по которому Telegram узнаёт программу, управляющую ботом. Кто знает токен, может писать от имени бота.</li>
+          <li><span class="term">Docker</span> — программа, которая запускает другие программы в изолированных <span class="term">контейнерах</span>. В контейнере программа работает вместе со всем, что ей нужно, отдельно от остальной системы. n8n запускается в контейнере одной командой, без установки Node.js-пакетов и баз.</li>
+        </ul>
+
+        <p>На схеме — путь заявки от формы до телефона.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Путь заявки: доска → n8n → Telegram</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 250" role="img" aria-label="Доска в браузере отправляет POST на вебхук n8n в Docker. Узел Telegram с токеном отправляет сообщение через Bot API. Бот присылает сообщение в Telegram ответственного">
+              <rect x="20" y="30" width="170" height="64" fill="#D6F0F9"/><text class="mono" x="34" y="56">доска заявок</text><text class="soft" x="34" y="78">localhost:5173</text>
+              <rect x="250" y="14" width="250" height="150" fill="#ffffff"/><text class="mono" x="264" y="36">n8n в Docker</text><text class="soft" x="264" y="54">localhost:5678</text>
+              <rect x="266" y="70" width="100" height="46" fill="#F9DDE8"/><text class="mono" x="278" y="98">Webhook</text>
+              <rect x="388" y="70" width="100" height="46" fill="#161A2E"/><text class="mono on-dark" x="398" y="98">Telegram</text>
+              <path d="M366 93 H 382"/><path d="M376 88 L 382 93 L 376 98"/>
+              <text class="soft ng-text" x="380" y="146">токен бота — здесь</text>
+              <path d="M190 62 C 220 62, 230 93, 260 93"/><path d="M252 87 L 260 93 L 252 99"/><text class="soft" x="196" y="118">POST заявка</text>
+              <rect x="560" y="30" width="180" height="64" fill="#ffffff"/><text class="mono" x="574" y="56">Telegram</text><text class="soft" x="574" y="78">Bot API</text>
+              <path d="M488 93 C 520 93, 525 62, 552 62"/><path d="M544 56 L 552 62 L 544 68"/>
+              <rect x="560" y="160" width="180" height="64" fill="#D4EEDF"/><text class="mono" x="574" y="186">Telegram</text><text class="soft" x="574" y="208">ответственного</text>
+              <path d="M650 94 V 152"/><path d="M644 144 L 650 152 L 656 144"/><text class="soft" x="658" y="128">бот пишет</text>
+              <text class="soft" x="20" y="236">в коде доски только адрес вебхука; токена в браузере нет</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Доска знает только адрес вебхука. Токен бота хранится в n8n, и в браузер он не попадает.</p>
+        </figure>
+
+        <p>Почему токен хранится в n8n. Всё, что доска присылает браузеру, может прочитать любой посетитель: в DevTools видны файлы проекта и все запросы. Токен в коде доски означал бы, что любой посетитель может писать от имени бота. Поэтому секреты держат на сервере, в n8n, а доска отправляет только данные заявки. Это правило дисциплины из главы 0.5: токены и ключи не попадают в код фронтенда.</p>
+
+        <p class="bridge">Сначала нужен сам n8n. Его запускает Docker.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Docker и n8n</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Устанавливаем Docker и запускаем n8n</p>
+
+        <ol class="steps">
+          <li><b>Установите Docker Desktop</b><p>Скачайте Docker Desktop с <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noreferrer">docker.com/products/docker-desktop</a> для своей системы и установите. Для учёбы и личного использования он бесплатный. Запустите Docker Desktop и дождитесь, пока в его окне появится надпись о том, что движок запущен (Engine running).</p></li>
+          <li><b>Проверьте установку</b><p>В терминале VS Code выполните команду. Ответ — номер версии, например <code>Docker version 29.7.2</code>.</p>
+            <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>docker --version</pre></figure></li>
+          <li><b>Создайте папку и файл compose.yaml</b><p>В проводнике VS Code в корне <code>react-kurs</code> создайте папку <code>avtomatizaciya</code>, в ней — файл <code>compose.yaml</code>. Вставьте текст и сохраните. Отступы важны: в этом формате вложенность задаётся пробелами.</p>
+            <!--CODE tools/n8n/compose.yaml | react-kurs/avtomatizaciya/compose.yaml--><figure class="code"><figcaption><span>react-kurs/avtomatizaciya/compose.yaml</span></figcaption><pre>services:
+  n8n:
+    image: n8nio/n8n:<span class="n">2.45</span>.<span class="n">4</span>
+    ports:
+      - <span class="s">"5678:5678"</span>
+    environment:
+      - GENERIC_TIMEZONE=Europe/Moscow
+      - <span class="a">TZ</span>=Europe/Moscow
+      - N8N_DEFAULT_LOCALE=en
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/a01-compose.png" width="1240" height="780" alt="VS Code: папка avtomatizaciya рядом с zayavki, в ней compose.yaml" loading="lazy"><figcaption>Так должен выглядеть проект: папка avtomatizaciya рядом с zayavki</figcaption></figure></li>
+          <li><b>Запустите n8n</b><p>Откройте второй терминал (<b>Terminal → New Terminal</b>; первый занят сервером доски) и выполните команды. Первый запуск скачивает образ n8n, это несколько минут.</p>
+            <figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>cd avtomatizaciya
+docker compose up -d
+docker compose ps</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/a02-compose-up.png" width="1240" height="312" alt="Терминал: docker compose up -d создал том, сеть и контейнер avtomatizaciya-n8n-1; docker compose ps показывает контейнер Up и порт 5678" loading="lazy"><figcaption>Контейнер avtomatizaciya-n8n-1 запущен (Up), порт 5678 открыт</figcaption></figure></li>
+          <li><b>Создайте учётную запись n8n</b><p>Откройте в браузере <code>http://localhost:5678</code>. Заполните форму: почта, имя, фамилия, пароль (не короче 8 символов, с цифрой и заглавной буквой). Нажмите <strong>Next</strong>. Учётная запись хранится только в этом n8n на вашем компьютере, письмо на почту не приходит.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a03-setup.png" width="1280" height="800" alt="n8n: форма Set up owner account с почтой student@example.com, именем Иван, фамилией Петров и паролем" loading="lazy"><figcaption>Первый вход: учётная запись владельца n8n</figcaption></figure></li>
+          <li><b>Пропустите анкету</b><p>n8n спросит о компании и роли. Поля можно не заполнять: нажмите <strong>Get started</strong>.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a04-survey.png" width="1280" height="800" alt="n8n: анкета Customize n8n to you с кнопкой Get started" loading="lazy"><figcaption>Анкета необязательная: Get started</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что написано в compose.yaml</p>
+
+        <!--CODE tools/n8n/compose.yaml | compose.yaml · по строкам | pins=2:1,3:2,5:3,7:4,11:5,14:6--><figure class="code" data-read><figcaption><span>compose.yaml · по строкам</span></figcaption><pre>services:
+  n8n:  <span class="pin">1</span>
+    image: n8nio/n8n:<span class="n">2.45</span>.<span class="n">4</span>  <span class="pin">2</span>
+    ports:
+      - <span class="s">"5678:5678"</span>  <span class="pin">3</span>
+    environment:
+      - GENERIC_TIMEZONE=Europe/Moscow  <span class="pin">4</span>
+      - <span class="a">TZ</span>=Europe/Moscow
+      - N8N_DEFAULT_LOCALE=en
+    volumes:
+      - n8n_data:/home/node/.n8n  <span class="pin">5</span>
+
+volumes:
+  n8n_data:  <span class="pin">6</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Описывается одна служба с именем <code>n8n</code>. В модуле 2 сюда добавится база PocketBase, и обе службы будут запускаться одной командой.</p></div></li>
+          <li><span class="pin">2</span><div><p><span class="term">Образ</span> — готовая сборка программы для Docker, как установочный диск. <code>n8nio/n8n</code> — образ n8n, <code>2.45.4</code> — версия. Версия указана точно, чтобы у всех студентов был одинаковый n8n и кадры совпадали с экраном.</p></div></li>
+          <li><span class="pin">3</span><div><p>«Порт 5678 компьютера соединить с портом 5678 контейнера». Поэтому n8n открывается по адресу <code>localhost:5678</code>.</p></div></li>
+          <li><span class="pin">4</span><div><p>Часовой пояс: время запусков в n8n будет московским.</p></div></li>
+          <li><span class="pin">5</span><div><p><span class="term">Том</span> (volume) — папка для данных, которая живёт отдельно от контейнера. В ней n8n хранит учётную запись, процессы и токен бота. Без тома всё пропадало бы при пересоздании контейнера.</p></div></li>
+          <li><span class="pin">6</span><div><p>Объявление тома <code>n8n_data</code>. Docker создаёт его сам при первом запуске — на кадре строка <code>Volume avtomatizaciya_n8n_data Created</code>.</p></div></li>
+        </ol>
+
+        <p>Команда <code>docker compose up -d</code> читает <code>compose.yaml</code> в текущей папке и запускает описанные службы. <code>-d</code> — «в фоне»: терминал остаётся свободным. <code>docker compose ps</code> показывает запущенные контейнеры: в столбце <code>STATUS</code> должно быть <code>Up</code>. Остановить n8n — <code>docker compose stop</code>, запустить снова — <code>docker compose start</code>. На следующем занятии достаточно запустить Docker Desktop и выполнить <code>docker compose start</code> в папке <code>avtomatizaciya</code>.</p>
+
+        <p class="bridge">n8n работает. Прежде чем собирать процесс, нужен бот, от имени которого n8n будет писать.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Бот в Telegram</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Создаём бота и узнаём номер чата</p>
+
+        <ol class="steps">
+          <li><b>Создайте бота в @BotFather</b><p>В Telegram найдите <strong>@BotFather</strong> — официальный бот Telegram для создания ботов, с синей галочкой. Нажмите <strong>Start</strong> и отправьте команду <code>/newbot</code>. BotFather спросит имя бота — его видят в чате, например «Доска заявок ИТ-отдела». Затем — адрес бота латиницей, обязательно с окончанием <code>bot</code>, например <code>zayavki_ivanov_bot</code>. Адрес должен быть свободным: если занят, BotFather попросит другой.</p>
+            <div class="shot-todo"><b>Кадр: диалог с @BotFather</b><p>Команда /newbot, имя, адрес и ответ с токеном (токен закрыт).</p></div></li>
+          <li><b>Сохраните токен</b><p>В последнем сообщении BotFather пришлёт токен вида <code>1234567890:AAH…</code>. Скопируйте его в надёжное место. Токен не вставляют в код доски, в чаты с ИИ и в репозиторий на GitHub. Если токен попал в чужие руки, в BotFather командой <code>/revoke</code> выдаётся новый, а старый перестаёт работать.</p></li>
+          <li><b>Напишите боту</b><p>Откройте своего бота по ссылке из сообщения BotFather и нажмите <strong>Start</strong>. Бот не может написать человеку первым: пока вы не нажали Start, сообщения от него не дойдут.</p></li>
+          <li><b>Узнайте номер чата</b><p>Откройте в браузере адрес ниже, подставив свой токен вместо <code>ТОКЕН</code> (слово <code>bot</code> перед ним остаётся). В ответе найдите <code>"chat":{"id":</code> — число после него и есть номер вашего чата с ботом.</p>
+            <figure class="code"><figcaption><span>Адрес в браузере</span></figcaption><pre>https://api.telegram.org/botТОКЕН/getUpdates</pre></figure>
+            <figure class="shot" style="max-width: 1106px"><img src="img/a11-getupdates.png" width="1100" height="143" alt="Ответ getUpdates в браузере: JSON с message, from и chat; номер чата, имя и имя пользователя размыты" loading="lazy"><figcaption>Ответ getUpdates: номер чата — после "chat":{"id": (на кадре размыт, как и имя)</figcaption></figure>
+            <p>Если в ответе <code>"result":[]</code> — пустой список, боту ещё никто не писал: нажмите Start в чате с ботом и обновите страницу.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что вернул getUpdates</p>
+
+        <p><code>getUpdates</code> — адрес Bot API, который отдаёт новые сообщения, присланные боту. Ответ — JSON, тот же формат, что в главе 1.7. В нём список <code>result</code>, в каждом элементе — сообщение <code>message</code>. Поле <code>from</code> описывает того, кто написал, поле <code>chat</code> — чат, где это произошло. Для личной переписки номер чата совпадает с номером пользователя. Этот номер n8n укажет, когда будет отправлять сообщение: куда писать.</p>
+
+        <p class="bridge">Есть токен и номер чата. Осталось собрать процесс в n8n.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Процесс в n8n</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Вставляем шаблон процесса</p>
+
+        <ol class="steps">
+          <li><b>Создайте пустой процесс</b><p>На главной странице n8n нажмите <strong>Build a workflow</strong>. Откроется пустой холст.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a05-home.png" width="1280" height="800" alt="Главная n8n: Let's build your first automation, карточки Build an agent и Build a workflow" loading="lazy"><figcaption>Главная n8n: Build a workflow</figcaption></figure></li>
+          <li><b>Скопируйте шаблон</b><p>Нажмите «копировать» у блока ниже. Это описание процесса из двух узлов в формате JSON; n8n принимает такой текст при вставке.</p>
+            <!--CODE tools/n8n/zayavka-telegram.json | avtomatizaciya/zayavka-telegram.json--><figure class="code"><figcaption><span>avtomatizaciya/zayavka-telegram.json</span></figcaption><pre>{
+  <span class="s">"name"</span>: <span class="s">"Заявка → Telegram"</span>,
+  <span class="s">"nodes"</span>: [
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"httpMethod"</span>: <span class="s">"POST"</span>,
+        <span class="s">"path"</span>: <span class="s">"zayavka"</span>,
+        <span class="s">"options"</span>: {
+          <span class="s">"allowedOrigins"</span>: <span class="s">"http://localhost:5173"</span>
+        }
+      },
+      <span class="s">"name"</span>: <span class="s">"Webhook"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.webhook"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">2.1</span>,
+      <span class="s">"position"</span>: [<span class="n">0</span>, <span class="n">0</span>],
+      <span class="s">"webhookId"</span>: <span class="s">"zayavka"</span>
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"chatId"</span>: <span class="s">""</span>,
+        <span class="s">"text"</span>: <span class="s">"=Новая заявка: {{ $json.body.title }}\nКабинет: {{ $json.body.room }} · {{ $json.body.category }}\n{{ $json.body.details }}"</span>,
+        <span class="s">"additionalFields"</span>: {
+          <span class="s">"appendAttribution"</span>: <span class="k">false</span>
+        }
+      },
+      <span class="s">"name"</span>: <span class="s">"Telegram"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.telegram"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">1.2</span>,
+      <span class="s">"position"</span>: [<span class="n">260</span>, <span class="n">0</span>]
+    }
+  ],
+  <span class="s">"connections"</span>: {
+    <span class="s">"Webhook"</span>: {
+      <span class="s">"main"</span>: [[{ <span class="s">"node"</span>: <span class="s">"Telegram"</span>, <span class="s">"type"</span>: <span class="s">"main"</span>, <span class="s">"index"</span>: <span class="n">0</span> }]]
+    }
+  }
+}</pre></figure><!--/CODE--></li>
+          <li><b>Вставьте шаблон на холст</b><p>Щёлкните по пустому месту холста и нажмите <kbd>Ctrl</kbd>+<kbd>V</kbd> (на macOS <kbd>Cmd</kbd>+<kbd>V</kbd>). Если появится окно <strong>Pasting this from an AI tool?</strong>, нажмите <strong>Skip</strong>.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a06-paste-ai.png" width="1280" height="800" alt="n8n: окно Pasting this from an AI tool? с кнопками Skip и Connect n8n" loading="lazy"><figcaption>Окно о помощниках ИИ появляется не всегда: Skip</figcaption></figure></li>
+          <li><b>Сохраните процесс</b><p>На холсте два узла: <strong>Webhook</strong> и <strong>Telegram</strong>. У Telegram красный значок: токен ещё не подключён. Нажмите <kbd>Ctrl</kbd>+<kbd>S</kbd>.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a07-canvas.png" width="1280" height="800" alt="Холст n8n: процесс Заявка → Telegram, узлы Webhook и Telegram соединены, у Telegram красный значок" loading="lazy"><figcaption>Процесс «Заявка → Telegram»: два узла, у Telegram красный значок</figcaption></figure></li>
+          <li><b>Посмотрите узел Webhook</b><p>Дважды щёлкните по узлу <strong>Webhook</strong>. Менять в нём ничего не нужно: метод POST, путь <code>zayavka</code>, разрешённый адрес <code>http://localhost:5173</code>. Закройте окно крестиком справа вверху.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a08-webhook.png" width="1280" height="800" alt="Узел Webhook: Test URL http://localhost:5678/webhook-test/zayavka, HTTP Method POST, Path zayavka, Respond Immediately, Allowed Origins (CORS) http://localhost:5173" loading="lazy"><figcaption>Узел Webhook: POST, путь zayavka, Allowed Origins — адрес доски</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--do"><span>Делаем</span>Подключаем бота</p>
+
+        <ol class="steps">
+          <li><b>Откройте узел Telegram</b><p>Дважды щёлкните по узлу <strong>Telegram</strong>. Поле <strong>Credential</strong> предлагает кнопку <strong>Connect to Telegram</strong>, поле <strong>Chat ID</strong> пустое и отмечено значком ошибки.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a09-telegram.png" width="1280" height="800" alt="Узел Telegram: кнопка Connect to Telegram, пустое поле Chat ID со значком ошибки, текст сообщения с выражениями" loading="lazy"><figcaption>Узел Telegram до настройки</figcaption></figure></li>
+          <li><b>Подключите токен</b><p>Нажмите <strong>Connect to Telegram</strong>. В окне <strong>Telegram account</strong> вставьте токен в поле <strong>Access Token</strong> и нажмите <strong>Save</strong>. Внизу появится «Credential successfully created». Закройте окно крестиком.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a10-credential.png" width="1280" height="800" alt="Окно Telegram account: поле Access Token скрыто точками, сообщение Credential successfully created" loading="lazy"><figcaption>Токен сохранён в n8n; в поле он виден только точками</figcaption></figure></li>
+          <li><b>Укажите номер чата</b><p>В поле <strong>Chat ID</strong> вставьте номер чата из §3. В поле <strong>Credential</strong> теперь стоит <strong>Telegram account</strong>.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a12-chat-id.png" width="1280" height="800" alt="Узел Telegram: Credential Telegram account, Chat ID заполнен (размыт)" loading="lazy"><figcaption>Chat ID заполнен (на кадре размыт), Credential — Telegram account</figcaption></figure></li>
+          <li><b>Сохраните и опубликуйте</b><p>Закройте окно узла, нажмите <kbd>Ctrl</kbd>+<kbd>S</kbd>, затем кнопку <strong>Publish</strong> справа вверху. В окне <strong>Publish workflow</strong> имя версии можно оставить как есть; нажмите <strong>Publish</strong>. Появится окно <strong>Workflow published</strong>: рабочий адрес вебхука готов принимать запросы. Нажмите <strong>Got it</strong>. Справа вверху вместо кнопки Publish теперь зелёная точка и надпись <strong>Published</strong>.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a13-publish.png" width="1280" height="800" alt="Окно Publish workflow: Version name, Describe changes, кнопки Cancel и Publish" loading="lazy"><figcaption>Окно публикации: Publish</figcaption></figure>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a14-published.png" width="1280" height="800" alt="Окно Workflow published: You can now make calls to your production webhook URL, кнопка Got it; справа вверху надпись Published" loading="lazy"><figcaption>Окно Workflow published: Got it; справа вверху — Published</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что делает шаблон процесса</p>
+
+        <!--CODE tools/n8n/zayavka-telegram.json | zayavka-telegram.json · по строкам | lines=1-30 pins=6:1,7:2,9:3,20:4,21:5,23:6--><figure class="code" data-read><figcaption><span>zayavka-telegram.json · по строкам</span></figcaption><pre>{
+  <span class="s">"name"</span>: <span class="s">"Заявка → Telegram"</span>,
+  <span class="s">"nodes"</span>: [
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"httpMethod"</span>: <span class="s">"POST"</span>,  <span class="pin">1</span>
+        <span class="s">"path"</span>: <span class="s">"zayavka"</span>,  <span class="pin">2</span>
+        <span class="s">"options"</span>: {
+          <span class="s">"allowedOrigins"</span>: <span class="s">"http://localhost:5173"</span>  <span class="pin">3</span>
+        }
+      },
+      <span class="s">"name"</span>: <span class="s">"Webhook"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.webhook"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">2.1</span>,
+      <span class="s">"position"</span>: [<span class="n">0</span>, <span class="n">0</span>],
+      <span class="s">"webhookId"</span>: <span class="s">"zayavka"</span>
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"chatId"</span>: <span class="s">""</span>,  <span class="pin">4</span>
+        <span class="s">"text"</span>: <span class="s">"=Новая заявка: {{ $json.body.title }}\nКабинет: {{ $json.body.room }} · {{ $json.body.category }}\n{{ $json.body.details }}"</span>,  <span class="pin">5</span>
+        <span class="s">"additionalFields"</span>: {
+          <span class="s">"appendAttribution"</span>: <span class="k">false</span>  <span class="pin">6</span>
+        }
+      },
+      <span class="s">"name"</span>: <span class="s">"Telegram"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.telegram"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">1.2</span>,
+      <span class="s">"position"</span>: [<span class="n">260</span>, <span class="n">0</span>]
+    }</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Узел Webhook принимает запросы с методом POST — тем, которым доска отправляет заявку в <code>notify.ts</code>.</p></div></li>
+          <li><span class="pin">2</span><div><p>Путь вебхука. Из него получается адрес <code>http://localhost:5678/webhook/zayavka</code> — тот самый <code>WEBHOOK_URL</code> из главы 1.7.</p></div></li>
+          <li><span class="pin">3</span><div><p>«Принимать запросы со страницы <code>http://localhost:5173</code>». Это настройка <span class="term">CORS</span>, о ней — ниже.</p></div></li>
+          <li><span class="pin">4</span><div><p>Номер чата пустой: у каждого студента он свой и вписывается в n8n вручную.</p></div></li>
+          <li><span class="pin">5</span><div><p>Текст сообщения. Знак <code>=</code> в начале значит «это выражение». В двойных фигурных скобках n8n подставляет данные: <code>$json.body</code> — тело пришедшего запроса, то есть заявка; <code>.title</code> — её поле. <code>\n</code> — перенос строки.</p></div></li>
+          <li><span class="pin">6</span><div><p>Не добавлять в конец сообщения подпись «This message was sent automatically with n8n».</p></div></li>
+        </ol>
+
+        <p>У вебхука два адреса — переключатель <strong>Test URL / Production URL</strong> на кадре узла. Тестовый, <code>/webhook-test/zayavka</code>, работает, пока в редакторе нажата кнопка <strong>Listen for test event</strong>, и показывает пришедшие данные прямо на холсте. Рабочий, <code>/webhook/zayavka</code>, работает всегда, когда процесс опубликован. Доска отправляет заявки на рабочий адрес, поэтому без публикации n8n отвечает ошибкой 404.</p>
+
+        <p><span class="term">CORS</span> (Cross-Origin Resource Sharing — «обмен между разными источниками») — правило браузера. Страница с одного адреса (<code>localhost:5173</code>) может отправить запрос на другой (<code>localhost:5678</code>), только если тот сервер явно разрешил. Перед заявкой браузер сам отправляет короткий проверочный запрос и смотрит ответ сервера: есть ли в нём <code>Access-Control-Allow-Origin: http://localhost:5173</code>. Поле <strong>Allowed Origins (CORS)</strong> в узле Webhook и даёт этот ответ. Если доску открыть с другого адреса, браузер заблокирует запрос, а в консоли появится ошибка со словами <code>blocked by CORS policy</code>.</p>
+
+        <p class="bridge">Процесс опубликован. Осталось проверить всё вместе.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Проверка: заявка в Telegram</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Отправляем заявку с доски</p>
+
+        <ol class="steps">
+          <li><b>Отправьте заявку</b><p>Откройте доску (<code>http://localhost:5173</code>), обновите страницу и отправьте заявку: «Не работает проектор в актовом зале», кабинет «Актовый зал», категория «Проектор», подробности «Проектор не видит ноутбук, кабель HDMI подключён.». Над списком — «Заявка добавлена, уведомление отправлено.».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/a15-otpravleno.png" width="1100" height="1118" alt="Доска заявок: над списком сообщение Заявка добавлена, уведомление отправлено; первая карточка Не работает проектор в актовом зале" loading="lazy"><figcaption>Доска: уведомление отправлено</figcaption></figure></li>
+          <li><b>Проверьте Telegram</b><p>Через несколько секунд бот пришлёт сообщение с названием, кабинетом, категорией и подробностями.</p>
+            <div class="shot-todo"><b>Кадр: сообщение от бота в Telegram</b><p>«Новая заявка: Не работает проектор в актовом зале / Кабинет: Актовый зал · Проектор / Проектор не видит ноутбук…»</p></div></li>
+          <li><b>Посмотрите запуск в n8n</b><p>В n8n откройте вкладку <strong>Executions</strong> над холстом. Последний запуск — <strong>Succeeded</strong>, оба узла с зелёной галочкой.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/a16-executions.png" width="1280" height="800" alt="n8n, вкладка Executions: запуск Succeeded in 316ms, узлы Webhook и Telegram с зелёными галочками, 1 item" loading="lazy"><figcaption>Запуск прошёл: оба узла зелёные</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что произошло за эти секунды</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Путь одной заявки</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code17/notify.ts | | bare--><pre class="trace__code" data-start="1"><span class="k">import</span> <span class="k">type</span> { RequestItem } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">const</span> WEBHOOK_URL = <span class="s">'http://localhost:5678/webhook/zayavka'</span>
+
+<span class="k">export</span> async <span class="k">function</span> <span class="f">sendRequest</span>(request: RequestItem): Promise<span class="t">&lt;boolean</span><span class="t">&gt;</span> {
+  try {
+    <span class="k">const</span> response = await <span class="f">fetch</span>(WEBHOOK_URL, {
+      method: <span class="s">'POST'</span>,
+      headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },
+      body: JSON.<span class="f">stringify</span>(request),
+    })
+    <span class="k">return</span> response.ok
+  } catch {
+    <span class="k">return</span> <span class="k">false</span>
+  }
+}</pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="7-11"><b>Доска отправляет запрос</b>
+                  <p><code>sendRequest</code> из главы 1.7 отправляет заявку методом POST на рабочий адрес вебхука.</p>
+                  <div class="obj"><b>тело запроса</b><div>title: 'Не работает проектор в актовом зале'</div><div>room: 'Актовый зал'</div><div>category: 'Проектор'</div><div>…</div></div></li>
+                <li data-lines="7"><b>Браузер проверяет CORS</b>
+                  <p>Перед заявкой браузер спрашивает n8n, можно ли странице <code>localhost:5173</code> отправлять сюда запросы. n8n отвечает: можно, этот адрес указан в Allowed Origins.</p></li>
+                <li data-lines="12"><b>n8n сразу отвечает 200</b>
+                  <p>Узел Webhook настроен отвечать немедленно (Respond: Immediately). Доска получает «200 OK», <code>response.ok</code> — «да», и над списком появляется «уведомление отправлено».</p>
+                  <div class="vars"><span class="var var--new"><i>response.status</i><span>200</span></span></div></li>
+                <li data-lines="12"><b>Узел Telegram собирает текст</b>
+                  <p>n8n подставляет поля заявки в шаблон текста и отправляет его в Bot API с токеном бота и номером чата. Токен при этом не покидает n8n.</p></li>
+                <li data-lines="12"><b>Сообщение приходит</b>
+                  <p>Telegram доставляет сообщение от бота в ваш чат. Запуск попадает в список Executions со статусом Succeeded.</p></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: n8n остановлен</p>
+
+        <ol class="steps">
+          <li><b>Остановите n8n</b><p>Во втором терминале в папке <code>avtomatizaciya</code> выполните <code>docker compose stop</code>.</p></li>
+          <li><b>Отправьте заявку</b><p>Заявка появляется на доске, над списком — «Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.», как в опыте главы 1.7. Сообщение в Telegram не приходит.</p></li>
+          <li><b>Запустите n8n снова</b><p>Выполните <code>docker compose start</code> и подождите полминуты, пока n8n запустится. Новая заявка снова дойдёт до Telegram. Заявка, отправленная при выключенном n8n, в Telegram уже не придёт: доска не повторяет неудачные запросы.</p></li>
+        </ol>
+
+        <p>Доска и автоматизация работают независимо: поломка n8n не мешает принимать заявки. Этим и объясняется порядок в <code>handleAdd</code> из главы 1.7: сначала заявка на доску, потом уведомление.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Частые ошибки</h2>
+
+        <p>Сообщения ниже получены на n8n 2.45.4 и Bot API Telegram; ошибки Telegram видны в n8n на вкладке Executions — у узла Telegram в неудачном запуске.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>Доска: «уведомление не отправлено». Консоль: <code>net::ERR_CONNECTION_REFUSED</code></td><td>n8n не запущен или Docker Desktop закрыт</td><td>Запустить Docker Desktop, в папке <code>avtomatizaciya</code> выполнить <code>docker compose start</code></td></tr>
+              <tr><td>Ответ n8n: <code>The requested webhook "POST zayavka" is not registered.</code> Подсказка: <code>The workflow must be active for a production URL to run successfully.</code></td><td>Процесс не опубликован, или путь вебхука не <code>zayavka</code></td><td>Нажать Publish; сверить путь в узле Webhook с адресом в <code>notify.ts</code></td></tr>
+              <tr><td>Консоль: <code>… has been blocked by CORS policy … The 'Access-Control-Allow-Origin' header has a value 'http://localhost:5173' that is not equal to the supplied origin.</code></td><td>Доска открыта с другого адреса, например <code>127.0.0.1:5173</code> или <code>localhost:5174</code></td><td>Открыть доску по адресу <code>http://localhost:5173</code> или вписать нужный адрес в Allowed Origins и опубликовать заново</td></tr>
+              <tr><td>Executions, узел Telegram: <code>Bad Request: chat not found</code></td><td>Неверный Chat ID, или вы не нажали Start в чате с ботом</td><td>Нажать Start у бота, взять номер из getUpdates заново</td></tr>
+              <tr><td>Executions, узел Telegram: <code>Unauthorized</code></td><td>Неверный токен или токен отозван через <code>/revoke</code></td><td>Вставить актуальный токен в Credential «Telegram account»</td></tr>
+              <tr><td>getUpdates: <code>{"ok":true,"result":[]}</code></td><td>Боту ещё никто не писал</td><td>Нажать Start в чате с ботом и обновить страницу</td></tr>
+              <tr><td>Сообщение приходит, но вместо названия пусто</td><td>В тексте узла Telegram опечатка в имени поля, например <code>$json.body.titel</code></td><td>Сверить имена полей с <code>RequestItem</code> из <code>requests.ts</code></td></tr>
+              <tr><td>Поля узла серые, внизу холста «Editing in another tab»</td><td>Процесс открыт ещё в одной вкладке браузера</td><td>Закрыть лишнюю вкладку или нажать <strong>Edit here</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s7"><span class="sec">§7</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Почему токен бота хранится в n8n?</summary>
+          <p>Код доски выполняется в браузере, и любой посетитель может прочитать его и все запросы в DevTools. Токен в коде дал бы любому возможность писать от имени бота. n8n работает на сервере, и токен из него в браузер не попадает.</p>
+        </details>
+        <details>
+          <summary>Чем Test URL вебхука отличается от Production URL?</summary>
+          <p>Test URL (<code>/webhook-test/…</code>) работает, только пока в редакторе нажато Listen for test event, и показывает данные на холсте. Production URL (<code>/webhook/…</code>) работает всегда, когда процесс опубликован. Доска отправляет заявки на Production URL.</p>
+        </details>
+        <details>
+          <summary>Зачем в узле Webhook поле Allowed Origins (CORS)?</summary>
+          <p>Браузер разрешает странице с <code>localhost:5173</code> отправлять запрос на <code>localhost:5678</code>, только если сервер это явно разрешил. Поле задаёт, со страниц какого адреса n8n принимает запросы.</p>
+        </details>
+        <details>
+          <summary>Что такое том в <code>compose.yaml</code> и что будет без него?</summary>
+          <p>Папка для данных, которая живёт отдельно от контейнера. В ней n8n хранит учётную запись, процессы и токен. Без тома всё это пропадало бы при пересоздании контейнера.</p>
+        </details>
+        <details>
+          <summary>Что подставит выражение <code>{{ $json.body.room }}</code>?</summary>
+          <p>Поле <code>room</code> из тела пришедшего запроса — кабинет заявки, например «Актовый зал».</p>
+        </details>
+        <details>
+          <summary>Добавьте в сообщение статус заявки. Что изменить?</summary>
+          <p>В узле Telegram в поле Text дописать строку <code>Статус: {{ $json.body.status }}</code>, сохранить процесс и опубликовать заново. Код доски менять не нужно: <code>status</code> уже есть в отправляемой заявке.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Запустить n8n</b><code>docker compose up -d</code></div>
+          <div><b>Состояние</b><code>docker compose ps</code></div>
+          <div><b>Остановить / запустить</b><code>docker compose stop</code> · <code>start</code></div>
+          <div><b>Адрес n8n</b><code>http://localhost:5678</code></div>
+          <div><b>Рабочий вебхук</b><code>/webhook/zayavka</code></div>
+          <div><b>Номер чата</b><code>api.telegram.org/botТОКЕН/getUpdates</code></div>
+          <div><b>Поле заявки в n8n</b><code>{{ $json.body.title }}</code></div>
+          <div><b>Новый токен</b><code>/revoke</code> в @BotFather</div>
+        </div>
+
+        <h3>Итог</h3>
+        <p>Автоматизация модуля 1 собрана из готовых блоков. Docker запускает n8n одной командой по описанию в <code>compose.yaml</code>, данные n8n хранятся в томе. Бот создаётся в @BotFather; его токен — пароль, который хранится только в n8n, а номер чата берётся из ответа getUpdates. Процесс в n8n из двух узлов: Webhook принимает заявку по адресу <code>/webhook/zayavka</code>, Telegram подставляет её поля в текст и отправляет сообщение. Рабочий адрес вебхука работает после публикации процесса, а поле Allowed Origins разрешает браузеру отправлять запросы со страницы доски. Доска сообщает о каждой новой заявке в Telegram и продолжает работать, если n8n выключен.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://docs.n8n.io/hosting/installation/docker/" target="_blank" rel="noreferrer">docs.n8n.io — Docker installation</a></li>
+          <li><a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/" target="_blank" rel="noreferrer">docs.n8n.io — Webhook node</a></li>
+          <li><a href="https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.telegram/" target="_blank" rel="noreferrer">docs.n8n.io — Telegram node</a></li>
+          <li><a href="https://core.telegram.org/bots/tutorial#obtain-your-bot-token" target="_blank" rel="noreferrer">core.telegram.org — Obtain your bot token</a></li>
+          <li><a href="https://core.telegram.org/bots/api#getupdates" target="_blank" rel="noreferrer">core.telegram.org — Bot API: getUpdates</a></li>
+          <li><a href="https://docs.docker.com/compose/" target="_blank" rel="noreferrer">docs.docker.com — Docker Compose</a></li>
+          <li><a href="https://developer.mozilla.org/ru/docs/Web/HTTP/CORS" target="_blank" rel="noreferrer">MDN — CORS</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../19-proekt-doska-zayavok/index.html">← Проект: доска заявок</a>
+          <a href="../../index.html">Оглавление →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

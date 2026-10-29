@@ -49,6 +49,13 @@ React+Vite, PocketBase, n8n в Docker, Ollama / GigaChat, Telegram Bot API, GitH
 - 1.5 `temy/15-spiski-i-usloviya` — массив заявок в `src/requests.ts`, `map` и `key`, опыт с изменением
   массива на месте, новый массив через `map` и `{ ...r }`, `filter`, условный вывод (`&&`, тернарный),
   удаление, фильтр по статусу, опыт с `key={index}`.
+- 1.7 `temy/17-sohranenie-i-otpravka` — localStorage (`storage.ts`, `update`), `fetch` POST на вебхук n8n (`notify.ts`),
+  доска работает при выключенном n8n.
+- Проект П1 `temy/19-proekt-doska-zayavok` — варианты «Общежитие», «Студсовет», свой; требования, режим Р1, журнал `ai-log.md`, защита.
+  Пример варианта — `tools/proekt-obshchezhitie`.
+- Автоматизация А1 `temy/18-avtomatizaciya` — Docker + `compose.yaml` (n8n 2.45.4), бот @BotFather, getUpdates, шаблон процесса
+  `tools/n8n/zayavka-telegram.json` вставляется Ctrl+V, Publish. Кадры `tools/shots_n8n.py` (токен из файла, номер чата размыт).
+  Кадры @BotFather и сообщения в Telegram — места `.shot-todo`, ждут снимков автора.
 - 1.6 `temy/16-formy` — категория в данных (`Category`, `NewRequest`), управляемые поля (`value` + `onChange`,
   опыт без `onChange`), отправка (`onSubmit`, `preventDefault`, `[created, ...requests]`, `Date.now()`),
   проверка полей с `trim()` и сообщением об ошибке. Тип события — `SubmitEvent` (`FormEvent` в @types/react помечен устаревшим).

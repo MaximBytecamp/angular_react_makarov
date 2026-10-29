@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>Проект модуля 1 · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .check { margin: 18px 0; padding: 0; list-style: none; border: 3px solid var(--ink); background: var(--page); }
+    .check > li { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 9px 14px; border-top: 1px solid var(--rule); font-size: 15px; line-height: 1.5; }
+    .check > li:first-child { border-top: 0; }
+    .check > li::before { content: ""; width: 18px; height: 18px; margin-top: 2px; border: 2px solid var(--ink); background: #fff; }
+    .check > li > small { font: 600 11.5px/1.6 var(--mono); color: var(--ink-faint); white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 1 · React: первый проект и первый бот</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 1 · проект</p>
+          <p class="running__folio">П1</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">П1</span>
+          <h1>Проект:<br>доска заявок</h1>
+          <p class="lead">На этой странице — задание проекта модуля 1. В главах 1.1–1.7 собрана доска заявок ИТ-отдела. В проекте студент делает такую же доску для другой службы колледжа: общежития или студсовета. Ниже — варианты, обязательные требования, порядок работы, правила работы с ИИ и порядок защиты. После проекта к доске подключается автоматизация: уведомление о заявке в Telegram.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Режим ИИ</dt><dd>Р1 — ИИ объясняет, код пишет студент (глава 0.5)</dd></div>
+          <div><dt>Вариант</dt><dd>Общежитие, студсовет или свой</dd></div>
+          <div><dt>Основа</dt><dd>Проект <code>zayavki</code> после главы 1.7</dd></div>
+          <div><dt>Сдаётся</dt><dd>Папка проекта, журнал работы с ИИ, защита у преподавателя</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>На этой странице</b>
+          <ol>
+            <li><a href="#s1">Варианты</a></li>
+            <li><a href="#s2">Обязательные требования</a></li>
+            <li><a href="#s3">Порядок работы</a></li>
+            <li><a href="#s4">Дополнительные задания</a></li>
+            <li><a href="#s5">Работа с ИИ</a></li>
+            <li><a href="#s6">Сдача и защита</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Варианты</h2>
+
+        <p>Доска делается для одной из служб. Устройство у всех вариантов одно: форма, список карточек, статусы, фильтр, сохранение в браузере. Отличаются тексты, поле места и категории. Вариант выбирается вместе с преподавателем; свой вариант — например, библиотека или спортзал — тоже можно, если в нём есть место и четыре категории.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Вариант</th><th>Заголовок и подпись</th><th>Поле места</th><th>Категории</th></tr></thead>
+            <tbody>
+              <tr><td>Общежитие</td><td>«Заявки в общежитие» · заявки жильцов коменданту</td><td>Комната</td><td>Сантехника, Электрика, Мебель, Интернет</td></tr>
+              <tr><td>Студсовет</td><td>«Студсовет» · предложения и обращения студентов</td><td>Группа</td><td>Мероприятие, Учёба, Столовая, Другое</td></tr>
+              <tr><td>Свой</td><td>Согласуется с преподавателем</td><td>Своё</td><td>Четыре своих</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Так выглядит вариант «Общежитие» после переделки доски из глав.</p>
+
+        <figure class="shot" style="max-width: 1106px"><img src="img/01-obshchezhitie.png" width="1100" height="956" alt="Доска Заявки в общежитие: поле Комната, категория Сантехника, карточки комн. 214 · Сантехника, комн. 308 · Электрика и другие" loading="lazy"><figcaption>Пример: вариант «Общежитие» — свои заголовок, поле «Комната», категории и заявки</figcaption></figure>
+
+        <h2 id="s2"><span class="sec">§2</span>Обязательные требования</h2>
+
+        <p>Работа принимается, если выполнены все пункты. Справа — глава, где разобран нужный механизм.</p>
+
+        <ul class="check">
+          <li><span>Шапка с названием своей службы и числом новых заявок</span><small>1.2, 1.4</small></li>
+          <li><span>Форма: что случилось, место, категория из четырёх своих, подробности</span><small>1.2, 1.6</small></li>
+          <li><span>В начале на доске не меньше пяти своих заявок разных статусов, у каждой свой <code>id</code></span><small>1.5</small></li>
+          <li><span>Карточки выводятся из массива через <code>map</code> с ключом <code>key</code></span><small>1.5</small></li>
+          <li><span>Кнопка в карточке переводит заявку «Новая → В работе → Готово», готовую можно убрать с доски</span><small>1.4, 1.5</small></li>
+          <li><span>Подробности раскрываются по кнопке</span><small>1.5</small></li>
+          <li><span>Фильтр «Все / Новая / В работе / Готово» и сообщение, если заявок нет</span><small>1.5</small></li>
+          <li><span>Новая заявка из формы появляется первой, форма очищается</span><small>1.6</small></li>
+          <li><span>Пустые название и место не принимаются, под формой сообщение</span><small>1.6</small></li>
+          <li><span>Заявки и статусы сохраняются после перезагрузки страницы</span><small>1.7</small></li>
+          <li><span>Новая заявка отправляется на вебхук n8n, доска сообщает, удалось ли</span><small>1.7</small></li>
+          <li><span><code>npm run build</code> и <code>npm run lint</code> проходят без ошибок и предупреждений</span><small>1.1</small></li>
+        </ul>
+
+        <h2 id="s3"><span class="sec">§3</span>Порядок работы</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Переделываем доску под свой вариант</p>
+
+        <ol class="steps">
+          <li><b>Возьмите основу</b><p>Скопируйте свою папку <code>zayavki</code> после главы 1.7 в новую, например <code>zayavki-obshchezhitie</code>, или распакуйте <a href="../17-sohranenie-i-otpravka/zayavki-konec-1-7.zip">архив конца главы 1.7</a> и переименуйте папку. В новой папке выполните <code>npm install</code> и <code>npm run dev</code>.</p></li>
+          <li><b>Шапка</b><p>В <code>Header.tsx</code> замените заголовок и подпись на свои.</p></li>
+          <li><b>Данные</b><p>В <code>requests.ts</code> замените четыре категории в типе <code>Category</code> и пять заявок в <code>initialRequests</code> на свои. TypeScript подчеркнёт заявку, у которой категория не из нового списка.</p></li>
+          <li><b>Форма</b><p>В <code>RequestForm.tsx</code> замените подпись поля места, подсказки <code>placeholder</code>, варианты <code>&lt;option&gt;</code>, начальную категорию в двух местах (<code>useState</code> и очистка формы) и текст сообщения об ошибке.</p></li>
+          <li><b>Карточка</b><p>В <code>RequestCard.tsx</code> замените «каб.» на своё сокращение: «комн.», «гр.».</p></li>
+          <li><b>Хранилище</b><p>В <code>storage.ts</code> замените ключ <code>'zayavki'</code> на свой, например <code>'zayavki-obshchezhitie'</code>. Иначе доска прочитает из localStorage заявки ИТ-отдела, сохранённые раньше на этом же адресе.</p></li>
+          <li><b>Проверка</b><p>Обновите страницу и пройдите список из §2 по порядку. Во втором терминале выполните <code>npm run build</code> и <code>npm run lint</code>.</p></li>
+          <li><b>Уведомление</b><p>Подключите автоматизацию по странице «Автоматизация». В тексте узла Telegram замените «Кабинет» на название своего поля места.</p></li>
+        </ol>
+
+        <div class="margin-note">
+          <b>Что менять не нужно</b>
+          <p>Механизмы доски — состояние, <code>map</code>, обработчики, сохранение, отправка — у всех вариантов одинаковые. Если для своего варианта приходится менять <code>App.tsx</code>, стоит остановиться и проверить, не проще ли решить задачу данными.</p>
+        </div>
+
+        <h2 id="s4"><span class="sec">§4</span>Дополнительные задания</h2>
+
+        <p>Задания выполняются по выбору; сколько их нужно для какой оценки, сообщает преподаватель. Подсказки к первым двум есть в «Проверьте себя» глав.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Задание</th><th>Что получится</th><th>Подсказка</th></tr></thead>
+            <tbody>
+              <tr><td>Счётчики в фильтре</td><td>На кнопках «Новая (3)», «В работе (1)»</td><td>Глава 1.5, последний вопрос «Проверьте себя»</td></tr>
+              <tr><td>Кнопка «Вернуть»</td><td>Заявку «В работе» можно вернуть в «Новая»</td><td>Глава 1.4, последний вопрос; функцию передать карточке, как <code>onNext</code></td></tr>
+              <tr><td>Поиск по названию</td><td>Над списком поле, список сужается по мере ввода</td><td>Ещё одно управляемое поле (глава 1.6) и ещё одно условие в <code>visible</code>: <code>r.title.toLowerCase().includes(…)</code></td></tr>
+              <tr><td>Статус в уведомлении</td><td>В сообщении Telegram строка «Статус: Новая»</td><td>Страница «Автоматизация», последний вопрос</td></tr>
+              <tr><td>Срочность</td><td>В форме флажок «Срочно», срочные карточки выделены рамкой</td><td>Поле <code>urgent: boolean</code> в типе, <code>&lt;input type="checkbox"&gt;</code> с <code>checked</code> и <code>onChange</code>, класс по условию (глава 1.5)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s5"><span class="sec">§5</span>Работа с ИИ</h2>
+
+        <p>Проект выполняется в режиме Р1 из главы 0.5. ИИ можно спрашивать, что означает ошибка, как работает функция, чем отличаются два способа. Код пишется самостоятельно. Автодополнение ИИ в редакторе отключается. Токен бота и номер чата в чат ИИ не вставляются.</p>
+
+        <p>К работе прилагается журнал — файл <code>ai-log.md</code> в папке проекта. Каждый вопрос к ИИ — одна строка таблицы:</p>
+
+        <figure class="code"><figcaption><span>zayavki-obshchezhitie/ai-log.md</span></figcaption><pre># Журнал работы с ИИ
+
+Инструмент: GigaChat (или другой)
+
+| Дата  | Вопрос                                       | Что взял из ответа                          | Что не взял и почему                                   |
+|-------|----------------------------------------------|---------------------------------------------|--------------------------------------------------------|
+| 12.11 | Что значит Type 'string' is not assignable … | Нужно as Category в onChange списка         | —                                                      |
+| 12.11 | Как сделать поиск без учёта регистра         | toLowerCase() у обеих строк                 | Совет хранить отфильтрованный список в useState: это   |
+|       |                                              |                                             | вычисляемое значение, глава 1.5                        |</pre></figure>
+
+        <p>Последний столбец важен: отклонённый совет с объяснением причины засчитывается как часть работы. Если ИИ не использовался, в журнале так и пишется.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Сдача и защита</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Готовим работу к сдаче</p>
+
+        <ol class="steps">
+          <li><b>Проверьте сборку</b><p>Во втором терминале выполните обе команды. Ошибок и предупреждений быть не должно.</p>
+            <figure class="code"><figcaption><span>Терминал · папка проекта</span></figcaption><pre>npm run build
+npm run lint</pre></figure></li>
+          <li><b>Проверьте, что в коде нет токена</b><p>В VS Code нажмите <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> и найдите в проекте <code>api.telegram.org</code> и начало своего токена. Совпадений быть не должно: токен хранится только в n8n.</p></li>
+          <li><b>Соберите архив</b><p>Удалите папки <code>node_modules</code> и <code>dist</code> — их восстанавливают <code>npm install</code> и <code>npm run build</code>. Упакуйте папку проекта в архив вместе с <code>ai-log.md</code>. Если преподаватель так договорился с группой, вместо архива сдаётся ссылка на репозиторий GitHub.</p></li>
+          <li><b>Приложите снимок уведомления</b><p>Снимок экрана Telegram с сообщением бота о заявке своего варианта.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как проходит защита</p>
+
+        <p>На защите доска запускается у преподавателя: <code>npm install</code>, <code>npm run dev</code>, затем проверка по списку из §2. Студент показывает уведомление в Telegram с работающим n8n. Затем преподаватель указывает на строки кода и спрашивает, что они делают и почему так написаны. Ответ «так написал ИИ» оценивается как отсутствие ответа. Примеры вопросов:</p>
+        <ul>
+          <li>Почему ключ <code>&lt;RequestCard&gt;</code> в <code>map</code> — <code>r.id</code>? Что сломается с номером в массиве?</li>
+          <li>Что произойдёт, если в <code>handleSubmit</code> убрать <code>event.preventDefault()</code>?</li>
+          <li>Почему <code>newCount</code> и <code>visible</code> не хранятся в <code>useState</code>?</li>
+          <li>Зачем <code>useState(loadRequests)</code> записан без скобок?</li>
+          <li>Почему заявка добавляется на доску до отправки в n8n?</li>
+          <li>Где хранится токен бота и почему не в коде доски?</li>
+        </ul>
+
+        <div class="pager">
+          <a href="../17-sohranenie-i-otpravka/index.html">← 1.7 Сохранение и отправка данных</a>
+          <a href="../18-avtomatizaciya/index.html">Автоматизация: заявка → n8n → Telegram →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>
