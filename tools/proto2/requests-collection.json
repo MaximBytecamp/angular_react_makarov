@@ -1,0 +1,20 @@
+{
+  "name": "requests",
+  "type": "base",
+  "listRule": "",
+  "viewRule": "",
+  "createRule": "",
+  "updateRule": "",
+  "deleteRule": "",
+  "fields": [
+    {"name": "title", "type": "text", "required": true, "max": 120},
+    {"name": "room", "type": "text", "required": true, "max": 40},
+    {"name": "category", "type": "select", "required": true, "maxSelect": 1, "values": ["Компьютер", "Проектор", "Принтер", "Интернет"]},
+    {"name": "details", "type": "text", "max": 1000},
+    {"name": "status", "type": "select", "required": true, "maxSelect": 1, "values": ["Новая", "В работе", "Готово"]},
+    {"name": "urgent", "type": "bool"},
+    {"name": "summary", "type": "text", "max": 300},
+    {"name": "created", "type": "autodate", "onCreate": true, "onUpdate": false},
+    {"name": "updated", "type": "autodate", "onCreate": true, "onUpdate": true}
+  ]
+}

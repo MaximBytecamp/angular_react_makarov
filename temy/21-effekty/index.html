@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>2.1 Эффекты и когда они не нужны · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; stroke-dasharray: 6 4; }
+    .sch .ng-text { fill: #C2185B; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 2 · Данные с сервера и ИИ-диспетчер</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 2 · данные с сервера и ИИ-диспетчер</p>
+          <p class="running__folio">2.1</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">2.1</span>
+          <h1>Эффекты<br>и когда они не нужны</h1>
+          <p class="lead">В этой главе разобран хук <code>useEffect</code> — способ связать компонент с тем, что находится вне страницы React: заголовком вкладки, таймером, нажатиями клавиш в окне браузера. Доска получает три эффекта: число новых заявок в заголовке вкладки, сообщение над списком, которое исчезает через 5 секунд, и сброс фильтра клавишей <kbd>Esc</kbd>. Опыты с журналом в консоли показывают, когда эффект запускается и зачем его «убирать за собой». В конце — случай, когда эффект не нужен и только мешает. В следующих главах эффект будет загружать заявки из базы данных.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>React</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после главы 1.7 (или архив ниже), запущенный <code>npm run dev</code>, браузер Chrome, Edge или Яндекс Браузер</dd></div>
+          <div><dt>Результат</dt><dd>Заголовок вкладки показывает число новых заявок, сообщение над списком исчезает само, <kbd>Esc</kbd> сбрасывает фильтр</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Что такое эффект</a></li>
+            <li><a href="#s2">Заголовок вкладки</a></li>
+            <li><a href="#s3">Когда запускается эффект</a></li>
+            <li><a href="#s4">Таймер и очистка</a></li>
+            <li><a href="#s5">Клавиша Esc: подписка и отписка</a></li>
+            <li><a href="#s6">Когда эффект не нужен</a></li>
+            <li><a href="#s7">Частые ошибки</a></li>
+            <li><a href="#s8">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <div class="starter">
+          <p class="starter__head">Если проекта нет или он в другом состоянии</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в том состоянии, с которого начинается глава, — после главы 1.7. Папки <code>node_modules</code> в архиве нет: её создаёт команда <code>npm install</code> по списку пакетов из <code>package.json</code>.</p>
+            <a class="starter__btn" href="zayavki-nachalo-2-1.zip" download>zayavki-nachalo-2-1.zip <small>21 КБ</small></a>
+            <ol class="starter__steps">
+              <li>Распакуйте архив в папку с проектами курса, например <code>react-kurs</code>. Если папка <code>zayavki</code> там уже есть, сначала переименуйте старую, например в <code>zayavki-staraya</code>.</li>
+              <li>Откройте папку курса в VS Code: <b>File → Open Folder</b>.</li>
+              <li>Откройте терминал (<b>Terminal → New Terminal</b>) и выполните три команды по очереди.</li>
+            </ol>
+            <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>cd zayavki
+npm install
+npm run dev</pre></figure>
+          </div>
+        </div>
+
+        <h2 id="s1"><span class="sec">§1</span>Что такое эффект</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Отрисовка и всё остальное</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Дежурный в ИТ-отделе заполняет журнал заявок — это его основная работа. Но после каждой записи он ещё переворачивает табличку на двери: «Новых заявок: 3». Табличка висит снаружи кабинета, к журналу не относится, и переворачивать её нужно только тогда, когда число изменилось.</p>
+          <p class="miss">Дежурный может забыть про табличку. React запускает эффект сам, после каждой отрисовки, в которой изменились указанные значения.</p>
+        </div></div>
+
+        <p>Функция компонента в React делает одну работу: по состоянию и props возвращает разметку. React вызывает её, когда нужно, и переносит разметку на страницу (глава 1.4). Но приложению нужно и то, что разметкой не описать:</p>
+        <ul>
+          <li><b>заголовок вкладки</b> — он находится вне блока <code>root</code>, куда React выводит доску;</li>
+          <li><b>таймер</b> — «через 5 секунд скрыть сообщение»;</li>
+          <li><b>события окна</b> — нажатие клавиши в любом месте страницы, где бы ни был курсор;</li>
+          <li><b>сеть и база данных</b> — загрузить заявки при открытии страницы. Это тема следующих глав.</li>
+        </ul>
+
+        <p>Такие действия называют <span class="term">побочными</span>: они меняют что-то за пределами разметки компонента. Для них в React есть хук <code>useEffect</code>. <span class="term">Эффект</span> — функция, которую React вызывает <em>после</em> того, как перенёс разметку на страницу. Записывается эффект так:</p>
+
+        <figure class="code" data-read><figcaption><span>Общий вид эффекта</span></figcaption><pre><span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+  <span class="c">// что сделать после отрисовки</span>
+  <span class="k">return</span> () =<span class="t">&gt;</span> {
+    <span class="c">// как убрать за собой (необязательно)</span>
+  }
+}, [зависимости])</pre></figure>
+
+        <p>На схеме — место эффекта среди шагов, знакомых по главе 1.4.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Отрисовка, перенос на страницу, эффект</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 210" role="img" aria-label="Изменение состояния, вызов функции компонента, перенос разметки на страницу, затем эффект; перед следующим запуском эффекта выполняется очистка">
+              <rect x="20" y="30" width="160" height="56" fill="#161A2E"/><text class="mono on-dark" x="34" y="54">состояние</text><text class="soft" x="34" y="74" style="fill:#c8d0e0">изменилось</text>
+              <rect x="210" y="30" width="160" height="56" fill="#D6F0F9"/><text class="mono" x="224" y="54">App()</text><text class="soft" x="224" y="74">новая разметка</text>
+              <rect x="400" y="30" width="160" height="56" fill="#ffffff"/><text class="mono" x="414" y="54">страница</text><text class="soft" x="414" y="74">обновлена</text>
+              <rect x="590" y="30" width="150" height="56" fill="#F9DDE8"/><text class="mono" x="604" y="54">эффект</text><text class="soft" x="604" y="74">document.title</text>
+              <path d="M180 58 H 202"/><path d="M194 52 L 202 58 L 194 64"/>
+              <path d="M370 58 H 392"/><path d="M384 52 L 392 58 L 384 64"/>
+              <path d="M560 58 H 582"/><path d="M574 52 L 582 58 L 574 64"/>
+              <path class="ng" d="M665 86 V 140 H 290 V 94"/><text class="soft ng-text" x="300" y="160">перед следующим запуском — очистка из return</text>
+              <text class="soft" x="20" y="196">эффект не мешает отрисовке: страница уже показана, когда он выполняется</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Эффект выполняется последним, когда страница уже обновлена. Если эффект вернул функцию очистки, React вызовет её перед следующим запуском эффекта и при удалении компонента со страницы.</p>
+        </figure>
+
+        <p class="bridge">Первый эффект доски — число новых заявок в заголовке вкладки.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Заголовок вкладки</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Добавляем первый эффект</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое App.tsx</b><p>Изменённые строки подсвечены: импорт <code>useEffect</code> и эффект после строки с <code>visible</code>.</p>
+            <!--CODE tools/code21/App-title.tsx | zayavki/src/App.tsx | mark=1,21-23--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="hl"><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span></span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> { nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> RequestItem, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span>
+<span class="k">import</span> { loadRequests, saveRequests } <span class="k">from</span> <span class="s">'./storage'</span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [requests, setRequests] = <span class="f">useState</span>(loadRequests)
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+<span class="hl">  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {</span>
+<span class="hl">    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span></span>
+<span class="hl">  }, [newCount])</span>
+
+  <span class="k">function</span> <span class="f">update</span>(list: RequestItem[]) {
+    <span class="f">setRequests</span>(list)
+    <span class="f">saveRequests</span>(list)
+  }
+
+  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
+    <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {
+      <span class="k">if</span> (r.id === id) {
+        <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }
+      }
+      <span class="k">return</span> r
+    })
+    <span class="f">update</span>(updated)
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    <span class="k">const</span> created: RequestItem = { ...data, id: Date.<span class="f">now</span>(), status: <span class="s">'Новая'</span> }
+    <span class="f">update</span>([created, ...requests])
+    <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+    <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+    <span class="k">if</span> (sent) {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+    } <span class="k">else</span> {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+    }
+  }
+
+  <span class="k">function</span> <span class="f">handleRemove</span>(id: number) {
+    <span class="f">update</span>(requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-app-title.png" width="1240" height="780" alt="VS Code: App.tsx, импорт useEffect в строке 1 и эффект с document.title в строках 21–23" loading="lazy"><figcaption>Так должен выглядеть App.tsx: эффект в строках 21–23</figcaption></figure></li>
+          <li><b>Посмотрите на вкладку</b><p>Обновите страницу. На вкладке браузера вместо «zayavki» — «Новых: 3 · Доска заявок». Нажмите «Взять в работу» в первой карточке: на вкладке «Новых: 2».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/05-title.png" width="1100" height="826" alt="Консоль: команда document.title возвращает 'Новых: 2 · Доска заявок'" loading="lazy"><figcaption>Заголовок после «Взять в работу»: «Новых: 2 · Доска заявок» (на кадре — ответ консоли на document.title)</figcaption></figure>
+            <p>Заголовок вкладки можно проверить и в консоли: наберите <code>document.title</code> и нажмите <kbd>Enter</kbd>.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что записано в эффекте</p>
+
+        <!--CODE tools/code21/App-title.tsx | App.tsx · строки 18–23 | lines=18-23 pins=21:1,22:2,23:3--><figure class="code" data-read><figcaption><span>App.tsx · строки 18–23</span></figcaption><pre>  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {  <span class="pin">1</span>
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>  <span class="pin">2</span>
+  }, [newCount])  <span class="pin">3</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>«После отрисовки выполни вот это». <code>useEffect</code> получает стрелочную функцию — сам эффект.</p></div></li>
+          <li><span class="pin">2</span><div><p>Действие эффекта: записать текст в заголовок вкладки. <code>document</code> — вся страница браузера, <code>title</code> — её заголовок. Обратные кавычки <code>`…`</code> — строка, в которую через <code>${…}</code> подставляется значение, здесь число новых заявок.</p></div></li>
+          <li><span class="pin">3</span><div><p><span class="term">Массив зависимостей</span>: «запускай эффект снова, только если изменилось <code>newCount</code>». Щелчок по фильтру перерисовывает доску, но число новых не меняет — и эффект не запускается.</p></div></li>
+        </ol>
+
+        <p>Почему не записать <code>document.title = …</code> прямо в теле <code>App</code>, рядом с <code>newCount</code>? Тело компонента React вызывает при каждой отрисовке, иногда несколько раз подряд, в том числе без переноса результата на страницу. Действия во внешнем мире в теле компонента выполнялись бы в непредсказуемые моменты. Эффект выполняется в определённый момент — после того как страница обновлена.</p>
+
+        <p class="bridge">Утверждение «эффект запускается, только когда изменилось <code>newCount</code>» стоит проверить. Следующий раздел — опыт с журналом в консоли.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Когда запускается эффект</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: журнал отрисовок и эффектов</p>
+
+        <ol class="steps">
+          <li><b>Замените App.tsx версией с журналом</b><p>Добавлены две строки <code>console.log</code>: одна печатает при каждой отрисовке <code>App</code>, другая — при каждом запуске эффекта.</p>
+            <!--CODE tools/code21/App-title-log.tsx | zayavki/src/App.tsx · опыт | mark=14,23--><figure class="code"><figcaption><span>zayavki/src/App.tsx · опыт</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> { nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> RequestItem, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span>
+<span class="k">import</span> { loadRequests, saveRequests } <span class="k">from</span> <span class="s">'./storage'</span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+<span class="hl">  console.<span class="f">log</span>(<span class="s">'отрисовка App'</span>)</span>
+  <span class="k">const</span> [requests, setRequests] = <span class="f">useState</span>(loadRequests)
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+<span class="hl">    console.<span class="f">log</span>(<span class="s">'эффект: заголовок, новых'</span>, newCount)</span>
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+  }, [newCount])
+
+  <span class="k">function</span> <span class="f">update</span>(list: RequestItem[]) {
+    <span class="f">setRequests</span>(list)
+    <span class="f">saveRequests</span>(list)
+  }
+
+  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
+    <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {
+      <span class="k">if</span> (r.id === id) {
+        <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }
+      }
+      <span class="k">return</span> r
+    })
+    <span class="f">update</span>(updated)
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    <span class="k">const</span> created: RequestItem = { ...data, id: Date.<span class="f">now</span>(), status: <span class="s">'Новая'</span> }
+    <span class="f">update</span>([created, ...requests])
+    <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+    <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+    <span class="k">if</span> (sent) {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+    } <span class="k">else</span> {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+    }
+  }
+
+  <span class="k">function</span> <span class="f">handleRemove</span>(id: number) {
+    <span class="f">update</span>(requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE--></li>
+          <li><b>Обновите страницу с открытой консолью</b><p>Откройте консоль (<kbd>F12</kbd>, вкладка <strong>Console</strong>) и нажмите <kbd>F5</kbd>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/02-log-zagruzka.png" width="1100" height="826" alt="Консоль после загрузки: отрисовка App дважды, эффект: заголовок, новых 3 дважды" loading="lazy"><figcaption>Загрузка: две отрисовки и два запуска эффекта</figcaption></figure></li>
+          <li><b>Нажмите фильтр «Новая»</b>
+            <figure class="shot" style="max-width: 1106px"><img src="img/03-log-filtr.png" width="1100" height="826" alt="Консоль: после щелчка по фильтру добавились две строки отрисовка App, строк эффекта нет" loading="lazy"><figcaption>Щелчок по фильтру: две новые отрисовки, эффект не запускался</figcaption></figure></li>
+          <li><b>Нажмите «Все», затем «Взять в работу» в первой карточке</b>
+            <figure class="shot" style="max-width: 1106px"><img src="img/04-log-status.png" width="1100" height="826" alt="Консоль: шесть строк отрисовка App и одна строка эффект: заголовок, новых 2" loading="lazy"><figcaption>После «Взять в работу» эффект запустился один раз: новых 2</figcaption></figure></li>
+          <li><b>Уберите массив зависимостей</b><p>Замените App.tsx версией, где у эффекта нет второго аргумента. Обновите страницу, очистите консоль кнопкой <strong>⊘</strong>, нажмите фильтры «Новая» и «Готово».</p>
+            <!--CODE tools/code21/App-title-log-bez-massiva.tsx | zayavki/src/App.tsx · опыт, строки 22–25 | lines=22-25 mark=25--><figure class="code"><figcaption><span>zayavki/src/App.tsx · опыт, строки 22–25</span></figcaption><pre>  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    console.<span class="f">log</span>(<span class="s">'эффект: заголовок, новых'</span>, newCount)
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+<span class="hl">  })</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1106px"><img src="img/06-bez-massiva.png" width="1100" height="826" alt="Консоль: после каждого щелчка по фильтру две отрисовки и запуск эффекта с тем же числом 3" loading="lazy"><figcaption>Без массива: эффект запускается после каждой отрисовки, хотя число не менялось</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что показал журнал</p>
+
+        <p>Почему всё по два раза. В <code>main.tsx</code> приложение обёрнуто в <code>&lt;StrictMode&gt;</code> — «строгий режим». Во время разработки он нарочно вызывает каждую функцию компонента дважды, а эффекты при первом показе запускает, очищает и запускает снова. Так быстрее обнаруживаются ошибки, о которых §5. В собранном для публикации приложении (<code>npm run build</code>) двойных вызовов нет.</p>
+
+        <p>Щелчок по фильтру меняет состояние <code>filter</code>: <code>App</code> отрисовывается, а <code>newCount</code> остаётся 3. React сравнивает значения в массиве зависимостей с прошлыми. Они не изменились, поэтому эффект не запускается. После «Взять в работу» <code>newCount</code> стал 2 — эффект запустился и записал новый заголовок.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Запись</th><th>Когда запускается эффект</th><th>Пример</th></tr></thead>
+            <tbody>
+              <tr><td><code>useEffect(f, [a, b])</code></td><td>После первой отрисовки и после каждой, в которой изменилось <code>a</code> или <code>b</code></td><td>Заголовок вкладки от <code>newCount</code></td></tr>
+              <tr><td><code>useEffect(f, [])</code></td><td>Один раз, после первой отрисовки</td><td>Подписка на клавиши окна (§5)</td></tr>
+              <tr><td><code>useEffect(f)</code></td><td>После каждой отрисовки</td><td>Почти никогда не нужно</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: забытая зависимость</p>
+
+        <ol class="steps">
+          <li><b>Оставьте массив пустым</b><p>Замените App.tsx версией, где у эффекта <code>[]</code> вместо <code>[newCount]</code>, и выполните во втором терминале <code>npm run lint</code>.</p>
+            <!--CODE tools/code21/App-title-bez-zavisimosti.tsx | zayavki/src/App.tsx · опыт, строки 21–23 | lines=21-23 mark=23--><figure class="code"><figcaption><span>zayavki/src/App.tsx · опыт, строки 21–23</span></figcaption><pre>  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+<span class="hl">  }, [])</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/07-lint-deps.png" width="1240" height="249" alt="Терминал: npm run lint, предупреждение react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'newCount'" loading="lazy"><figcaption>Линтер: в эффекте используется newCount, а в массиве его нет</figcaption></figure></li>
+          <li><b>Проверьте заголовок</b><p>Обновите страницу, нажмите «Взять в работу» в первой карточке и наберите в консоли <code>document.title</code>. Новых заявок стало 2, а заголовок остался прежним.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/08-title-zastyl.png" width="1100" height="826" alt="Консоль: document.title возвращает 'Новых: 3 · Доска заявок', хотя первая заявка уже взята в работу" loading="lazy"><figcaption>Заголовок застыл на «Новых: 3»</figcaption></figure></li>
+          <li><b>Верните правильную версию</b><p>Замените App.tsx версией из §2 (с <code>[newCount]</code>) и сохраните.</p></li>
+        </ol>
+
+        <p>Предупреждение <code>React Hook useEffect has a missing dependency: 'newCount'</code> переводится как «у хука useEffect пропущена зависимость newCount». Правило такое: в массив зависимостей записывают все значения из компонента — состояние, props, вычисленные переменные, — которые используются внутри эффекта. Линтер проверяет это сам.</p>
+
+        <p class="bridge">Эффект с заголовком только записывает значение. Таймер нужно ещё и отменять.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Таймер и очистка</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Сообщение исчезает через 5 секунд</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое App.tsx</b><p>Добавлен второй эффект, строки 25–31.</p>
+            <!--CODE tools/code21/App-notice.tsx | zayavki/src/App.tsx | mark=25-31--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> { nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> RequestItem, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span>
+<span class="k">import</span> { loadRequests, saveRequests } <span class="k">from</span> <span class="s">'./storage'</span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [requests, setRequests] = <span class="f">useState</span>(loadRequests)
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+  }, [newCount])
+
+<span class="hl">  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {</span>
+<span class="hl">    <span class="k">if</span> (notice === <span class="s">''</span>) {</span>
+<span class="hl">      <span class="k">return</span></span>
+<span class="hl">    }</span>
+<span class="hl">    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)</span>
+<span class="hl">    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)</span>
+<span class="hl">  }, [notice])</span>
+
+  <span class="k">function</span> <span class="f">update</span>(list: RequestItem[]) {
+    <span class="f">setRequests</span>(list)
+    <span class="f">saveRequests</span>(list)
+  }
+
+  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
+    <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {
+      <span class="k">if</span> (r.id === id) {
+        <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }
+      }
+      <span class="k">return</span> r
+    })
+    <span class="f">update</span>(updated)
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    <span class="k">const</span> created: RequestItem = { ...data, id: Date.<span class="f">now</span>(), status: <span class="s">'Новая'</span> }
+    <span class="f">update</span>([created, ...requests])
+    <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+    <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+    <span class="k">if</span> (sent) {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+    } <span class="k">else</span> {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+    }
+  }
+
+  <span class="k">function</span> <span class="f">handleRemove</span>(id: number) {
+    <span class="f">update</span>(requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE--></li>
+          <li><b>Отправьте заявку</b><p>Обновите страницу и отправьте заявку «Не работает звонок», кабинет «Вахта». Над списком появилось сообщение.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/09-soobshchenie.png" width="1100" height="900" alt="Доска: над списком сообщение Заявка добавлена, но уведомление не отправлено; первая карточка Не работает звонок" loading="lazy"><figcaption>Сообщение над списком сразу после отправки</figcaption></figure></li>
+          <li><b>Подождите 5 секунд</b><p>Сообщение исчезло само.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/10-soobshchenie-skrylos.png" width="1100" height="900" alt="Доска через 5 секунд: сообщения над списком нет, фильтры сразу под заголовком Заявки" loading="lazy"><figcaption>Через 5 секунд сообщения нет</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как работает таймер</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Чайник поставили на плиту и завели кухонный таймер на 5 минут. Если через минуту передумали и поставили другой чайник, старый таймер выключают и заводят новый. Иначе старый зазвонит раньше времени и чай заварится не в том чайнике.</p>
+          <p class="miss">Кухонный таймер выключает человек. В React старый таймер выключает функция очистки, которую React вызывает сам.</p>
+        </div></div>
+
+        <!--CODE tools/code21/App-notice.tsx | App.tsx · строки 25–31 | lines=25-31 pins=25:1,26:2,29:3,30:4,31:5--><figure class="code" data-read><figcaption><span>App.tsx · строки 25–31</span></figcaption><pre>  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {  <span class="pin">1</span>
+    <span class="k">if</span> (notice === <span class="s">''</span>) {  <span class="pin">2</span>
+      <span class="k">return</span>
+    }
+    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)  <span class="pin">3</span>
+    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)  <span class="pin">4</span>
+  }, [notice])  <span class="pin">5</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Второй эффект. В компоненте может быть несколько эффектов, каждый отвечает за своё.</p></div></li>
+          <li><span class="pin">2</span><div><p>Если сообщения нет, делать нечего: <code>return</code> завершает эффект.</p></div></li>
+          <li><span class="pin">3</span><div><p><code>setTimeout(функция, 5000)</code> — «через 5000 миллисекунд, то есть 5 секунд, выполни функцию». Функция стирает сообщение. <code>setTimeout</code> возвращает номер таймера, он сохраняется в <code>timer</code>.</p></div></li>
+          <li><span class="pin">4</span><div><p><span class="term">Функция очистки</span>: «если этот эффект больше не нужен, выключи таймер». <code>clearTimeout(timer)</code> отменяет таймер по номеру.</p></div></li>
+          <li><span class="pin">5</span><div><p>Эффект зависит от <code>notice</code>: каждый новый текст сообщения — новый таймер на 5 секунд.</p></div></li>
+        </ol>
+
+        <p>Пошаговый разбор ниже показывает, когда React вызывает очистку. После отправки заявки сообщение меняется дважды: сначала «Отправляем уведомление…», через долю секунды — итоговое.</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Два сообщения подряд — один таймер</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code21/App-notice.tsx | | bare lines=25-31--><pre class="trace__code" data-start="25">  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">if</span> (notice === <span class="s">''</span>) {
+      <span class="k">return</span>
+    }
+    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)
+    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)
+  }, [notice])</pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="29"><b>Первое сообщение — таймер А</b>
+                  <p><code>notice</code> стал «Заявка добавлена. Отправляем уведомление…». Эффект заводит таймер А на 5 секунд.</p>
+                  <div class="vars"><span class="var var--new"><i>таймер А</i><span>сработает через 5 с</span></span></div></li>
+                <li data-lines="30"><b>Сообщение сменилось — очистка</b>
+                  <p>Ответ сервера пришёл через полсекунды, <code>notice</code> сменился на итоговый. Перед новым запуском эффекта React вызывает очистку прошлого запуска: таймер А выключен.</p>
+                  <div class="vars"><span class="var"><i>таймер А</i><span>выключен</span></span></div></li>
+                <li data-lines="29"><b>Второе сообщение — таймер Б</b>
+                  <p>Эффект запускается с новым текстом и заводит таймер Б на полные 5 секунд.</p>
+                  <div class="vars"><span class="var var--new"><i>таймер Б</i><span>сработает через 5 с</span></span></div></li>
+                <li data-lines="29"><b>Таймер Б срабатывает</b>
+                  <p><code>setNotice('')</code>: сообщение стирается. Эффект запускается снова, но сообщение пустое, и он сразу завершается (строка 26).</p></li>
+                <li data-lines="30"><b>Что было бы без очистки</b>
+                  <p>Таймер А остался бы включённым и через 5 секунд от <em>первого</em> сообщения стёр бы второе. Второе сообщение провисело бы меньше 5 секунд.</p></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p class="bridge">Таймер очищается перед каждым новым запуском. Подписке на события окна очистка тоже нужна, и без неё ошибка видна сразу.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Клавиша Esc: подписка и отписка</h2>
+
+        <p>Клавиша <kbd>Esc</kbd> должна сбрасывать фильтр на «Все», где бы ни стоял курсор. Обработчик <code>onKeyDown</code> у кнопки здесь не поможет: он срабатывает, только когда фокус на этой кнопке. Нужно подписаться на нажатия клавиш во всём окне браузера: <code>window.addEventListener('keydown', функция)</code>. Окно — внешняя система, значит, подписка оформляется эффектом.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: подписка без отписки</p>
+
+        <ol class="steps">
+          <li><b>Замените App.tsx версией для опыта</b><p>Эффект подписывается на клавиши и печатает в консоль при <kbd>Esc</kbd>, но не возвращает функцию очистки.</p>
+            <!--CODE tools/code21/App-esc-bez-ochistki.tsx | zayavki/src/App.tsx · опыт, строки 33–41 | lines=33-41 mark=36,40--><figure class="code"><figcaption><span>zayavki/src/App.tsx · опыт, строки 33–41</span></figcaption><pre>  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">function</span> <span class="f">handleKey</span>(event: KeyboardEvent) {
+      <span class="k">if</span> (event.key === <span class="s">'Escape'</span>) {
+<span class="hl">        console.<span class="f">log</span>(<span class="s">'Esc: фильтр сброшен'</span>)</span>
+        <span class="f">setFilter</span>(<span class="s">'Все'</span>)
+      }
+    }
+<span class="hl">    window.<span class="f">addEventListener</span>(<span class="s">'keydown'</span>, handleKey)</span>
+  }, [])</pre></figure><!--/CODE--></li>
+          <li><b>Нажмите Esc</b><p>Обновите страницу, очистите консоль, выберите фильтр «Готово», щёлкните по пустому месту страницы и нажмите <kbd>Esc</kbd>. Сообщение в консоли с цифрой 2 — оно напечатано дважды за одно нажатие.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/11-esc-bez-ochistki.png" width="1100" height="826" alt="Консоль: сообщение Esc: фильтр сброшен с отметкой 2" loading="lazy"><figcaption>Одно нажатие — два срабатывания: в окне висят две подписки</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Откуда вторая подписка</p>
+
+        <p>Строгий режим при первом показе запускает эффект, очищает его и запускает снова (§3). Очистки в опыте нет, поэтому первая подписка осталась, и вторая добавилась к ней. В собранном приложении то же происходило бы при каждом удалении и повторном показе компонента: подписки накапливались бы, и одно нажатие запускало бы обработчик много раз. Строгий режим нарочно делает так, чтобы забытая очистка была видна сразу.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Подписка с отпиской</p>
+
+        <ol class="steps">
+          <li><b>Замените содержимое App.tsx</b><p>Это итоговая версия главы: три эффекта. Третий в строках 33–41 возвращает функцию отписки.</p>
+            <!--CODE tools/code21/App.tsx | zayavki/src/App.tsx | mark=33-41--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> { nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> RequestItem, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span>
+<span class="k">import</span> { loadRequests, saveRequests } <span class="k">from</span> <span class="s">'./storage'</span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [requests, setRequests] = <span class="f">useState</span>(loadRequests)
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+  }, [newCount])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">if</span> (notice === <span class="s">''</span>) {
+      <span class="k">return</span>
+    }
+    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)
+    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)
+  }, [notice])
+
+<span class="hl">  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {</span>
+<span class="hl">    <span class="k">function</span> <span class="f">handleKey</span>(event: KeyboardEvent) {</span>
+<span class="hl">      <span class="k">if</span> (event.key === <span class="s">'Escape'</span>) {</span>
+<span class="hl">        <span class="f">setFilter</span>(<span class="s">'Все'</span>)</span>
+<span class="hl">      }</span>
+<span class="hl">    }</span>
+<span class="hl">    window.<span class="f">addEventListener</span>(<span class="s">'keydown'</span>, handleKey)</span>
+<span class="hl">    <span class="k">return</span> () =<span class="t">&gt;</span> window.<span class="f">removeEventListener</span>(<span class="s">'keydown'</span>, handleKey)</span>
+<span class="hl">  }, [])</span>
+
+  <span class="k">function</span> <span class="f">update</span>(list: RequestItem[]) {
+    <span class="f">setRequests</span>(list)
+    <span class="f">saveRequests</span>(list)
+  }
+
+  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
+    <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {
+      <span class="k">if</span> (r.id === id) {
+        <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }
+      }
+      <span class="k">return</span> r
+    })
+    <span class="f">update</span>(updated)
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    <span class="k">const</span> created: RequestItem = { ...data, id: Date.<span class="f">now</span>(), status: <span class="s">'Новая'</span> }
+    <span class="f">update</span>([created, ...requests])
+    <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+    <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+    <span class="k">if</span> (sent) {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+    } <span class="k">else</span> {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+    }
+  }
+
+  <span class="k">function</span> <span class="f">handleRemove</span>(id: number) {
+    <span class="f">update</span>(requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/12-app-effekty.png" width="1240" height="780" alt="VS Code: App.tsx с тремя эффектами, третий с addEventListener и removeEventListener" loading="lazy"><figcaption>Так должен выглядеть App.tsx: три эффекта в строках 21–41</figcaption></figure></li>
+          <li><b>Проверьте Esc</b><p>Обновите страницу, выберите фильтр «Готово», щёлкните по пустому месту и нажмите <kbd>Esc</kbd>. Фильтр вернулся на «Все».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/13-filtr-gotovo.png" width="1100" height="634" alt="Доска с фильтром Готово: одна карточка Замятие бумаги в принтере" loading="lazy"><figcaption>До нажатия: фильтр «Готово»</figcaption></figure>
+            <figure class="shot" style="max-width: 1106px"><img src="img/14-esc-vse.png" width="1100" height="938" alt="Доска после Esc: фильтр Все, пять карточек" loading="lazy"><figcaption>После Esc: фильтр «Все»</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что записано в третьем эффекте</p>
+
+        <!--CODE tools/code21/App.tsx | App.tsx · строки 33–41 | lines=33-41 pins=34:1,35:2,39:3,40:4,41:5--><figure class="code" data-read><figcaption><span>App.tsx · строки 33–41</span></figcaption><pre>  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">function</span> <span class="f">handleKey</span>(event: KeyboardEvent) {  <span class="pin">1</span>
+      <span class="k">if</span> (event.key === <span class="s">'Escape'</span>) {  <span class="pin">2</span>
+        <span class="f">setFilter</span>(<span class="s">'Все'</span>)
+      }
+    }
+    window.<span class="f">addEventListener</span>(<span class="s">'keydown'</span>, handleKey)  <span class="pin">3</span>
+    <span class="k">return</span> () =<span class="t">&gt;</span> window.<span class="f">removeEventListener</span>(<span class="s">'keydown'</span>, handleKey)  <span class="pin">4</span>
+  }, [])  <span class="pin">5</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Функция, которую браузер вызовет при нажатии любой клавиши. <code>KeyboardEvent</code> — тип события клавиатуры.</p></div></li>
+          <li><span class="pin">2</span><div><p><code>event.key</code> — название нажатой клавиши. Фильтр сбрасывается только по <kbd>Esc</kbd>.</p></div></li>
+          <li><span class="pin">3</span><div><p>Подписка: «окно, при нажатии клавиши вызывай <code>handleKey</code>».</p></div></li>
+          <li><span class="pin">4</span><div><p>Отписка: та же функция снимается с окна. Передаётся именно <code>handleKey</code> — та самая, что подписана: поэтому она объявлена внутри эффекта отдельной функцией с именем.</p></div></li>
+          <li><span class="pin">5</span><div><p>Пустой массив: подписаться один раз при первом показе. <code>setFilter</code> React не меняет между отрисовками, поэтому линтер не требует вписать его в массив.</p></div></li>
+        </ol>
+
+        <p class="bridge">Эффекты связывают доску с вкладкой, таймером и окном. Но эффект легко поставить и туда, где он не нужен.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Когда эффект не нужен</h2>
+
+        <p>Список видимых заявок <code>visible</code> в главе 1.5 вычисляется при отрисовке. Его можно было бы хранить в отдельном состоянии и обновлять эффектом при изменении фильтра или заявок. Опыт показывает, почему так не делают.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: visible через эффект</p>
+
+        <ol class="steps">
+          <li><b>Замените App.tsx версией для опыта</b>
+            <!--CODE tools/code21/App-visible-effekt.tsx | zayavki/src/App.tsx · опыт, строки 17–24 | lines=17-24 mark=19-24--><figure class="code"><figcaption><span>zayavki/src/App.tsx · опыт, строки 17–24</span></figcaption><pre>
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+<span class="hl">  <span class="k">const</span> [visible, setVisible] = <span class="f">useState</span>(requests)</span>
+<span class="hl">  console.<span class="f">log</span>(<span class="s">'отрисовка App, видно заявок'</span>, visible.length)</span>
+<span class="hl"></span>
+<span class="hl">  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {</span>
+<span class="hl">    <span class="f">setVisible</span>(filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter))</span>
+<span class="hl">  }, [filter, requests])</span></pre></figure><!--/CODE--></li>
+          <li><b>Запустите линтер</b><p>Во втором терминале выполните <code>npm run lint</code>.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/15-lint-set-state.png" width="1240" height="249" alt="Терминал: react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders" loading="lazy"><figcaption>Линтер: изменение состояния прямо в эффекте вызывает лишние отрисовки</figcaption></figure></li>
+          <li><b>Посмотрите журнал</b><p>Обновите страницу, очистите консоль и нажмите фильтр «Новая».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/16-lishnyaya-otrisovka.png" width="1100" height="826" alt="Консоль: четыре строки отрисовка App: две с видно заявок 5 и две с видно заявок 3" loading="lazy"><figcaption>Один щелчок — две лишние отрисовки со старым списком</figcaption></figure></li>
+          <li><b>Верните итоговую версию</b><p>Замените App.tsx итоговой версией из §5 и сохраните.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Где что решать</p>
+
+        <p>В журнале после щелчка сначала две отрисовки с прежним списком (видно 5 заявок), потом эффект меняет <code>visible</code>, и ещё две отрисовки с новым (видно 3). Первая пара отрисовок лишняя: на мгновение страница показывает старый список. Линтер называет это <code>set-state-in-effect</code>: «изменение состояния в эффекте вызывает цепочку отрисовок». Его подсказка: вычислять значение при отрисовке или менять его в обработчике события, которое вызвало изменение.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Задача</th><th>Где решать</th><th>Пример на доске</th></tr></thead>
+            <tbody>
+              <tr><td>Значение получается из состояния или props</td><td>Вычислить при отрисовке</td><td><code>newCount</code>, <code>visible</code></td></tr>
+              <tr><td>Реакция на действие пользователя</td><td>В обработчике события</td><td>Сохранение в localStorage в <code>update</code>, сообщение в <code>handleAdd</code></td></tr>
+              <tr><td>Связь с внешней системой, которая должна совпадать с состоянием</td><td>Эффект</td><td>Заголовок вкладки, таймер, подписка на клавиши, загрузка из базы</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Вопрос для проверки: «Это нужно, потому что компонент показан на странице, или потому что пользователь что-то сделал?» Если из-за действия пользователя — место в обработчике. Эффект нужен, когда внешнее должно совпадать с тем, что сейчас на странице, независимо от того, что к этому привело.</p>
+
+        <div class="starter starter--finish">
+          <p class="starter__head">Проект после главы</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в состоянии конца главы: три эффекта в <code>App.tsx</code> — заголовок вкладки, исчезающее сообщение, сброс фильтра клавишей Esc. Распаковка и запуск — как у архива в начале главы.</p>
+            <a class="starter__btn" href="zayavki-konec-2-1.zip" download>zayavki-konec-2-1.zip <small>21 КБ</small></a>
+          </div>
+        </div>
+
+        <h2 id="s7"><span class="sec">§7</span>Частые ошибки</h2>
+
+        <p>Предупреждения получены командой <code>npm run lint</code> в проекте <code>zayavki</code>, ошибка React — в консоли браузера.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>Линтер: <code>react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'newCount'</code></td><td>Значение используется в эффекте, но не записано в массив зависимостей; эффект работает со старым значением</td><td>Вписать значение в массив: <code>[newCount]</code></td></tr>
+              <tr><td>Линтер: <code>react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders</code></td><td>Эффект пересчитывает состояние из другого состояния</td><td>Вычислять значение при отрисовке или менять в обработчике события</td></tr>
+              <tr><td>Консоль: <code>Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.</code></td><td>Эффект без массива зависимостей меняет состояние: изменение вызывает отрисовку, отрисовка — эффект, и так без конца</td><td>Добавить массив зависимостей или убрать изменение состояния из эффекта</td></tr>
+              <tr><td>Одно нажатие клавиши обрабатывается дважды</td><td>Подписка в эффекте без функции отписки</td><td>Вернуть из эффекта <code>() =&gt; window.removeEventListener('keydown', handleKey)</code></td></tr>
+              <tr><td>Сообщение исчезает раньше времени</td><td>Таймер из прошлого запуска эффекта не отменён</td><td>Вернуть из эффекта <code>() =&gt; clearTimeout(timer)</code></td></tr>
+              <tr><td>В консоли всё печатается дважды</td><td>Строгий режим <code>&lt;StrictMode&gt;</code> во время разработки вызывает компоненты и эффекты повторно</td><td>Ничего: это проверка. В собранном приложении двойных вызовов нет</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s8"><span class="sec">§8</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Что такое эффект и когда React его выполняет?</summary>
+          <p>Функция, переданная в <code>useEffect</code>, для связи компонента с внешним миром. React выполняет её после того, как перенёс разметку на страницу.</p>
+        </details>
+        <details>
+          <summary>Чем отличаются <code>useEffect(f, [x])</code>, <code>useEffect(f, [])</code> и <code>useEffect(f)</code>?</summary>
+          <p>Первый запускается после первой отрисовки и когда изменился <code>x</code>. Второй — один раз после первой отрисовки. Третий — после каждой отрисовки.</p>
+        </details>
+        <details>
+          <summary>Зачем эффект возвращает функцию?</summary>
+          <p>Это функция очистки. React вызывает её перед следующим запуском эффекта и при удалении компонента. В ней отменяют таймеры и подписки, иначе они накапливаются.</p>
+        </details>
+        <details>
+          <summary>Почему в разработке эффект при загрузке запускается дважды?</summary>
+          <p>Строгий режим нарочно запускает эффект, очищает и запускает снова, чтобы забытая очистка была видна сразу. В собранном приложении эффект запускается один раз.</p>
+        </details>
+        <details>
+          <summary>Нужен ли эффект, чтобы считать <code>newCount</code>?</summary>
+          <p>Нет. <code>newCount</code> вычисляется из состояния при отрисовке. Эффект с <code>setState</code> дал бы лишние отрисовки и устаревшее значение на мгновение.</p>
+        </details>
+        <details>
+          <summary>Сделайте так, чтобы заголовок вкладки был просто «Доска заявок», когда новых заявок нет. Что изменить?</summary>
+          <p>В первом эффекте выбрать текст тернарным оператором: <code>document.title = newCount &gt; 0 ? `Новых: ${newCount} · Доска заявок` : 'Доска заявок'</code>. Массив зависимостей остаётся <code>[newCount]</code>.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Импорт</b><code>import { useEffect } from 'react'</code></div>
+          <div><b>При изменении x</b><code>useEffect(() =&gt; { … }, [x])</code></div>
+          <div><b>Один раз</b><code>useEffect(() =&gt; { … }, [])</code></div>
+          <div><b>Таймер</b><code>const t = setTimeout(f, 5000); return () =&gt; clearTimeout(t)</code></div>
+          <div><b>Подписка</b><code>window.addEventListener('keydown', h)</code></div>
+          <div><b>Отписка</b><code>return () =&gt; window.removeEventListener('keydown', h)</code></div>
+          <div><b>Заголовок вкладки</b><code>document.title = '…'</code></div>
+          <div><b>Без эффекта</b>значения из состояния — при отрисовке; реакции на действия — в обработчике</div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>Эффект — функция в <code>useEffect</code>, которую React выполняет после переноса разметки на страницу. Эффекты связывают компонент с внешними системами: заголовком вкладки, таймерами, событиями окна, а дальше — с сетью и базой данных. Массив зависимостей задаёт, когда эффект запускается снова: при изменении перечисленных значений, один раз при пустом массиве или после каждой отрисовки без массива. В массив записывают всё, что эффект использует, — линтер проверяет это правилом <code>exhaustive-deps</code>. Функция, которую эффект возвращает, отменяет его работу: выключает таймер, снимает подписку. React вызывает её перед следующим запуском и при удалении компонента. Строгий режим в разработке проверяет, что очистка есть. Значения, которые вычисляются из состояния, и реакции на действия пользователя эффектов не требуют. Доска показывает число новых заявок на вкладке, прячет сообщение через 5 секунд и сбрасывает фильтр по <kbd>Esc</kbd>.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://react.dev/learn/synchronizing-with-effects" target="_blank" rel="noreferrer">react.dev — Synchronizing with Effects</a></li>
+          <li><a href="https://react.dev/learn/you-might-not-need-an-effect" target="_blank" rel="noreferrer">react.dev — You Might Not Need an Effect</a></li>
+          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">react.dev — useEffect</a></li>
+          <li><a href="https://react.dev/reference/react/StrictMode" target="_blank" rel="noreferrer">react.dev — StrictMode</a></li>
+          <li><a href="https://developer.mozilla.org/ru/docs/Web/API/setTimeout" target="_blank" rel="noreferrer">MDN — setTimeout()</a></li>
+          <li><a href="https://developer.mozilla.org/ru/docs/Web/API/EventTarget/addEventListener" target="_blank" rel="noreferrer">MDN — addEventListener()</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../18-avtomatizaciya/index.html">← Автоматизация модуля 1</a>
+          <a href="../../index.html">Оглавление →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

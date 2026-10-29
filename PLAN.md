@@ -68,3 +68,12 @@ React+Vite, PocketBase, n8n в Docker, Ollama / GigaChat, Telegram Bot API, GitH
 - Пошаговый разбор `.trace` (book.js): код слева (`<!--CODE … | | bare lines=A-B-->`), шаги справа
   с `data-lines` по номерам строк файла; в шагах — ячейки памяти `.var`, массив `.arr`, мини-карточки `.mini`.
 - Код с номерными метками: `pins=строка:номер` в маркере CODE и список `.anno` под блоком.
+
+## Модуль 2
+
+Порядок (решение автора 29.10.2026): 2.1 Эффекты → 2.2 PocketBase: коллекции и правила → 2.3 Загрузка: загрузка и ошибка →
+2.4 Собственный хук → 2.5 Обновление по событиям. Прототип всего модуля — `tools/proto2` (PocketBase 0.40.6 из своего
+Dockerfile, n8n 2.45.4, Ollama + qwen2.5:3b из GGUF с Hugging Face; кнопки Telegram опросом getUpdates).
+
+- 2.1 `temy/21-effekty` — заголовок вкладки, исчезающее сообщение (таймер + очистка), Esc через подписку на окно;
+  опыты с журналом в консоли (StrictMode), пропущенная зависимость (exhaustive-deps), visible через эффект (set-state-in-effect).

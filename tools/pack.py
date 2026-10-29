@@ -52,6 +52,8 @@ AFTER_17 = {
     "storage.ts": "code17/storage.ts", "notify.ts": "code17/notify.ts",
 }
 
+AFTER_21 = {**AFTER_17, "App.tsx": "code21/App.tsx"}
+
 ARCHIVES = [
     ("11-node-npm-vite", "zayavki-konec-1-1.zip", AFTER_11),
     ("12-jsx-i-komponenty", "zayavki-nachalo-1-2.zip", AFTER_11),
@@ -66,6 +68,8 @@ ARCHIVES = [
     ("16-formy", "zayavki-konec-1-6.zip", AFTER_16),
     ("17-sohranenie-i-otpravka", "zayavki-nachalo-1-7.zip", AFTER_16),
     ("17-sohranenie-i-otpravka", "zayavki-konec-1-7.zip", AFTER_17),
+    ("21-effekty", "zayavki-nachalo-2-1.zip", AFTER_17),
+    ("21-effekty", "zayavki-konec-2-1.zip", AFTER_21),
 ]
 
 
