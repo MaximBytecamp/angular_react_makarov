@@ -87,3 +87,7 @@ Dockerfile, n8n 2.45.4, Ollama + qwen2.5:3b из GGUF с Hugging Face; кноп�
   (вечная загрузка → `try/catch`, `error`, кнопка «Повторить» через зависимость `attempt`), действие без сервера → `notice`;
   функция обновления `setRequests((list) => …)`. Код `tools/code23`, съёмка `shots_23.py` (база перед съёмкой приводится
   к пяти «Новая»; задержка ответа — `page.route`), обрезка `crop_23.py`. После главы в базе 6 заявок.
+- 2.4 `temy/24-sobstvennyy-huk` — хук `useRequests` в два шага (загрузка → действия add/next/remove, `setRequests` наружу
+  не выходит; try/catch остаётся в обработчиках App), опыт «Header сам вызывает хук» (4 запроса, счётчик расходится),
+  опыт «return перед хуком» (oxlint rules-of-hooks, «Rendered fewer hooks than expected»), разбор порядка ячеек хуков.
+  Код `tools/code24`, съёмка `shots_24.py`, обрезка `crop_24.py`. После главы в базе 7 заявок («Нет звука в колонках» в работе).

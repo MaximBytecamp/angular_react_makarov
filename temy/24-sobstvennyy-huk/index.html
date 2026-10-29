@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>2.4 Собственный хук · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; stroke-dasharray: 6 4; }
+    .sch .ng-text { fill: #C2185B; }
+    .sch .dash { stroke-dasharray: 6 4; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 2 · Данные с сервера и ИИ-диспетчер</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 2 · данные с сервера и ИИ-диспетчер</p>
+          <p class="running__folio">2.4</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">2.4</span>
+          <h1>Собственный хук</h1>
+          <p class="lead">В этой главе код работы с заявками переезжает из <code>App.tsx</code> в отдельную функцию — собственный хук <code>useRequests</code>. Сначала в хук переходят загрузка, ошибка и кнопка «Повторить», затем добавление, смена статуса и удаление. Доска при этом работает как прежде, а <code>App.tsx</code> становится короче на 35 строк. Два опыта показывают, как хук ведёт себя в нескольких компонентах и почему хуки нельзя вызывать после <code>return</code> по условию. В конце разобраны правила хуков и проверка, которую выполняет линтер.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>React, хуки</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после главы 2.3 и запущенный PocketBase с коллекцией <code>requests</code></dd></div>
+          <div><dt>Результат</dt><dd>Файл <code>useRequests.ts</code> с хуком, <code>App.tsx</code> получает заявки и действия одной строкой</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Зачем собственный хук</a></li>
+            <li><a href="#s2">Хук загрузки</a></li>
+            <li><a href="#s3">Действия в хуке</a></li>
+            <li><a href="#s4">У каждого вызова своё состояние</a></li>
+            <li><a href="#s5">Правила хуков</a></li>
+            <li><a href="#s6">Частые ошибки</a></li>
+            <li><a href="#s7">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <div class="starter">
+          <p class="starter__head">Если проекта нет или он в другом состоянии</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в том состоянии, с которого начинается глава, — после главы 2.3. PocketBase должен работать в Docker с коллекцией и правилами из главы 2.2.</p>
+            <a class="starter__btn" href="zayavki-nachalo-2-4.zip" download>zayavki-nachalo-2-4.zip <small>21 КБ</small></a>
+            <p class="starter__lock">Архив закрыт паролем. После нажатия на кнопку введите пароль — его сообщает преподаватель.</p>
+            <ol class="starter__steps">
+              <li>Распакуйте архив в папку <code>react-kurs</code>. Если папка <code>zayavki</code> там уже есть, сначала переименуйте старую.</li>
+              <li>Проверьте, что PocketBase запущен: в Docker Desktop контейнер <code>avtomatizaciya-pocketbase-1</code> работает.</li>
+              <li>Выполните три команды в терминале VS Code.</li>
+            </ol>
+            <figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>cd zayavki
+npm install
+npm run dev</pre></figure>
+          </div>
+        </div>
+
+        <h2 id="s1"><span class="sec">§1</span>Зачем собственный хук</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что лежит в App.tsx</p>
+
+        <p>После главы 2.3 в <code>App.tsx</code> 150 строк, и в них смешаны две задачи. Первая — данные: список заявок, состояние загрузки и ошибки, эффект загрузки, запросы к серверу на добавление, смену статуса и удаление. Вторая — экран: фильтр, сообщение над списком, клавиша Esc, заголовок вкладки, разметка. Чтобы изменить загрузку, приходится искать её среди кода экрана.</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В кафе официант принимает заказ и передаёт его на кухню. Котлеты официант не жарит: он забирает готовое блюдо из окошка выдачи. Кухня может готовить и для зала, и для доставки, а официанту достаточно знать, что можно заказать.</p>
+          <p class="miss">Кухня в кафе одна на всех официантов. У хука такой общей кухни нет: каждый компонент, который его вызывает, получает собственные переменные состояния.</p>
+        </div></div>
+
+        <p><span class="term">Собственный хук</span> (custom hook) — функция, имя которой начинается с <code>use</code> и внутри которой вызываются другие хуки: <code>useState</code>, <code>useEffect</code>. Хук возвращает компоненту то, что ему нужно, а как это получено, остаётся внутри хука. Для доски это будет <code>useRequests</code>: в нём состояние заявок, загрузка и запросы к серверу, а компонент получает готовый список и функции для действий.</p>
+
+        <p>На схеме — <code>App.tsx</code> до главы и после неё.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Код работы с заявками до и после переноса в хук</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 290" role="img" aria-label="Слева App.tsx на 150 строк: экран и данные вместе. Справа App.tsx на 115 строк с экраном и вызовом useRequests; файл useRequests.ts на 57 строк с данными возвращает requests, loading, error, retry, add, next, remove">
+              <rect x="20" y="20" width="250" height="250" fill="#ffffff"/><text class="mono" x="34" y="44">App.tsx · 150 строк</text>
+              <rect x="34" y="60" width="222" height="96" fill="#D6F0F9"/><text x="46" y="82">экран</text><text class="soft" x="46" y="102">filter, notice, Esc</text><text class="soft" x="46" y="120">заголовок вкладки</text><text class="soft" x="46" y="138">разметка</text>
+              <rect x="34" y="166" width="222" height="90" fill="#D4EEDF"/><text x="46" y="188">данные</text><text class="soft" x="46" y="208">4 useState, эффект</text><text class="soft" x="46" y="226">retry</text><text class="soft" x="46" y="244">запросы к серверу</text>
+              <path d="M282 145 H 318"/><path d="M310 139 L 318 145 L 310 151"/>
+              <rect x="330" y="20" width="200" height="250" fill="#ffffff"/><text class="mono" x="344" y="44">App.tsx · 115 строк</text>
+              <rect x="344" y="60" width="172" height="96" fill="#D6F0F9"/><text x="356" y="82">экран</text><text class="soft" x="356" y="102">filter, notice, Esc</text><text class="soft" x="356" y="120">заголовок вкладки</text><text class="soft" x="356" y="138">разметка</text>
+              <rect x="344" y="176" width="172" height="60" fill="#161A2E"/><text class="mono on-dark" x="356" y="200">useRequests()</text><text class="soft" x="356" y="220" style="fill:#c8d0e0">одна строка</text>
+              <rect x="570" y="100" width="170" height="170" fill="#D4EEDF"/><text class="mono" x="582" y="124">useRequests.ts</text><text class="soft" x="582" y="142">57 строк</text><text class="soft" x="582" y="168">4 useState, эффект</text><text class="soft" x="582" y="186">retry</text><text class="soft" x="582" y="204">add, next, remove</text><text class="soft" x="582" y="230">возвращает список</text><text class="soft" x="582" y="248">и функции</text>
+              <path d="M516 206 H 562"/><path d="M554 200 L 562 206 L 554 212"/>
+            </svg>
+          </div>
+          <p class="scheme__note">Голубое — код экрана, зелёное — код данных. Код данных переезжает в отдельный файл без изменений. В <code>App.tsx</code> от него остаётся одна строка с вызовом хука.</p>
+        </figure>
+
+        <p>Хуки из React — <code>useState</code>, <code>useEffect</code> — встроенные. Собственный хук собирается из них, как функция собирается из других функций. Переносить будем в два шага, после каждого проверяя доску.</p>
+
+        <p class="bridge">Первый шаг — загрузка: четыре переменные состояния, эффект и функция <code>retry</code>.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Хук загрузки</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Переносим загрузку в useRequests</p>
+
+        <ol class="steps">
+          <li><b>Создайте файл хука</b><p>В папке <code>zayavki/src</code> создайте файл <code>useRequests.ts</code> и вставьте код. Состояния, эффект и <code>retry</code> скопированы из <code>App.tsx</code> без изменений.</p>
+            <!--CODE tools/code24/useRequests-load.ts | zayavki/src/useRequests.ts--><figure class="code"><figcaption><span>zayavki/src/useRequests.ts</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> { fetchRequests } <span class="k">from</span> <span class="s">'./api'</span>
+<span class="k">import</span> <span class="k">type</span> { RequestItem } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">export</span> <span class="k">function</span> <span class="f">useRequests</span>() {
+  <span class="k">const</span> [requests, setRequests] = useState<span class="t">&lt;RequestItem</span>[]<span class="t">&gt;</span>([])
+  <span class="k">const</span> [loading, setLoading] = <span class="f">useState</span>(<span class="k">true</span>)
+  <span class="k">const</span> [error, setError] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [attempt, setAttempt] = <span class="f">useState</span>(<span class="n">0</span>)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">let</span> ignore = <span class="k">false</span>
+    async <span class="k">function</span> <span class="f">load</span>() {
+      try {
+        <span class="k">const</span> list = await <span class="f">fetchRequests</span>()
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setRequests</span>(list)
+        }
+      } catch (e) {
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setError</span>((e as Error).message)
+        }
+      }
+      <span class="k">if</span> (!ignore) {
+        <span class="f">setLoading</span>(<span class="k">false</span>)
+      }
+    }
+    <span class="f">load</span>()
+    <span class="k">return</span> () =<span class="t">&gt;</span> {
+      ignore = <span class="k">true</span>
+    }
+  }, [attempt])
+
+  <span class="k">function</span> <span class="f">retry</span>() {
+    <span class="f">setError</span>(<span class="s">''</span>)
+    <span class="f">setLoading</span>(<span class="k">true</span>)
+    <span class="f">setAttempt</span>(attempt + <span class="n">1</span>)
+  }
+
+  <span class="k">return</span> { requests, setRequests, loading, error, retry }
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-hook-load.png" width="1240" height="780" alt="VS Code: новый файл src/useRequests.ts с функцией useRequests, четырьмя useState и эффектом загрузки" loading="lazy"><figcaption>Новый файл src/useRequests.ts</figcaption></figure></li>
+          <li><b>Замените App.tsx</b><p>Замените содержимое <code>src/App.tsx</code>. Четыре <code>useState</code>, эффект загрузки и <code>retry</code> из него удалены. Вместо них — строка 15 с вызовом хука. Изменённые строки подсвечены.</p>
+            <!--CODE tools/code24/App-load.tsx | zayavki/src/App.tsx | mark=5-7,15--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="hl"><span class="k">import</span> { nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span></span>
+<span class="hl"><span class="k">import</span> { createRequest, deleteRequest, updateStatus } <span class="k">from</span> <span class="s">'./api'</span></span>
+<span class="hl"><span class="k">import</span> { useRequests } <span class="k">from</span> <span class="s">'./useRequests'</span></span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+<span class="hl">  <span class="k">const</span> { requests, setRequests, loading, error, retry } = <span class="f">useRequests</span>()</span>
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+  }, [newCount])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">if</span> (notice === <span class="s">''</span>) {
+      <span class="k">return</span>
+    }
+    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)
+    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)
+  }, [notice])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">function</span> <span class="f">handleKey</span>(event: KeyboardEvent) {
+      <span class="k">if</span> (event.key === <span class="s">'Escape'</span>) {
+        <span class="f">setFilter</span>(<span class="s">'Все'</span>)
+      }
+    }
+    window.<span class="f">addEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+    <span class="k">return</span> () =<span class="t">&gt;</span> window.<span class="f">removeEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+  }, [])
+
+  async <span class="k">function</span> <span class="f">handleNext</span>(id: string, status: Status) {
+    try {
+      <span class="k">const</span> updated = await <span class="f">updateStatus</span>(id, <span class="f">nextStatus</span>(status))
+      <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> list.<span class="f">map</span>((r) =<span class="t">&gt;</span> (r.id === id ? updated : r)))
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    try {
+      <span class="k">const</span> created = await <span class="f">createRequest</span>(data)
+      <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> [created, ...list])
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+      <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+      <span class="k">if</span> (sent) {
+        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+      } <span class="k">else</span> {
+        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+      }
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  async <span class="k">function</span> <span class="f">handleRemove</span>(id: string) {
+    try {
+      await <span class="f">deleteRequest</span>(id)
+      <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> list.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {loading &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявок…<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {error !== <span class="s">''</span> &amp;&amp; (
+            <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"load-error"</span><span class="t">&gt;</span>
+              <span class="t">&lt;p</span><span class="t">&gt;</span>{error}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+              <span class="t">&lt;button</span> <span class="a">onClick</span>={retry}<span class="t">&gt;</span>Повторить<span class="t">&lt;/button</span><span class="t">&gt;</span>
+            <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          )}
+          {!loading &amp;&amp; error === <span class="s">''</span> &amp;&amp; visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id, r.status)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-app-load.png" width="1240" height="780" alt="VS Code: App.tsx, строка 15 const { requests, setRequests, loading, error, retry } = useRequests(), ниже filter и notice" loading="lazy"><figcaption>App.tsx: заявки и загрузка приходят из хука, строка 15</figcaption></figure></li>
+          <li><b>Проверьте доску</b><p>Обновите страницу (<kbd>F5</kbd>). Доска показывает те же шесть заявок, что в конце главы 2.3: «Не печатает принтер» в работе, остальные новые.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/03-doska.png" width="1100" height="1073" alt="Доска: шесть заявок, сверху Не печатает принтер со статусом В работе, Новых заявок: 5" loading="lazy"><figcaption>Доска работает как раньше</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что записано в хуке</p>
+
+        <!--CODE tools/code24/useRequests-load.ts | useRequests.ts · по строкам | pins=1:1,5:2,6:3,11:4,34:5,40:6--><figure class="code" data-read><figcaption><span>useRequests.ts · по строкам</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>  <span class="pin">1</span>
+<span class="k">import</span> { fetchRequests } <span class="k">from</span> <span class="s">'./api'</span>
+<span class="k">import</span> <span class="k">type</span> { RequestItem } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">export</span> <span class="k">function</span> <span class="f">useRequests</span>() {  <span class="pin">2</span>
+  <span class="k">const</span> [requests, setRequests] = useState<span class="t">&lt;RequestItem</span>[]<span class="t">&gt;</span>([])  <span class="pin">3</span>
+  <span class="k">const</span> [loading, setLoading] = <span class="f">useState</span>(<span class="k">true</span>)
+  <span class="k">const</span> [error, setError] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [attempt, setAttempt] = <span class="f">useState</span>(<span class="n">0</span>)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {  <span class="pin">4</span>
+    <span class="k">let</span> ignore = <span class="k">false</span>
+    async <span class="k">function</span> <span class="f">load</span>() {
+      try {
+        <span class="k">const</span> list = await <span class="f">fetchRequests</span>()
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setRequests</span>(list)
+        }
+      } catch (e) {
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setError</span>((e as Error).message)
+        }
+      }
+      <span class="k">if</span> (!ignore) {
+        <span class="f">setLoading</span>(<span class="k">false</span>)
+      }
+    }
+    <span class="f">load</span>()
+    <span class="k">return</span> () =<span class="t">&gt;</span> {
+      ignore = <span class="k">true</span>
+    }
+  }, [attempt])
+
+  <span class="k">function</span> <span class="f">retry</span>() {  <span class="pin">5</span>
+    <span class="f">setError</span>(<span class="s">''</span>)
+    <span class="f">setLoading</span>(<span class="k">true</span>)
+    <span class="f">setAttempt</span>(attempt + <span class="n">1</span>)
+  }
+
+  <span class="k">return</span> { requests, setRequests, loading, error, retry }  <span class="pin">6</span>
+}</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Хук сам вызывает <code>useState</code> и <code>useEffect</code>, поэтому импортирует их из React — как компонент.</p></div></li>
+          <li><span class="pin">2</span><div><p>Обычная функция с именем на <code>use</code>. Слово <code>export</code> разрешает импортировать её в других файлах. Разметку хук не возвращает, поэтому у файла расширение <code>.ts</code>.</p></div></li>
+          <li><span class="pin">3</span><div><p>Четыре переменные состояния — те же, что были в <code>App</code>: список, загрузка, текст ошибки, номер попытки.</p></div></li>
+          <li><span class="pin">4</span><div><p>Эффект загрузки из главы 2.3, слово в слово.</p></div></li>
+          <li><span class="pin">5</span><div><p>Функция для кнопки «Повторить».</p></div></li>
+          <li><span class="pin">6</span><div><p>Хук возвращает объект из пяти значений. Запись <code>{ requests, setRequests, … }</code> — короткая форма <code>{ requests: requests, … }</code>. Имя поля совпадает с именем переменной. <code>attempt</code> и сеттеры загрузки наружу не выходят: они нужны только внутри хука.</p></div></li>
+        </ol>
+
+        <p>В <code>App</code> объект сразу раскладывается на переменные:</p>
+
+        <!--CODE tools/code24/App-load.tsx | App.tsx · строка 15 | lines=15-15--><figure class="code"><figcaption><span>App.tsx · строка 15</span></figcaption><pre>  <span class="k">const</span> { requests, setRequests, loading, error, retry } = <span class="f">useRequests</span>()</pre></figure><!--/CODE-->
+
+        <p>Это распаковка объекта, знакомая по props из главы 1.3: из объекта, который вернул хук, берутся поля с этими именами. Остальной код <code>App</code> пользуется ими как раньше: <code>requests</code> в фильтре и карточках, <code>setRequests</code> в обработчиках, <code>loading</code>, <code>error</code> и <code>retry</code> в разметке.</p>
+
+        <p>Для React вызов хука равен его строкам, вставленным в компонент на место вызова. Состояния <code>useRequests</code> принадлежат <code>App</code>. При каждой отрисовке <code>App</code> хук вызывается снова и отдаёт текущие значения, как <code>useState</code>.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Что выполняется при отрисовке App</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 250" role="img" aria-label="Отрисовка App: строка 15 вызывает useRequests, внутри него четыре useState и useEffect относятся к App; затем useState для filter и notice и остальные эффекты App">
+              <rect x="20" y="20" width="720" height="210" fill="#ffffff"/><text class="mono" x="34" y="44">отрисовка App</text>
+              <rect x="40" y="60" width="330" height="150" fill="#D4EEDF" class="dash"/><text class="mono" x="54" y="84">строка 15: useRequests()</text>
+              <text class="soft" x="54" y="110">useState  → requests</text><text class="soft" x="54" y="130">useState  → loading</text><text class="soft" x="54" y="150">useState  → error</text><text class="soft" x="54" y="170">useState  → attempt</text><text class="soft" x="54" y="190">useEffect → загрузка</text>
+              <rect x="400" y="60" width="320" height="150" fill="#D6F0F9"/><text class="mono" x="414" y="84">дальше в App</text>
+              <text class="soft" x="414" y="110">useState  → filter</text><text class="soft" x="414" y="130">useState  → notice</text><text class="soft" x="414" y="150">useEffect → заголовок</text><text class="soft" x="414" y="170">useEffect → таймер</text><text class="soft" x="414" y="190">useEffect → Esc</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Пунктирная рамка — граница файла <code>useRequests.ts</code>. Для React её нет: все десять хуков относятся к одному компоненту <code>App</code> и вызываются при каждой его отрисовке в этом порядке.</p>
+        </figure>
+
+        <p class="bridge">Загрузка переехала. Но <code>App</code> всё ещё сам отправляет запросы на изменение и сам меняет список через <code>setRequests</code>. Это тоже работа с данными, и ей место в хуке.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Действия в хуке</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Добавление, статус и удаление переезжают в хук</p>
+
+        <ol class="steps">
+          <li><b>Дополните хук</b><p>Замените содержимое <code>src/useRequests.ts</code>. Добавлены три функции действий, изменился список импортов и объект, который хук возвращает.</p>
+            <!--CODE tools/code24/useRequests.ts | zayavki/src/useRequests.ts | mark=2-3,40-56--><figure class="code"><figcaption><span>zayavki/src/useRequests.ts</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="hl"><span class="k">import</span> { createRequest, deleteRequest, fetchRequests, updateStatus } <span class="k">from</span> <span class="s">'./api'</span></span>
+<span class="hl"><span class="k">import</span> { nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> RequestItem, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span></span>
+
+<span class="k">export</span> <span class="k">function</span> <span class="f">useRequests</span>() {
+  <span class="k">const</span> [requests, setRequests] = useState<span class="t">&lt;RequestItem</span>[]<span class="t">&gt;</span>([])
+  <span class="k">const</span> [loading, setLoading] = <span class="f">useState</span>(<span class="k">true</span>)
+  <span class="k">const</span> [error, setError] = <span class="f">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [attempt, setAttempt] = <span class="f">useState</span>(<span class="n">0</span>)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">let</span> ignore = <span class="k">false</span>
+    async <span class="k">function</span> <span class="f">load</span>() {
+      try {
+        <span class="k">const</span> list = await <span class="f">fetchRequests</span>()
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setRequests</span>(list)
+        }
+      } catch (e) {
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setError</span>((e as Error).message)
+        }
+      }
+      <span class="k">if</span> (!ignore) {
+        <span class="f">setLoading</span>(<span class="k">false</span>)
+      }
+    }
+    <span class="f">load</span>()
+    <span class="k">return</span> () =<span class="t">&gt;</span> {
+      ignore = <span class="k">true</span>
+    }
+  }, [attempt])
+
+  <span class="k">function</span> <span class="f">retry</span>() {
+    <span class="f">setError</span>(<span class="s">''</span>)
+    <span class="f">setLoading</span>(<span class="k">true</span>)
+    <span class="f">setAttempt</span>(attempt + <span class="n">1</span>)
+  }
+
+<span class="hl">  async <span class="k">function</span> <span class="f">add</span>(data: NewRequest): Promise<span class="t">&lt;RequestItem</span><span class="t">&gt;</span> {</span>
+<span class="hl">    <span class="k">const</span> created = await <span class="f">createRequest</span>(data)</span>
+<span class="hl">    <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> [created, ...list])</span>
+<span class="hl">    <span class="k">return</span> created</span>
+<span class="hl">  }</span>
+<span class="hl"></span>
+<span class="hl">  async <span class="k">function</span> <span class="f">next</span>(id: string, status: Status) {</span>
+<span class="hl">    <span class="k">const</span> updated = await <span class="f">updateStatus</span>(id, <span class="f">nextStatus</span>(status))</span>
+<span class="hl">    <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> list.<span class="f">map</span>((r) =<span class="t">&gt;</span> (r.id === id ? updated : r)))</span>
+<span class="hl">  }</span>
+<span class="hl"></span>
+<span class="hl">  async <span class="k">function</span> <span class="f">remove</span>(id: string) {</span>
+<span class="hl">    await <span class="f">deleteRequest</span>(id)</span>
+<span class="hl">    <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> list.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))</span>
+<span class="hl">  }</span>
+<span class="hl"></span>
+<span class="hl">  <span class="k">return</span> { requests, loading, error, retry, add, next, remove }</span>
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/04-hook-full.png" width="1240" height="780" alt="VS Code: useRequests.ts с функциями retry, add, next, remove и return с семью значениями" loading="lazy"><figcaption>Хук с действиями add, next, remove</figcaption></figure></li>
+          <li><b>Замените App.tsx</b><p>Обработчики теперь вызывают функции хука. Импорт из <code>api.ts</code> больше не нужен: с сервером работает только хук.</p>
+            <!--CODE tools/code24/App.tsx | zayavki/src/App.tsx | mark=5,14,45,53,68--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="hl"><span class="k">import</span> <span class="k">type</span> { NewRequest, Status } <span class="k">from</span> <span class="s">'./requests'</span></span>
+<span class="k">import</span> { useRequests } <span class="k">from</span> <span class="s">'./useRequests'</span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+<span class="hl">  <span class="k">const</span> { requests, loading, error, retry, add, next, remove } = <span class="f">useRequests</span>()</span>
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+  }, [newCount])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">if</span> (notice === <span class="s">''</span>) {
+      <span class="k">return</span>
+    }
+    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)
+    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)
+  }, [notice])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">function</span> <span class="f">handleKey</span>(event: KeyboardEvent) {
+      <span class="k">if</span> (event.key === <span class="s">'Escape'</span>) {
+        <span class="f">setFilter</span>(<span class="s">'Все'</span>)
+      }
+    }
+    window.<span class="f">addEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+    <span class="k">return</span> () =<span class="t">&gt;</span> window.<span class="f">removeEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+  }, [])
+
+  async <span class="k">function</span> <span class="f">handleNext</span>(id: string, status: Status) {
+    try {
+<span class="hl">      await <span class="f">next</span>(id, status)</span>
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    try {
+<span class="hl">      <span class="k">const</span> created = await <span class="f">add</span>(data)</span>
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+      <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+      <span class="k">if</span> (sent) {
+        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+      } <span class="k">else</span> {
+        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+      }
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  async <span class="k">function</span> <span class="f">handleRemove</span>(id: string) {
+    try {
+<span class="hl">      await <span class="f">remove</span>(id)</span>
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {loading &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявок…<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {error !== <span class="s">''</span> &amp;&amp; (
+            <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"load-error"</span><span class="t">&gt;</span>
+              <span class="t">&lt;p</span><span class="t">&gt;</span>{error}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+              <span class="t">&lt;button</span> <span class="a">onClick</span>={retry}<span class="t">&gt;</span>Повторить<span class="t">&lt;/button</span><span class="t">&gt;</span>
+            <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          )}
+          {!loading &amp;&amp; error === <span class="s">''</span> &amp;&amp; visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id, r.status)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-app-final.png" width="1240" height="780" alt="VS Code: App.tsx с обработчиками handleNext, handleAdd, handleRemove: await next, await add, await remove внутри try, setNotice в catch" loading="lazy"><figcaption>Обработчики App вызывают next, add и remove</figcaption></figure></li>
+          <li><b>Проверьте добавление</b><p>Обновите страницу (<kbd>F5</kbd>). Добавьте заявку «Нет звука в колонках», кабинет 305, категория «Компьютер». Она появилась сверху, над списком сообщение об отправке уведомления.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/06-dobavlena.png" width="1100" height="1257" alt="Доска: сообщение Заявка добавлена, уведомление отправлено; сверху новая заявка Нет звука в колонках, каб. 305, Новых заявок: 6" loading="lazy"><figcaption>Новая заявка сохранена через хук</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Кто за что отвечает</p>
+
+        <!--CODE tools/code24/useRequests.ts | useRequests.ts · строки 40–56 | lines=40-56 pins=40:1,43:2,46:3,51:4,56:5--><figure class="code" data-read><figcaption><span>useRequests.ts · строки 40–56</span></figcaption><pre>  async <span class="k">function</span> <span class="f">add</span>(data: NewRequest): Promise<span class="t">&lt;RequestItem</span><span class="t">&gt;</span> {  <span class="pin">1</span>
+    <span class="k">const</span> created = await <span class="f">createRequest</span>(data)
+    <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> [created, ...list])
+    <span class="k">return</span> created  <span class="pin">2</span>
+  }
+
+  async <span class="k">function</span> <span class="f">next</span>(id: string, status: Status) {  <span class="pin">3</span>
+    <span class="k">const</span> updated = await <span class="f">updateStatus</span>(id, <span class="f">nextStatus</span>(status))
+    <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> list.<span class="f">map</span>((r) =<span class="t">&gt;</span> (r.id === id ? updated : r)))
+  }
+
+  async <span class="k">function</span> <span class="f">remove</span>(id: string) {  <span class="pin">4</span>
+    await <span class="f">deleteRequest</span>(id)
+    <span class="f">setRequests</span>((list) =<span class="t">&gt;</span> list.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))
+  }
+
+  <span class="k">return</span> { requests, loading, error, retry, add, next, remove }  <span class="pin">5</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p><code>add</code> создаёт заявку на сервере и кладёт её в начало списка. Код взят из <code>handleAdd</code> главы 2.3. <code>Promise&lt;RequestItem&gt;</code> — «когда-нибудь вернёт заявку»: так записывается результат асинхронной функции.</p></div></li>
+          <li><span class="pin">2</span><div><p>Созданная заявка возвращается тому, кто вызвал <code>add</code>. <code>App</code> передаёт её в <code>sendRequest</code> для уведомления в Telegram.</p></div></li>
+          <li><span class="pin">3</span><div><p><code>next</code> переводит заявку в следующий статус и заменяет её в списке.</p></div></li>
+          <li><span class="pin">4</span><div><p><code>remove</code> удаляет заявку на сервере и из списка.</p></div></li>
+          <li><span class="pin">5</span><div><p>Наружу выходят семь значений. <code>setRequests</code> среди них нет: список меняется только через <code>add</code>, <code>next</code> и <code>remove</code>, и каждое изменение сначала проходит через сервер.</p></div></li>
+        </ol>
+
+        <p>В функциях хука нет <code>try</code> и <code>catch</code>. Если сервер не ответил, ошибка из <code>callApi</code> проходит через <code>next</code> и попадает в <code>handleNext</code> в <code>App</code>, где её ловит <code>catch</code>. Так разделены обязанности: хук работает с сервером и списком, а тексты для человека задаёт компонент. Текст «Заявка добавлена, уведомление отправлено» относится к экрану, поэтому он остался в <code>App</code>.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что</th><th>Где после главы</th></tr></thead>
+            <tbody>
+              <tr><td>Список заявок, загрузка, ошибка загрузки, номер попытки</td><td><code>useRequests</code></td></tr>
+              <tr><td>Запросы к PocketBase и изменение списка</td><td><code>useRequests</code> (через <code>api.ts</code>)</td></tr>
+              <tr><td>Фильтр, сообщение над списком, клавиша Esc, заголовок вкладки</td><td><code>App</code></td></tr>
+              <tr><td>Тексты сообщений и уведомление в Telegram</td><td><code>App</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="bridge">Хук можно вызвать в любом компоненте. Следующий опыт — вызов в двух компонентах сразу.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>У каждого вызова своё состояние</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: шапка сама загружает заявки</p>
+
+        <ol class="steps">
+          <li><b>Замените Header.tsx</b><p>Шапка сама вызовет <code>useRequests</code> и посчитает новые заявки, без prop <code>newCount</code>. Замените содержимое <code>src/components/Header.tsx</code>.</p>
+            <!--CODE tools/code24/Header-hook.tsx | zayavki/src/components/Header.tsx | mark=1,3-6--><figure class="code"><figcaption><span>zayavki/src/components/Header.tsx</span></figcaption><pre><span class="hl"><span class="k">import</span> { useRequests } <span class="k">from</span> <span class="s">'../useRequests'</span></span>
+
+<span class="hl"><span class="k">function</span> <span class="f">Header</span>() {</span>
+<span class="hl">  <span class="k">const</span> { requests } = <span class="f">useRequests</span>()</span>
+<span class="hl">  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length</span>
+<span class="hl"></span>
+  <span class="k">return</span> (
+    <span class="t">&lt;header</span> <span class="a">className</span>=<span class="s">"header"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h1</span><span class="t">&gt;</span>Доска заявок<span class="t">&lt;/h1</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>ИТ-отдел колледжа · заявки студентов и преподавателей<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"header__count"</span><span class="t">&gt;</span>Новых заявок: {newCount}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+    <span class="t">&lt;/header</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> Header</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/07-header-hook.png" width="1240" height="780" alt="VS Code: Header.tsx импортирует useRequests и считает newCount из своего списка requests" loading="lazy"><figcaption>Шапка вызывает хук сама</figcaption></figure></li>
+          <li><b>Уберите prop в App.tsx</b><p>В <code>src/App.tsx</code> найдите строку 76 <code>&lt;Header newCount={newCount} /&gt;</code> и замените её на <code>&lt;Header /&gt;</code>. Сохраните.</p></li>
+          <li><b>Посмотрите запросы</b><p>Откройте DevTools (<kbd>F12</kbd>), вкладку <strong>Network</strong>, фильтр <strong>Fetch/XHR</strong>. Обновите страницу. Запросов <code>records?sort=-created</code> стало четыре: по два от <code>App</code> и от <code>Header</code>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/08-network-chetyre.png" width="1100" height="1068" alt="Доска и вкладка Network: четыре запроса records?sort=-created со статусом 200" loading="lazy"><figcaption>Четыре запроса списка вместо двух</figcaption></figure></li>
+          <li><b>Возьмите заявку в работу</b><p>Закройте DevTools. У верхней заявки «Нет звука в колонках» нажмите <strong>Взять в работу</strong>. Статус карточки сменился на «В работе», а в шапке по-прежнему «Новых заявок: 6».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/09-rassinhron.png" width="1100" height="900" alt="Доска: Нет звука в колонках со статусом В работе, в шапке Новых заявок: 6, хотя новых в списке пять" loading="lazy"><figcaption>Карточка изменилась, счётчик в шапке — нет</figcaption></figure></li>
+          <li><b>Верните прежний код</b><p>Замените <code>Header.tsx</code> кодом ниже. В <code>App.tsx</code> верните строку 76: <code>&lt;Header newCount={newCount} /&gt;</code>.</p>
+            <!--CODE tools/code14/Header.tsx | zayavki/src/components/Header.tsx--><figure class="code"><figcaption><span>zayavki/src/components/Header.tsx</span></figcaption><pre><span class="k">type</span> HeaderProps = {
+  newCount: number
+}
+
+<span class="k">function</span> <span class="f">Header</span>({ newCount }: HeaderProps) {
+  <span class="k">return</span> (
+    <span class="t">&lt;header</span> <span class="a">className</span>=<span class="s">"header"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h1</span><span class="t">&gt;</span>Доска заявок<span class="t">&lt;/h1</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>ИТ-отдел колледжа · заявки студентов и преподавателей<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"header__count"</span><span class="t">&gt;</span>Новых заявок: {newCount}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+    <span class="t">&lt;/header</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> Header</pre></figure><!--/CODE--></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему счётчик не изменился</p>
+
+        <p>Каждый вызов хука создаёт свои переменные состояния. <code>useRequests</code> в <code>App</code> и <code>useRequests</code> в <code>Header</code> — два отдельных списка, и каждый загружен своим эффектом. Кнопка «Взять в работу» вызывает <code>next</code> из хука <code>App</code>, поэтому меняется только список <code>App</code>. В списке <code>Header</code> заявка осталась «Новой» до следующей загрузки страницы.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Два вызова хука — два списка</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 260" role="img" aria-label="App и Header вызывают useRequests; у каждого свой список: в списке App заявка Нет звука в колонках В работе, новых 5; в списке Header она Новая, новых 6; оба списка загружены из PocketBase">
+              <rect x="20" y="20" width="230" height="60" fill="#161A2E"/><text class="mono on-dark" x="34" y="46">App</text><text class="soft" x="34" y="66" style="fill:#c8d0e0">useRequests()</text>
+              <rect x="20" y="110" width="230" height="130" fill="#D4EEDF"/><text class="mono" x="34" y="134">список App</text><text class="soft" x="34" y="160">«Нет звука…» — В работе</text><text class="soft" x="34" y="182">новых: 5</text><text class="soft" x="34" y="214">← нажатие «Взять в работу»</text>
+              <rect x="510" y="20" width="230" height="60" fill="#161A2E"/><text class="mono on-dark" x="524" y="46">Header</text><text class="soft" x="524" y="66" style="fill:#c8d0e0">useRequests()</text>
+              <rect x="510" y="110" width="230" height="130" fill="#F9DDE8"/><text class="mono" x="524" y="134">список Header</text><text class="soft" x="524" y="160">«Нет звука…» — Новая</text><text class="soft" x="524" y="182">новых: 6</text><text class="soft" x="524" y="214">изменений не получал</text>
+              <path d="M135 80 V 104"/><path d="M129 96 L 135 104 L 141 96"/>
+              <path d="M625 80 V 104"/><path d="M619 96 L 625 104 L 631 96"/>
+              <rect x="300" y="140" width="160" height="60" fill="#D6F0F9"/><text class="mono" x="314" y="166">PocketBase</text><text class="soft" x="314" y="186">запросы GET</text>
+              <path class="dash" d="M300 170 H 258"/><path d="M266 164 L 258 170 L 266 176"/>
+              <path class="dash" d="M460 170 H 502"/><path d="M494 164 L 502 170 L 494 176"/>
+            </svg>
+          </div>
+          <p class="scheme__note">Пунктир — загрузка при открытии страницы: оба списка получили одни и те же данные. После этого они живут отдельно, и изменение одного не попадает в другой.</p>
+        </figure>
+
+        <p>Из опыта следует правило: хук даёт компонентам общий код, данные у каждого вызова свои. Когда нескольким компонентам нужен один и тот же список, хук вызывают один раз в общем родителе, а данные передают через props. Так и было устроено до опыта: <code>App</code> вызывает <code>useRequests</code> и передаёт шапке готовое число <code>newCount</code>.</p>
+
+        <p class="bridge">Хуки вызываются по правилам, и линтер проверяет их. Нарушение одного правила ломает страницу целиком — это следующий опыт.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Правила хуков</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: хук после return по условию</p>
+
+        <ol class="steps">
+          <li><b>Замените App.tsx</b><p>Пусть раздел «Готово» будет временно закрыт: если выбран этот фильтр, <code>App</code> сразу возвращает надпись. Проверка стоит перед вызовом хука. Изменённые строки подсвечены.</p>
+            <!--CODE tools/code24/App-ranniy-return.tsx | zayavki/src/App.tsx · опыт | mark=14-18--><figure class="code"><figcaption><span>zayavki/src/App.tsx · опыт</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> <span class="k">type</span> { NewRequest, Status } <span class="k">from</span> <span class="s">'./requests'</span>
+<span class="k">import</span> { useRequests } <span class="k">from</span> <span class="s">'./useRequests'</span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+<span class="hl">  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)</span>
+<span class="hl">  <span class="k">if</span> (filter === <span class="s">'Готово'</span>) {</span>
+<span class="hl">    <span class="k">return</span> <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Раздел «Готово» пока закрыт<span class="t">&lt;/p</span><span class="t">&gt;</span></span>
+<span class="hl">  }</span>
+<span class="hl">  <span class="k">const</span> { requests, loading, error, retry, add, next, remove } = <span class="f">useRequests</span>()</span>
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+  }, [newCount])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">if</span> (notice === <span class="s">''</span>) {
+      <span class="k">return</span>
+    }
+    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)
+    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)
+  }, [notice])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">function</span> <span class="f">handleKey</span>(event: KeyboardEvent) {
+      <span class="k">if</span> (event.key === <span class="s">'Escape'</span>) {
+        <span class="f">setFilter</span>(<span class="s">'Все'</span>)
+      }
+    }
+    window.<span class="f">addEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+    <span class="k">return</span> () =<span class="t">&gt;</span> window.<span class="f">removeEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+  }, [])
+
+  async <span class="k">function</span> <span class="f">handleNext</span>(id: string, status: Status) {
+    try {
+      await <span class="f">next</span>(id, status)
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    try {
+      <span class="k">const</span> created = await <span class="f">add</span>(data)
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+      <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+      <span class="k">if</span> (sent) {
+        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+      } <span class="k">else</span> {
+        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+      }
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  async <span class="k">function</span> <span class="f">handleRemove</span>(id: string) {
+    try {
+      await <span class="f">remove</span>(id)
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {loading &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявок…<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {error !== <span class="s">''</span> &amp;&amp; (
+            <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"load-error"</span><span class="t">&gt;</span>
+              <span class="t">&lt;p</span><span class="t">&gt;</span>{error}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+              <span class="t">&lt;button</span> <span class="a">onClick</span>={retry}<span class="t">&gt;</span>Повторить<span class="t">&lt;/button</span><span class="t">&gt;</span>
+            <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          )}
+          {!loading &amp;&amp; error === <span class="s">''</span> &amp;&amp; visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id, r.status)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/10-ranniy-return.png" width="1240" height="780" alt="VS Code: App.tsx, строки 14–18: useState filter, if filter === Готово return, затем вызов useRequests" loading="lazy"><figcaption>Вызов useRequests стоит после return по условию</figcaption></figure></li>
+          <li><b>Запустите линтер</b><p>Откройте второй терминал (<strong>Terminal → New Terminal</strong>) и выполните команду.</p>
+            <figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>cd zayavki && npm run lint</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/11-lint-return.png" width="1240" height="499" alt="Терминал: oxlint, пять ошибок react-hooks(rules-of-hooks): React Hook useRequests, useState, useEffect is called conditionally" loading="lazy"><figcaption>Пять ошибок rules-of-hooks: хуки вызываются по условию</figcaption></figure></li>
+          <li><b>Нажмите «Готово»</b><p>Откройте DevTools на вкладке <strong>Console</strong> и обновите страницу. Доска открылась. Нажмите фильтр <strong>Готово</strong>: страница стала пустой, в консоли ошибка.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/12-gotovo-oshibka.png" width="1100" height="918" alt="Пустая страница; в консоли Uncaught Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement. и предупреждение An error occurred in the App component" loading="lazy"><figcaption>«Rendered fewer hooks than expected»: страница пропала</figcaption></figure></li>
+          <li><b>Верните App.tsx</b><p>Замените содержимое <code>src/App.tsx</code> кодом из §3 и обновите страницу.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему важен порядок вызовов</p>
+
+        <p>Имена переменных состояния React не сохраняет. Значения хуков он хранит компонента списком и раздаёт их по порядку вызова: первому <code>useState</code> — первое значение, второму — второе. Поэтому при каждой отрисовке хуки должны вызываться в одном и том же порядке и в одном и том же количестве. Пошаговый разбор показывает, что произошло в опыте.</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Отрисовки App с return перед хуком</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code24/App-ranniy-return.tsx | | bare lines=13-20--><pre class="trace__code" data-start="13"><span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+  <span class="k">if</span> (filter === <span class="s">'Готово'</span>) {
+    <span class="k">return</span> <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Раздел «Готово» пока закрыт<span class="t">&lt;/p</span><span class="t">&gt;</span>
+  }
+  <span class="k">const</span> { requests, loading, error, retry, add, next, remove } = <span class="f">useRequests</span>()
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)</pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="14"><b>Первая отрисовка, хук 1</b>
+                  <p>Фильтр «Все». <code>useState</code> для <code>filter</code> получает ячейку 1.</p>
+                  <div class="vars"><span class="var var--new"><i>ячейка 1</i><span>filter = «Все»</span></span></div></li>
+                <li data-lines="15"><b>Условие не выполнено</b>
+                  <p>Фильтр не «Готово», <code>return</code> пропущен.</p></li>
+                <li data-lines="18-19"><b>Хуки 2–10</b>
+                  <p><code>useRequests</code> занимает ячейки 2–6: четыре состояния и эффект. Дальше <code>notice</code> — ячейка 7, три эффекта — ячейки 8–10. React запомнил: у <code>App</code> десять хуков.</p>
+                  <div class="vars"><span class="var"><i>ячейка 1</i><span>filter</span></span><span class="var var--new"><i>ячейки 2–6</i><span>useRequests</span></span><span class="var var--new"><i>ячейки 7–10</i><span>notice, эффекты</span></span></div></li>
+                <li data-lines="14-16"><b>Нажат «Готово»</b>
+                  <p>Новая отрисовка. Ячейка 1 — <code>filter</code>, теперь «Готово». Условие выполнено, <code>App</code> возвращает надпись.</p>
+                  <div class="vars"><span class="var"><i>ячейка 1</i><span>filter = «Готово»</span></span></div></li>
+                <li data-lines="16"><b>Хуков меньше, чем было</b>
+                  <p>Вызван один хук вместо десяти. Ячейки 2–10 остались без хозяев, и React останавливает отрисовку ошибкой «Rendered fewer hooks than expected» — «вызвано меньше хуков, чем ожидалось». Страница пустеет.</p></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p>Отсюда правила хуков. Линтер oxlint из проекта проверяет их правилом <code>react-hooks(rules-of-hooks)</code>:</p>
+        <ul>
+          <li><b>Хуки вызывают только на верхнем уровне</b> компонента или собственного хука: не внутри <code>if</code>, не в цикле, не после <code>return</code> по условию, не во вложенной функции. Тогда их порядок не меняется.</li>
+          <li><b>Хуки вызывают только из компонентов и собственных хуков</b>, не из обычных функций вроде <code>api.ts</code>.</li>
+          <li><b>Имя собственного хука начинается с <code>use</code></b>. По имени линтер отличает хук от обычной функции. Если назвать функцию <code>loadRequestsState</code>, линтер сообщит, что <code>useState</code> вызван в функции, которая не компонент и не хук.</li>
+        </ul>
+
+        <p>Условие переносят ниже всех хуков — в разметку. Так сделано с надписью «Заявок с таким статусом нет»: она выводится по условию в JSX, а хуки над ней вызываются всегда.</p>
+
+        <div class="starter starter--finish">
+          <p class="starter__head">Проект после главы</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в состоянии конца главы: <code>useRequests.ts</code> с загрузкой и действиями, <code>App.tsx</code> с вызовом хука и обработчиками сообщений, прежний <code>Header.tsx</code>. Распаковка и запуск — как у архива в начале главы.</p>
+            <a class="starter__btn" href="zayavki-konec-2-4.zip" download>zayavki-konec-2-4.zip <small>22 КБ</small></a>
+            <p class="starter__lock">Архив закрыт паролем. После нажатия на кнопку введите пароль — его сообщает преподаватель.</p>
+          </div>
+        </div>
+
+        <p class="bridge">Доска загружает заявки один раз при открытии. Заявку, которую добавили в другом браузере, она покажет только после F5. Глава 2.5 обновляет список по событиям сервера.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Частые ошибки</h2>
+
+        <p>Сообщения получены в проекте <code>zayavki</code>: линтера — командой <code>npm run lint</code>, ошибки типов — командой <code>npx tsc -b</code>, ошибка React — в консоли браузера.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td><code>React Hook "useRequests" is called conditionally. React Hooks must be called in the exact same order in every component render.</code></td><td>Хук вызван внутри <code>if</code> или после <code>return</code> по условию</td><td>Перенести вызов хука выше условия, условие — в разметку</td></tr>
+              <tr><td><code>Uncaught Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.</code></td><td>При этой отрисовке хуков вызвано меньше, чем при прошлой</td><td>То же: все хуки — до первого <code>return</code></td></tr>
+              <tr><td><code>React Hook "useState" is called in function "loadRequestsState" that is neither a React function component nor a custom React Hook function.</code></td><td>Имя функции с хуками не начинается с <code>use</code></td><td>Переименовать: <code>useRequests</code></td></tr>
+              <tr><td><code>error TS2339: Property 'setRequests' does not exist on type '{ requests: RequestItem[]; loading: boolean; …</code></td><td>Хук больше не возвращает <code>setRequests</code>. <code>App</code> ещё распаковывает его</td><td>Заменить <code>App.tsx</code> кодом из §3</td></tr>
+              <tr><td><code>error TS2552: Cannot find name 'useRequests'. Did you mean 'requests'?</code></td><td>Нет строки <code>import { useRequests } from './useRequests'</code></td><td>Добавить импорт</td></tr>
+              <tr><td>Счётчик в шапке не совпадает со списком, в Network лишние запросы</td><td>Хук вызван в двух компонентах: у каждого свой список</td><td>Вызывать хук один раз в <code>App</code>, данные передавать через props</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s7"><span class="sec">§7</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Чем собственный хук отличается от обычной функции?</summary>
+          <p>Внутри него вызываются другие хуки, а имя начинается с <code>use</code>. Обычная функция хуки вызывать не может.</p>
+        </details>
+        <details>
+          <summary>Чьи переменные состояния создаёт <code>useState</code> внутри <code>useRequests</code>?</summary>
+          <p>Того компонента, который вызвал хук. Для React строки хука выполняются внутри этого компонента на месте вызова.</p>
+        </details>
+        <details>
+          <summary>Почему в опыте §4 счётчик в шапке не изменился?</summary>
+          <p>У <code>Header</code> был свой вызов хука и свой список. Кнопка изменила список <code>App</code>, а список <code>Header</code> остался прежним.</p>
+        </details>
+        <details>
+          <summary>Почему хук после <code>return</code> по условию ломает страницу?</summary>
+          <p>React раздаёт значения хуков по порядку вызова. Когда условие выполнилось, хуков вызвано меньше, чем при прошлой отрисовке, и React останавливает отрисовку ошибкой.</p>
+        </details>
+        <details>
+          <summary>Почему в функциях хука нет <code>try</code> и <code>catch</code>?</summary>
+          <p>Текст для человека при ошибке задаёт компонент. Ошибка из хука поднимается в обработчик <code>App</code>, и его <code>catch</code> выводит сообщение.</p>
+        </details>
+        <details>
+          <summary>Напишите хук <code>useNewCount(requests)</code>, который возвращает число новых заявок. Нужен ли ему <code>useState</code>?</summary>
+          <p>Не нужен: число вычисляется из списка при каждой отрисовке. <code>export function useNewCount(requests: RequestItem[]) { return requests.filter((r) =&gt; r.status === 'Новая').length }</code>. Хуков внутри нет, поэтому это можно оформить и обычной функцией без <code>use</code>.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Объявить хук</b><code>export function useRequests() { … return { … } }</code></div>
+          <div><b>Вызвать хук</b><code>const { requests, loading } = useRequests()</code></div>
+          <div><b>Имя</b>начинается с <code>use</code></div>
+          <div><b>Где вызывать</b>на верхнем уровне компонента или хука, до любого <code>return</code></div>
+          <div><b>Общие данные</b>один вызов в родителе, дальше props</div>
+          <div><b>Проверка</b><code>npm run lint</code> — правило <code>rules-of-hooks</code></div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>Собственный хук — функция с именем на <code>use</code>, которая вызывает другие хуки и возвращает компоненту готовые значения. Код заявок переехал из <code>App.tsx</code> в <code>useRequests.ts</code>: список, загрузка, ошибка, повтор, добавление, смена статуса и удаление. <code>App</code> получает всё одной строкой и отвечает только за экран и тексты сообщений. Для React строки хука выполняются внутри вызвавшего компонента, поэтому каждый вызов создаёт своё состояние: хук делится кодом, а данные между компонентами передаются через props. Значения хуков React раздаёт по порядку вызова, поэтому хуки вызывают на верхнем уровне, до любого <code>return</code>, и линтер проверяет это правилом <code>rules-of-hooks</code>.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://react.dev/learn/reusing-logic-with-custom-hooks" target="_blank" rel="noreferrer">react.dev — Reusing Logic with Custom Hooks</a></li>
+          <li><a href="https://react.dev/reference/rules/rules-of-hooks" target="_blank" rel="noreferrer">react.dev — Rules of Hooks</a></li>
+          <li><a href="https://react.dev/learn/state-a-components-memory#how-does-react-know-which-state-to-return" target="_blank" rel="noreferrer">react.dev — State: How does React know which state to return?</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../23-zagruzka/index.html">← 2.3 Загрузка данных: загрузка и ошибка</a>
+          <a href="../../index.html">Оглавление →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

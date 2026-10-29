@@ -60,6 +60,8 @@ AFTER_23 = {k: v for k, v in AFTER_21.items() if k != "storage.ts"} | {
     "requests.ts": "code23/requests.ts", "api.ts": "code23/api.ts",
 }
 
+AFTER_24 = {**AFTER_23, "App.tsx": "code24/App.tsx", "useRequests.ts": "code24/useRequests.ts"}
+
 ARCHIVES = [
     ("11-node-npm-vite", "zayavki-konec-1-1.zip", AFTER_11),
     ("12-jsx-i-komponenty", "zayavki-nachalo-1-2.zip", AFTER_11),
@@ -78,6 +80,8 @@ ARCHIVES = [
     ("21-effekty", "zayavki-konec-2-1.zip", AFTER_21),
     ("23-zagruzka", "zayavki-nachalo-2-3.zip", AFTER_21),
     ("23-zagruzka", "zayavki-konec-2-3.zip", AFTER_23),
+    ("24-sobstvennyy-huk", "zayavki-nachalo-2-4.zip", AFTER_23),
+    ("24-sobstvennyy-huk", "zayavki-konec-2-4.zip", AFTER_24),
 ]
 
 
