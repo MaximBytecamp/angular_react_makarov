@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>1.7 Сохранение и отправка данных · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; stroke-dasharray: 6 4; }
+    .sch .ng-text { fill: #C2185B; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 1 · React: первый проект и первый бот</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 1 · первый проект и первый бот</p>
+          <p class="running__folio">1.7</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">1.7</span>
+          <h1>Сохранение<br>и отправка данных</h1>
+          <p class="lead">В этой главе доска заявок перестаёт забывать данные и учится сообщать о новой заявке наружу. Сначала опыт показывает, что после перезагрузки страницы новые заявки пропадают. Затем заявки сохраняются в хранилище браузера localStorage и переживают перезагрузку. Во второй половине главы форма отправляет новую заявку запросом <code>fetch</code> на адрес сервера автоматизации n8n. Сервер в этой главе ещё не запущен, поэтому опыт показывает, как доска ведёт себя, когда запрос не проходит.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>React, браузер</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после главы 1.6 (или архив ниже), запущенный <code>npm run dev</code>, браузер Chrome, Edge или Яндекс Браузер</dd></div>
+          <div><dt>Результат</dt><dd>Заявки сохраняются после перезагрузки; новая заявка отправляется запросом на адрес n8n, и доска сообщает, удалось ли это</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Опыт: заявка пропадает</a></li>
+            <li><a href="#s2">Хранилище браузера localStorage</a></li>
+            <li><a href="#s3">Запрос fetch</a></li>
+            <li><a href="#s4">Частые ошибки</a></li>
+            <li><a href="#s5">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <div class="starter">
+          <p class="starter__head">Если проекта нет или он в другом состоянии</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в том состоянии, с которого начинается глава, — после главы 1.6. Папки <code>node_modules</code> в архиве нет: её создаёт команда <code>npm install</code> по списку пакетов из <code>package.json</code>.</p>
+            <a class="starter__btn" href="zayavki-nachalo-1-7.zip" download>zayavki-nachalo-1-7.zip <small>20 КБ</small></a>
+            <ol class="starter__steps">
+              <li>Распакуйте архив в папку с проектами курса, например <code>react-kurs</code>. Появится папка <code>zayavki</code>. Если папка с таким именем там уже есть, сначала переименуйте старую, например в <code>zayavki-staraya</code>.</li>
+              <li>Откройте папку курса в VS Code: <b>File → Open Folder</b>.</li>
+              <li>Откройте терминал (<b>Terminal → New Terminal</b>) и выполните три команды по очереди. Последняя запускает сервер разработки; страница открывается по адресу <code>http://localhost:5173/</code>.</li>
+            </ol>
+            <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>cd zayavki
+npm install
+npm run dev</pre></figure>
+          </div>
+        </div>
+
+        <h2 id="s1"><span class="sec">§1</span>Опыт: заявка пропадает</h2>
+
+        <p>Доска из главы 1.6 принимает заявки из формы. Опыт проверяет, что с ними происходит после перезагрузки страницы.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Добавляем заявку и перезагружаем страницу</p>
+
+        <ol class="steps">
+          <li><b>Добавьте заявку</b><p>Заполните форму: «Не работает звонок», кабинет «Вахта», категория «Компьютер». Нажмите «Отправить заявку». Заявка первая в списке, в шапке «Новых заявок: 4».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/01-do-perezagruzki.png" width="1100" height="1073" alt="Доска заявок: первая карточка Не работает звонок, каб. Вахта · Компьютер; в шапке Новых заявок: 4" loading="lazy"><figcaption>До перезагрузки: новая заявка первая, в шапке 4</figcaption></figure></li>
+          <li><b>Перезагрузите страницу</b><p>Нажмите <kbd>F5</kbd>. Заявки про звонок больше нет, в шапке снова 3.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/02-posle-perezagruzki.png" width="1100" height="938" alt="Доска заявок после перезагрузки: заявки про звонок нет, в шапке Новых заявок: 3" loading="lazy"><figcaption>После перезагрузки: новой заявки нет, на доске снова пять заявок из requests.ts</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему заявка пропала</p>
+
+        <p>Состояние React хранится в памяти открытой вкладки. Пока вкладка открыта, <code>useState</code> помнит массив заявок между отрисовками. Перезагрузка страницы стирает эту память: браузер заново загружает файлы проекта, React заново вызывает <code>App</code>, и <code>useState(initialRequests)</code> получает начальный массив из <code>requests.ts</code>. Так же пропадают изменённые статусы и убранные с доски заявки.</p>
+
+        <p>Чтобы данные пережили перезагрузку, их нужно положить туда, где они хранятся дольше вкладки, и при открытии страницы брать оттуда.</p>
+
+        <p class="bridge">У браузера для этого есть встроенное хранилище. Следующий раздел подключает его к доске.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Хранилище браузера localStorage</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что такое localStorage</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Дежурный в ИТ-отделе держит заявки в голове, пока он на смене. Вечером смена заканчивается, и всё, что он помнил, уходит вместе с ним. Если дежурный записывает каждую заявку в журнал на столе, то утром следующий дежурный открывает журнал и продолжает с того же места. Память дежурного — состояние React, журнал на столе — localStorage.</p>
+          <p class="miss">Журнал на столе видят все сотрудники. localStorage виден только этому браузеру на этом компьютере: в другом браузере доска откроется с начальными заявками.</p>
+        </div></div>
+
+        <p><span class="term">localStorage</span> («локальное хранилище») — хранилище браузера, в которое страница записывает данные парами «ключ — значение». Данные сохраняются после перезагрузки страницы, закрытия вкладки и перезапуска браузера. У каждого сайта своё хранилище: страница <code>localhost:5173</code> видит только свои записи. Работают с ним две команды:</p>
+        <ul>
+          <li><code>localStorage.setItem('zayavki', текст)</code> — записать текст под ключом <code>zayavki</code>;</li>
+          <li><code>localStorage.getItem('zayavki')</code> — прочитать текст по ключу. Если записи нет, вернётся <code>null</code> — «ничего».</li>
+        </ul>
+
+        <p>Хранилище принимает только текст, а заявки — массив объектов. Поэтому массив перед записью превращают в текст, а после чтения — обратно в массив. Для этого есть формат <span class="term">JSON</span> — запись данных текстом, похожая на запись объектов в коде:</p>
+        <ul>
+          <li><code>JSON.stringify(массив)</code> — массив превращается в текст <code>[{"id":1,"title":"Не работает проектор",…},…]</code>;</li>
+          <li><code>JSON.parse(текст)</code> — из текста снова получается массив объектов.</li>
+        </ul>
+
+        <p>На схеме — путь заявок между состоянием и хранилищем.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Заявки в состоянии и в localStorage</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 230" role="img" aria-label="При изменении заявок update записывает массив в состояние и в localStorage. При открытии страницы loadRequests читает массив из localStorage, а если записи нет — берёт initialRequests">
+              <rect x="20" y="20" width="200" height="56" fill="#161A2E"/><text class="mono on-dark" x="36" y="44">действие на доске</text><text class="soft" x="36" y="64" style="fill:#c8d0e0">добавить, взять, убрать</text>
+              <rect x="280" y="20" width="200" height="56" fill="#D6F0F9"/><text class="mono" x="296" y="44">update(list)</text><text class="soft" x="296" y="64">App.tsx</text>
+              <path d="M220 48 H 272"/><path d="M264 42 L 272 48 L 264 54"/>
+              <rect x="540" y="20" width="200" height="56" fill="#ffffff"/><text class="mono" x="556" y="44">состояние React</text><text class="soft" x="556" y="64">setRequests(list)</text>
+              <path d="M480 40 H 532"/><path d="M524 34 L 532 40 L 524 46"/>
+              <rect x="540" y="130" width="200" height="56" fill="#F9DDE8"/><text class="mono" x="556" y="154">localStorage</text><text class="soft" x="556" y="174">ключ zayavki, текст JSON</text>
+              <path d="M480 60 C 510 60, 510 158, 532 158"/><path d="M524 152 L 532 158 L 524 164"/><text class="soft" x="420" y="110">saveRequests(list)</text>
+              <rect x="280" y="130" width="200" height="56" fill="#D6F0F9"/><text class="mono" x="296" y="154">loadRequests()</text><text class="soft" x="296" y="174">при открытии страницы</text>
+              <path class="ng" d="M540 168 H 488"/><path d="M496 162 L 488 168 L 496 174" style="stroke:#C2185B"/>
+              <text class="soft ng-text" x="20" y="150">нет записи —</text><text class="soft ng-text" x="20" y="168">initialRequests</text>
+              <path class="ng" d="M280 158 H 140"/>
+              <text class="soft" x="20" y="214">сплошные стрелки — запись при каждом изменении; пунктир — чтение при открытии страницы</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Каждое изменение доски записывается в два места: в состояние, чтобы обновилась страница, и в localStorage, чтобы пережить перезагрузку. Читается localStorage один раз — при открытии страницы.</p>
+        </figure>
+
+        <p class="phase phase--do"><span>Делаем</span>Подключаем хранилище</p>
+
+        <ol class="steps">
+          <li><b>Создайте файл storage.ts</b><p>В проводнике щёлкните правой кнопкой по папке <code>src</code>, выберите <b>New File</b>, введите <code>storage.ts</code> и нажмите <kbd>Enter</kbd>. Вставьте код и сохраните.</p>
+            <!--CODE tools/code17/storage.ts | zayavki/src/storage.ts--><figure class="code"><figcaption><span>zayavki/src/storage.ts</span></figcaption><pre><span class="k">import</span> { initialRequests, <span class="k">type</span> RequestItem } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">const</span> KEY = <span class="s">'zayavki'</span>
+
+<span class="k">export</span> <span class="k">function</span> <span class="f">loadRequests</span>(): RequestItem[] {
+  <span class="k">const</span> saved = localStorage.<span class="f">getItem</span>(KEY)
+  <span class="k">if</span> (saved === <span class="k">null</span>) {
+    <span class="k">return</span> initialRequests
+  }
+  <span class="k">return</span> JSON.<span class="f">parse</span>(saved)
+}
+
+<span class="k">export</span> <span class="k">function</span> <span class="f">saveRequests</span>(list: RequestItem[]) {
+  localStorage.<span class="f">setItem</span>(KEY, JSON.<span class="f">stringify</span>(list))
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-storage-ts.png" width="1240" height="780" alt="VS Code: файл storage.ts в папке src с функциями loadRequests и saveRequests" loading="lazy"><figcaption>Так должен выглядеть проект: storage.ts лежит в src рядом с requests.ts</figcaption></figure></li>
+          <li><b>Замените содержимое App.tsx</b><p>Изменённые строки подсвечены: состояние берёт заявки из хранилища, а все изменения проходят через новую функцию <code>update</code>.</p>
+            <!--CODE tools/code17/App-storage.tsx | zayavki/src/App.tsx | mark=5,6,13,19-22,31,36,40--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="hl"><span class="k">import</span> { nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> RequestItem, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span></span>
+<span class="hl"><span class="k">import</span> { loadRequests, saveRequests } <span class="k">from</span> <span class="s">'./storage'</span></span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+<span class="hl">  <span class="k">const</span> [requests, setRequests] = <span class="f">useState</span>(loadRequests)</span>
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+<span class="hl">  <span class="k">function</span> <span class="f">update</span>(list: RequestItem[]) {</span>
+<span class="hl">    <span class="f">setRequests</span>(list)</span>
+<span class="hl">    <span class="f">saveRequests</span>(list)</span>
+<span class="hl">  }</span>
+
+  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
+    <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {
+      <span class="k">if</span> (r.id === id) {
+        <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }
+      }
+      <span class="k">return</span> r
+    })
+<span class="hl">    <span class="f">update</span>(updated)</span>
+  }
+
+  <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    <span class="k">const</span> created: RequestItem = { ...data, id: Date.<span class="f">now</span>(), status: <span class="s">'Новая'</span> }
+<span class="hl">    <span class="f">update</span>([created, ...requests])</span>
+  }
+
+  <span class="k">function</span> <span class="f">handleRemove</span>(id: number) {
+<span class="hl">    <span class="f">update</span>(requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))</span>
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE--></li>
+          <li><b>Проверьте сохранение</b><p>Обновите страницу (<kbd>F5</kbd>). Добавьте заявку «Не работает звонок», кабинет «Вахта». Во второй карточке, «Не работает проектор», нажмите «Взять в работу». Снова нажмите <kbd>F5</kbd>: новая заявка и статус «В работе» остались на месте.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/04-sohranilos.png" width="1100" height="1073" alt="Доска после перезагрузки: заявка Не работает звонок на месте, проектор В работе" loading="lazy"><figcaption>После перезагрузки: новая заявка и новый статус сохранились</figcaption></figure></li>
+          <li><b>Посмотрите на хранилище</b><p>Откройте DevTools (<kbd>F12</kbd>), вкладку <strong>Application</strong>. Слева в разделе <strong>Storage</strong> раскройте <strong>Local storage</strong> и выберите <code>http://localhost:5173</code>. Щёлкните по строке <code>zayavki</code>: внизу появится массив заявок.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/05-application.png" width="1100" height="1088" alt="DevTools, вкладка Application, Local storage для localhost:5173: ключ zayavki, значение — массив из шести заявок" loading="lazy"><figcaption>В localStorage под ключом zayavki — массив из шести заявок, первая — про звонок</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что написано в storage.ts</p>
+
+        <!--CODE tools/code17/storage.ts | storage.ts · по строкам | pins=3:1,5:2,6:3,7:4,10:5,13:6,14:7--><figure class="code" data-read><figcaption><span>storage.ts · по строкам</span></figcaption><pre><span class="k">import</span> { initialRequests, <span class="k">type</span> RequestItem } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">const</span> KEY = <span class="s">'zayavki'</span>  <span class="pin">1</span>
+
+<span class="k">export</span> <span class="k">function</span> <span class="f">loadRequests</span>(): RequestItem[] {  <span class="pin">2</span>
+  <span class="k">const</span> saved = localStorage.<span class="f">getItem</span>(KEY)  <span class="pin">3</span>
+  <span class="k">if</span> (saved === <span class="k">null</span>) {  <span class="pin">4</span>
+    <span class="k">return</span> initialRequests
+  }
+  <span class="k">return</span> JSON.<span class="f">parse</span>(saved)  <span class="pin">5</span>
+}
+
+<span class="k">export</span> <span class="k">function</span> <span class="f">saveRequests</span>(list: RequestItem[]) {  <span class="pin">6</span>
+  localStorage.<span class="f">setItem</span>(KEY, JSON.<span class="f">stringify</span>(list))  <span class="pin">7</span>
+}</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Имя записи в хранилище. Оно вынесено в константу, чтобы чтение и запись точно использовали одно и то же имя: опечатка в одном месте — и доска читала бы пустую запись.</p></div></li>
+          <li><span class="pin">2</span><div><p>«Достань заявки». Функция возвращает массив заявок: <code>: RequestItem[]</code> после скобок — тип ответа.</p></div></li>
+          <li><span class="pin">3</span><div><p>Прочитать текст из хранилища. В <code>saved</code> окажется либо текст, либо <code>null</code>, если доску в этом браузере ещё ни разу не меняли.</p></div></li>
+          <li><span class="pin">4</span><div><p>«Если записи нет — вернуть начальные пять заявок из <code>requests.ts</code>». Так доска выглядит при самом первом открытии.</p></div></li>
+          <li><span class="pin">5</span><div><p>Запись есть — превратить текст обратно в массив и вернуть его.</p></div></li>
+          <li><span class="pin">6</span><div><p>«Сохрани заявки». Функция получает массив…</p></div></li>
+          <li><span class="pin">7</span><div><p>…превращает его в текст и записывает под ключом <code>zayavki</code>. Прежняя запись заменяется новой.</p></div></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что изменилось в App.tsx</p>
+
+        <!--CODE tools/code17/App-storage.tsx | App.tsx · строки 13–22 | lines=13-22 pins=13:1,19:2,20:3,21:4--><figure class="code" data-read><figcaption><span>App.tsx · строки 13–22</span></figcaption><pre>  <span class="k">const</span> [requests, setRequests] = <span class="f">useState</span>(loadRequests)  <span class="pin">1</span>
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="k">function</span> <span class="f">update</span>(list: RequestItem[]) {  <span class="pin">2</span>
+    <span class="f">setRequests</span>(list)  <span class="pin">3</span>
+    <span class="f">saveRequests</span>(list)  <span class="pin">4</span>
+  }</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Начальное значение состояния теперь даёт функция <code>loadRequests</code>. Имя записано без скобок: React получает саму функцию и вызывает её один раз, при первой отрисовке. Со скобками, <code>useState(loadRequests())</code>, хранилище читалось бы при каждой отрисовке впустую. Это та же разница «передать функцию или вызвать», что с обработчиками в главе 1.4.</p></div></li>
+          <li><span class="pin">2</span><div><p>«Обнови заявки». Одна функция для всех изменений доски.</p></div></li>
+          <li><span class="pin">3</span><div><p>Записать новый массив в состояние — страница обновится.</p></div></li>
+          <li><span class="pin">4</span><div><p>Записать тот же массив в хранилище — данные переживут перезагрузку.</p></div></li>
+        </ol>
+
+        <p>В <code>handleNext</code>, <code>handleAdd</code> и <code>handleRemove</code> вызов <code>setRequests(…)</code> заменён на <code>update(…)</code> (строки 31, 36, 40). Если где-то остался прямой <code>setRequests</code>, это изменение будет видно на странице, но пропадёт после перезагрузки. Поэтому все изменения идут через одну функцию.</p>
+
+        <div class="margin-note">
+          <b>Как вернуть начальные заявки</b>
+          <p>Пока в хранилище есть запись <code>zayavki</code>, массив из <code>requests.ts</code> не используется. Чтобы начать с пяти заявок заново, на вкладке <strong>Application</strong> щёлкните правой кнопкой по строке <code>zayavki</code>, выберите <strong>Delete</strong> и обновите страницу.</p>
+        </div>
+
+        <p class="bridge">Заявки сохраняются в браузере. Но о новой заявке знает только этот браузер, а ответственному в ИТ-отделе нужно уведомление. Следующий раздел отправляет заявку наружу.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Запрос fetch</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что такое запрос</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Письмо в другой отдел состоит из адреса, пометки на конверте, что внутри, и самого вложения. Почта доставляет его и приносит ответ: «получено» или «адресат не найден». Если почтовое отделение закрыто, письмо вообще не уходит, и об этом становится известно сразу.</p>
+          <p class="miss">Ответ на письмо идёт днями. Запрос в сети получает ответ за доли секунды, а если сервер не запущен — ошибку почти сразу.</p>
+        </div></div>
+
+        <p><span class="term">HTTP-запрос</span> — сообщение, которое браузер отправляет серверу по адресу. Из чего он состоит:</p>
+        <ul>
+          <li><b>адрес</b> — куда отправить: <code>http://localhost:5678/webhook/zayavka</code>;</li>
+          <li><b>метод</b> — что нужно сделать. <code>GET</code> — «дай данные», им браузер загружает страницы. <code>POST</code> — «прими данные», им отправляют заявки, комментарии, заказы;</li>
+          <li><b>заголовки</b> — пометки на конверте. <code>Content-Type: application/json</code> — «внутри текст в формате JSON»;</li>
+          <li><b>тело</b> — само вложение: заявка в виде JSON.</li>
+        </ul>
+
+        <p>Сервер отвечает <span class="term">кодом ответа</span>: 200 — «всё в порядке», 404 — «нет такого адреса», 500 — «ошибка на сервере». Если сервер по адресу не запущен, ответа нет совсем: браузер сообщает об ошибке соединения.</p>
+
+        <p>В JavaScript запрос отправляет функция <code>fetch</code> («принести»). Запрос идёт по сети, и ответ приходит не сразу. Чтобы страница в это время не замирала, <code>fetch</code> сразу возвращает «обещание ответа», а сам ответ приходит позже. Слово <code>await</code> («дождаться») перед ней говорит: «дальше этой строки не идти, пока ответ не придёт; страница пусть работает». <code>await</code> можно писать только внутри функции со словом <code>async</code> («асинхронная») в начале.</p>
+
+        <p>Принимать заявки будет n8n — сервис автоматизации, который на странице «Автоматизация» запускается на компьютере по адресу <code>localhost:5678</code> и пересылает заявку в Telegram. Сейчас n8n не запущен. Код отправки пишется уже сейчас, чтобы проверить: доска должна работать и тогда, когда сервер автоматизации недоступен.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Отправляем заявку на адрес n8n</p>
+
+        <ol class="steps">
+          <li><b>Создайте файл notify.ts</b><p>В папке <code>src</code> создайте файл <code>notify.ts</code>, вставьте код и сохраните.</p>
+            <!--CODE tools/code17/notify.ts | zayavki/src/notify.ts--><figure class="code"><figcaption><span>zayavki/src/notify.ts</span></figcaption><pre><span class="k">import</span> <span class="k">type</span> { RequestItem } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">const</span> WEBHOOK_URL = <span class="s">'http://localhost:5678/webhook/zayavka'</span>
+
+<span class="k">export</span> async <span class="k">function</span> <span class="f">sendRequest</span>(request: RequestItem): Promise<span class="t">&lt;boolean</span><span class="t">&gt;</span> {
+  try {
+    <span class="k">const</span> response = await <span class="f">fetch</span>(WEBHOOK_URL, {
+      method: <span class="s">'POST'</span>,
+      headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },
+      body: JSON.<span class="f">stringify</span>(request),
+    })
+    <span class="k">return</span> response.ok
+  } catch {
+    <span class="k">return</span> <span class="k">false</span>
+  }
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/06-notify-ts.png" width="1240" height="780" alt="VS Code: файл notify.ts с функцией sendRequest и вызовом fetch" loading="lazy"><figcaption>Так должен выглядеть notify.ts: адрес в строке 3, fetch в строках 7–11</figcaption></figure></li>
+          <li><b>Добавьте стиль сообщения</b><p>В самый конец <code>src/index.css</code> добавьте правило и сохраните.</p>
+            <!--CODE tools/code17/index.css | zayavki/src/index.css · в конец файла | lines=200-208--><figure class="code"><figcaption><span>zayavki/src/index.css · в конец файла</span></figcaption><pre>.notice {
+  <span class="a">margin</span>: <span class="n">0</span>;
+  <span class="a">padding</span>: <span class="n">10px</span> <span class="n">12px</span>;
+  <span class="a">border-left</span>: <span class="n">4px</span> solid <span class="n">#2f6fde</span>;
+  <span class="a">border-radius</span>: <span class="n">6px</span>;
+  <span class="a">background</span>: <span class="n">#e3ecff</span>;
+  <span class="a">color</span>: <span class="n">#1f2430</span>;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+}</pre></figure><!--/CODE--></li>
+          <li><b>Замените содержимое App.tsx</b><p>Изменённые строки подсвечены: импорт <code>sendRequest</code>, состояние сообщения <code>notice</code>, новая версия <code>handleAdd</code> и вывод сообщения над списком.</p>
+            <!--CODE tools/code17/App.tsx | zayavki/src/App.tsx | mark=7,16,36-46,59--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'./components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'./components/RequestCard'</span>
+<span class="k">import</span> { nextStatus, <span class="k">type</span> NewRequest, <span class="k">type</span> RequestItem, <span class="k">type</span> Status } <span class="k">from</span> <span class="s">'./requests'</span>
+<span class="k">import</span> { loadRequests, saveRequests } <span class="k">from</span> <span class="s">'./storage'</span>
+<span class="hl"><span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span></span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [requests, setRequests] = <span class="f">useState</span>(loadRequests)
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+<span class="hl">  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)</span>
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="k">function</span> <span class="f">update</span>(list: RequestItem[]) {
+    <span class="f">setRequests</span>(list)
+    <span class="f">saveRequests</span>(list)
+  }
+
+  <span class="k">function</span> <span class="f">handleNext</span>(id: number) {
+    <span class="k">const</span> updated = requests.<span class="f">map</span>((r) =<span class="t">&gt;</span> {
+      <span class="k">if</span> (r.id === id) {
+        <span class="k">return</span> { ...r, status: <span class="f">nextStatus</span>(r.status) }
+      }
+      <span class="k">return</span> r
+    })
+    <span class="f">update</span>(updated)
+  }
+
+<span class="hl">  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {</span>
+<span class="hl">    <span class="k">const</span> created: RequestItem = { ...data, id: Date.<span class="f">now</span>(), status: <span class="s">'Новая'</span> }</span>
+<span class="hl">    <span class="f">update</span>([created, ...requests])</span>
+<span class="hl">    <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)</span>
+<span class="hl">    <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)</span>
+<span class="hl">    <span class="k">if</span> (sent) {</span>
+<span class="hl">      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)</span>
+<span class="hl">    } <span class="k">else</span> {</span>
+<span class="hl">      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)</span>
+<span class="hl">    }</span>
+<span class="hl">  }</span>
+
+  <span class="k">function</span> <span class="f">handleRemove</span>(id: number) {
+    <span class="f">update</span>(requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.id !== id))
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+        <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span>
+        <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+          <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+<span class="hl">          {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}</span>
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+            {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+              <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+                {f}
+              <span class="t">&lt;/button</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+          {visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+          {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+            <span class="t">&lt;RequestCard</span>
+              <span class="a">key</span>={r.id}
+              <span class="a">title</span>={r.title}
+              <span class="a">room</span>={r.room}
+              <span class="a">category</span>={r.category}
+              <span class="a">details</span>={r.details}
+              <span class="a">status</span>={r.status}
+              <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id)}
+              <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}
+            <span class="t">/&gt;</span>
+          ))}
+        <span class="t">&lt;/section</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE--></li>
+          <li><b>Отправьте заявку</b><p>Откройте консоль браузера (<kbd>F12</kbd>, вкладка <strong>Console</strong>). Добавьте заявку «Не открывается журнал», кабинет 212, категория «Интернет». Заявка появилась в списке, над списком сообщение, что уведомление не отправлено, в консоли — ошибка запроса.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/07-ne-otpravleno.png" width="1100" height="826" alt="Доска: над списком сообщение Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен; в консоли POST http://localhost:5678/webhook/zayavka net::ERR_CONNECTION_REFUSED" loading="lazy"><figcaption>Заявка добавлена, уведомление не отправлено; в консоли net::ERR_CONNECTION_REFUSED</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что написано в notify.ts</p>
+
+        <!--CODE tools/code17/notify.ts | notify.ts · по строкам | pins=3:1,5:2,6:3,7:4,8:5,9:6,10:7,12:8,13:9--><figure class="code" data-read><figcaption><span>notify.ts · по строкам</span></figcaption><pre><span class="k">import</span> <span class="k">type</span> { RequestItem } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">const</span> WEBHOOK_URL = <span class="s">'http://localhost:5678/webhook/zayavka'</span>  <span class="pin">1</span>
+
+<span class="k">export</span> async <span class="k">function</span> <span class="f">sendRequest</span>(request: RequestItem): Promise<span class="t">&lt;boolean</span><span class="t">&gt;</span> {  <span class="pin">2</span>
+  try {  <span class="pin">3</span>
+    <span class="k">const</span> response = await <span class="f">fetch</span>(WEBHOOK_URL, {  <span class="pin">4</span>
+      method: <span class="s">'POST'</span>,  <span class="pin">5</span>
+      headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },  <span class="pin">6</span>
+      body: JSON.<span class="f">stringify</span>(request),  <span class="pin">7</span>
+    })
+    <span class="k">return</span> response.ok  <span class="pin">8</span>
+  } catch {  <span class="pin">9</span>
+    <span class="k">return</span> <span class="k">false</span>
+  }
+}</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Адрес, куда отправлять заявки. <code>localhost:5678</code> — n8n на этом же компьютере, <code>/webhook/zayavka</code> — «приёмное окно» для заявок, которое будет создано в n8n.</p></div></li>
+          <li><span class="pin">2</span><div><p>«Отправь заявку и скажи, получилось ли». <code>async</code> — функция ждёт ответа сети. <code>Promise&lt;boolean&gt;</code> — тип ответа: «когда-нибудь будет да или нет».</p></div></li>
+          <li><span class="pin">3</span><div><p><code>try</code> — «попробуй». Если внутри что-то сломается, выполнение перейдёт в блок <code>catch</code> (строка 13), и страница продолжит работать.</p></div></li>
+          <li><span class="pin">4</span><div><p>«Отправь запрос и дождись ответа». В скобках — адрес и настройки запроса.</p></div></li>
+          <li><span class="pin">5</span><div><p>Метод <code>POST</code> — «прими данные».</p></div></li>
+          <li><span class="pin">6</span><div><p>Заголовок: внутри текст JSON.</p></div></li>
+          <li><span class="pin">7</span><div><p>Тело запроса — заявка, превращённая в текст, как при записи в хранилище.</p></div></li>
+          <li><span class="pin">8</span><div><p>Ответ пришёл. <code>response.ok</code> — «да», если код ответа от 200 до 299, иначе «нет».</p></div></li>
+          <li><span class="pin">9</span><div><p>Сервер не ответил совсем: не запущен или нет сети. Ответа в этом случае нет: <code>fetch</code> выдаёт ошибку, и выполнение попадает сюда. Функция возвращает «нет».</p></div></li>
+        </ol>
+
+        <p>Пошаговый разбор ниже проходит по <code>handleAdd</code> в <code>App.tsx</code> в том опыте, который вы только что провели.</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">handleAdd: заявка добавлена, запрос не прошёл</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code17/App.tsx | | bare lines=36-46--><pre class="trace__code" data-start="36">  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    <span class="k">const</span> created: RequestItem = { ...data, id: Date.<span class="f">now</span>(), status: <span class="s">'Новая'</span> }
+    <span class="f">update</span>([created, ...requests])
+    <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+    <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+    <span class="k">if</span> (sent) {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+    } <span class="k">else</span> {
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+    }
+  }</pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="37-38"><b>Заявка сразу в списке</b>
+                  <p>Новая заявка собирается и через <code>update</code> попадает в состояние и в localStorage. Карточка появляется на странице, не дожидаясь сети.</p>
+                  <div class="minis"><span class="mini is-new"><small>каб. 212 · Интернет</small><b>Не открывается журнал</b><em>Новая</em></span></div></li>
+                <li data-lines="39"><b>Сообщение «отправляем»</b>
+                  <p>Над списком появляется «Заявка добавлена. Отправляем уведомление…».</p>
+                  <div class="vars"><span class="var var--new"><i>notice</i><span>'…Отправляем уведомление…'</span></span></div></li>
+                <li data-lines="40"><b>Запрос ушёл, функция ждёт</b>
+                  <p><code>await sendRequest(created)</code>: <code>handleAdd</code> останавливается на этой строке до ответа. Страница при этом работает: можно нажимать кнопки и фильтры.</p></li>
+                <li data-lines="40"><b>Сервер не отвечает</b>
+                  <p>По адресу <code>localhost:5678</code> никто не слушает. <code>fetch</code> выдаёт ошибку, <code>catch</code> в <code>notify.ts</code> возвращает «нет». В консоли браузер пишет <code>net::ERR_CONNECTION_REFUSED</code> — «в соединении отказано».</p>
+                  <div class="vars"><span class="var var--new"><i>sent</i><span>false</span></span></div></li>
+                <li data-lines="41,43-45"><b>Честное сообщение</b>
+                  <p><code>sent</code> — «нет», выполняется ветка <code>else</code>. Сообщение меняется: заявка добавлена, уведомление не отправлено. Заявка остаётся на доске и в хранилище.</p>
+                  <div class="vars"><span class="var var--new"><i>notice</i><span>'…уведомление не отправлено…'</span></span></div></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p>Заявка добавляется на доску до отправки запроса. Допустим, порядок обратный: сначала дождаться ответа, потом добавить. Тогда при выключенном n8n заявка не попала бы на доску совсем, и сотрудник решил бы, что форма сломана. Доска работает сама по себе, уведомление — дополнительная услуга.</p>
+
+        <p>Код отправки готов. Когда на странице «Автоматизация» по адресу <code>localhost:5678</code> заработает n8n, тот же код получит ответ 200, и над списком появится «Заявка добавлена, уведомление отправлено».</p>
+
+        <div class="starter starter--finish">
+          <p class="starter__head">Проект после главы</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в состоянии конца главы: хранение заявок в localStorage (<code>storage.ts</code>), отправка новой заявки запросом <code>fetch</code> (<code>notify.ts</code>) и сообщение о результате. Распаковка и запуск — как у архива в начале главы.</p>
+            <a class="starter__btn" href="zayavki-konec-1-7.zip" download>zayavki-konec-1-7.zip <small>21 КБ</small></a>
+          </div>
+        </div>
+
+        <h2 id="s4"><span class="sec">§4</span>Частые ошибки</h2>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>После перезагрузки пропадает смена статуса или удаление, а новые заявки остаются</td><td>В одном из обработчиков остался прямой вызов <code>setRequests(…)</code></td><td>Заменить его на <code>update(…)</code></td></tr>
+              <tr><td>Изменения в <code>requests.ts</code> не видны на доске</td><td>В localStorage уже есть запись <code>zayavki</code>, и начальный массив не используется</td><td>Удалить запись на вкладке <strong>Application</strong> и обновить страницу</td></tr>
+              <tr><td>На доске заявки другие, чем у соседа</td><td>localStorage свой у каждого браузера и компьютера</td><td>Так и должно быть до модуля 2: общая база появится там</td></tr>
+              <tr><td>Консоль: <code>POST http://localhost:5678/webhook/zayavka net::ERR_CONNECTION_REFUSED</code></td><td>n8n не запущен</td><td>Запустить n8n (страница «Автоматизация»). Доска при этом продолжает работать</td></tr>
+              <tr><td><code>'await' expressions are only allowed within async functions and at the top levels of modules.</code></td><td>Внутри функции есть <code>await</code>, а слова <code>async</code> перед ней нет</td><td>Записать <code>async function handleAdd(…)</code></td></tr>
+              <tr><td>Сообщение всегда «не отправлено», хотя n8n работает</td><td>Опечатка в адресе <code>WEBHOOK_URL</code> или процесс в n8n не включён — сервер отвечает 404</td><td>Сверить адрес с адресом вебхука в n8n</td></tr>
+              <tr><td>Консоль: <code>Unexpected token … is not valid JSON</code> при открытии страницы</td><td>В записи <code>zayavki</code> испорчен текст, например после правки вручную</td><td>Удалить запись на вкладке <strong>Application</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s5"><span class="sec">§5</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Почему без localStorage новые заявки пропадают после перезагрузки?</summary>
+          <p>Состояние React живёт в памяти открытой вкладки. При перезагрузке страница загружается заново, и <code>useState</code> получает начальное значение из <code>requests.ts</code>.</p>
+        </details>
+        <details>
+          <summary>Зачем перед записью в localStorage нужен <code>JSON.stringify</code>?</summary>
+          <p>localStorage хранит только текст. <code>JSON.stringify</code> превращает массив заявок в текст, а <code>JSON.parse</code> при чтении — обратно в массив.</p>
+        </details>
+        <details>
+          <summary>Чем <code>useState(loadRequests)</code> отличается от <code>useState(loadRequests())</code>?</summary>
+          <p>В первом случае React получает функцию и вызывает её один раз, при первой отрисовке. Во втором функция вызывается при каждой отрисовке, хотя её результат нужен только в первый раз.</p>
+        </details>
+        <details>
+          <summary>Из каких частей состоит запрос, который отправляет <code>sendRequest</code>?</summary>
+          <p>Адрес <code>http://localhost:5678/webhook/zayavka</code>, метод <code>POST</code>, заголовок <code>Content-Type: application/json</code> и тело — заявка в формате JSON.</p>
+        </details>
+        <details>
+          <summary>Что делают <code>async</code> и <code>await</code>?</summary>
+          <p><code>await</code> останавливает функцию на строке, пока не придёт ответ, а страница в это время продолжает работать. Писать <code>await</code> можно только в функции, помеченной <code>async</code>.</p>
+        </details>
+        <details>
+          <summary>Почему в <code>handleAdd</code> заявка добавляется на доску до отправки запроса?</summary>
+          <p>Чтобы доска работала и при выключенном сервере автоматизации. Если сначала ждать ответа, при ошибке сети заявка не попала бы на доску.</p>
+        </details>
+        <details>
+          <summary>Сделайте так, чтобы сообщение над списком исчезало при выборе фильтра. Что изменить?</summary>
+          <p>В обработчике кнопок фильтра вызывать ещё и <code>setNotice('')</code>: <code>onClick={() =&gt; { setFilter(f); setNotice('') }}</code>. Фигурные скобки после стрелки нужны, потому что команд две.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Записать</b><code>localStorage.setItem('zayavki', JSON.stringify(list))</code></div>
+          <div><b>Прочитать</b><code>JSON.parse(localStorage.getItem('zayavki'))</code></div>
+          <div><b>Состояние из хранилища</b><code>useState(loadRequests)</code></div>
+          <div><b>Запрос POST</b><code>await fetch(url, { method: 'POST', headers, body })</code></div>
+          <div><b>Тело JSON</b><code>body: JSON.stringify(request)</code></div>
+          <div><b>Ответ успешный</b><code>response.ok</code></div>
+          <div><b>Сеть недоступна</b><code>try { … } catch { return false }</code></div>
+          <div><b>Ждать ответа</b><code>async function f() { await … }</code></div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>Состояние React хранится в памяти вкладки и пропадает при перезагрузке. Чтобы данные сохранялись, их записывают в localStorage — хранилище браузера с парами «ключ — значение», где значение — текст. Массив превращают в текст <code>JSON.stringify</code> и обратно <code>JSON.parse</code>. Начальное значение состояния берётся из хранилища функцией, переданной в <code>useState</code> без скобок, а каждое изменение записывается и в состояние, и в хранилище через одну функцию <code>update</code>. Наружу данные отправляют запросом: <code>fetch</code> с адресом, методом <code>POST</code>, заголовком и телом JSON. Ответ приходит не сразу, поэтому функцию помечают <code>async</code> и ждут ответа через <code>await</code>; ошибку соединения перехватывают <code>try … catch</code>. Доска сохраняет заявки и отправляет новую на адрес n8n, а при недоступном сервере продолжает работать и сообщает об этом.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://developer.mozilla.org/ru/docs/Web/API/Window/localStorage" target="_blank" rel="noreferrer">MDN — Window.localStorage</a></li>
+          <li><a href="https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/JSON" target="_blank" rel="noreferrer">MDN — JSON</a></li>
+          <li><a href="https://developer.mozilla.org/ru/docs/Web/API/Fetch_API/Using_Fetch" target="_blank" rel="noreferrer">MDN — Использование Fetch</a></li>
+          <li><a href="https://developer.mozilla.org/ru/docs/Web/HTTP/Status" target="_blank" rel="noreferrer">MDN — Коды ответа HTTP</a></li>
+          <li><a href="https://react.dev/reference/react/useState#avoiding-recreating-the-initial-state" target="_blank" rel="noreferrer">react.dev — useState: avoiding recreating the initial state</a></li>
+          <li><a href="https://developer.chrome.com/docs/devtools/storage/localstorage" target="_blank" rel="noreferrer">developer.chrome.com — View and edit local storage</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../16-formy/index.html">← 1.6 Формы и отправка данных</a>
+          <a href="../../index.html">Оглавление →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

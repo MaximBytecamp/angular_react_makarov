@@ -47,6 +47,11 @@ AFTER_16 = {
     "components/RequestForm.tsx": "code16/RequestForm.tsx",
 }
 
+AFTER_17 = {
+    **AFTER_16, "App.tsx": "code17/App.tsx", "index.css": "code17/index.css",
+    "storage.ts": "code17/storage.ts", "notify.ts": "code17/notify.ts",
+}
+
 ARCHIVES = [
     ("11-node-npm-vite", "zayavki-konec-1-1.zip", AFTER_11),
     ("12-jsx-i-komponenty", "zayavki-nachalo-1-2.zip", AFTER_11),
@@ -59,6 +64,8 @@ ARCHIVES = [
     ("15-spiski-i-usloviya", "zayavki-konec-1-5.zip", AFTER_15),
     ("16-formy", "zayavki-nachalo-1-6.zip", AFTER_15),
     ("16-formy", "zayavki-konec-1-6.zip", AFTER_16),
+    ("17-sohranenie-i-otpravka", "zayavki-nachalo-1-7.zip", AFTER_16),
+    ("17-sohranenie-i-otpravka", "zayavki-konec-1-7.zip", AFTER_17),
 ]
 
 
