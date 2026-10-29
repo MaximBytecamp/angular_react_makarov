@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>2.2 PocketBase: коллекции и правила доступа · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; stroke-dasharray: 6 4; }
+    .sch .ng-text { fill: #C2185B; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 2 · Данные с сервера и ИИ-диспетчер</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 2 · данные с сервера и ИИ-диспетчер</p>
+          <p class="running__folio">2.2</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">2.2</span>
+          <h1>PocketBase: коллекции<br>и правила доступа</h1>
+          <p class="lead">В этой главе у доски заявок появляется сервер с базой данных — PocketBase. Он запускается в Docker рядом с n8n из модуля 1. В панели администратора PocketBase создаётся коллекция заявок с теми же полями, что у <code>RequestItem</code>, и добавляется первая запись. Затем разобраны правила доступа: кто может читать, создавать, менять и удалять заявки. Правила проверяются запросами из консоли браузера. Код доски в этой главе не меняется: подключение доски к базе — тема главы 2.3.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>Сервер, база данных</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Docker Desktop и папка <code>avtomatizaciya</code> со страницы «Автоматизация» модуля 1 (или архив ниже), браузер Chrome, Edge или Яндекс Браузер</dd></div>
+          <div><dt>Результат</dt><dd>PocketBase запущен в Docker, в коллекции <code>requests</code> пять заявок, правила доступа проверены</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Зачем доске сервер</a></li>
+            <li><a href="#s2">PocketBase в Docker</a></li>
+            <li><a href="#s3">Коллекция заявок</a></li>
+            <li><a href="#s4">Первая запись</a></li>
+            <li><a href="#s5">API и правила доступа</a></li>
+            <li><a href="#s6">Проверка правил из консоли</a></li>
+            <li><a href="#s7">Частые ошибки</a></li>
+            <li><a href="#s8">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <div class="starter">
+          <p class="starter__head">Готовые файлы для этой главы</p>
+          <div class="starter__body">
+            <p>В архиве папка <code>avtomatizaciya</code> в состоянии конца главы: <code>compose.yaml</code> с n8n и PocketBase, <code>pocketbase/Dockerfile</code> и шаблон процесса n8n из модуля 1. Распакуйте её в <code>react-kurs</code> вместо прежней. Данные n8n хранятся в томе Docker и при замене файлов не пропадают.</p>
+            <a class="starter__btn" href="avtomatizaciya-2-2.zip" download>avtomatizaciya-2-2.zip <small>2 КБ</small></a>
+          </div>
+        </div>
+
+        <h2 id="s1"><span class="sec">§1</span>Зачем доске сервер</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Где хранить заявки, чтобы их видели все</p>
+
+        <p>В главе 1.7 заявки сохраняются в localStorage — хранилище одного браузера. Заявку, отправленную студентом с телефона, мастер ИТ-отдела на своём компьютере не увидит: у каждого браузера свой список. Чтобы все видели одни и те же заявки, их хранят на <span class="term">сервере</span> — программе, к которой обращаются по сети все браузеры. Серверную часть приложения называют <span class="term">бэкендом</span>, а то, что работает в браузере, — фронтендом (глава 0.1).</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В поликлинике карточки пациентов лежат в регистратуре, по ящикам: в одном взрослые, в другом дети. В каждой карточке одинаковые графы. Посетитель карточку сам не берёт: он обращается в окошко, и регистратор выдаёт или принимает карточки по правилам — свою можно посмотреть, чужую нельзя. Главврач имеет ключ от всех ящиков.</p>
+          <p class="miss">Регистратор решает, глядя на человека. PocketBase проверяет каждый запрос по правилу, записанному заранее, без исключений.</p>
+        </div></div>
+
+        <p><span class="term">PocketBase</span> — бесплатный бэкенд в одном файле. В нём есть всё, что нужно доске:</p>
+        <ul>
+          <li><b>база данных</b> — хранилище записей на диске сервера;</li>
+          <li><b>API</b> (Application Programming Interface — программный интерфейс) — адреса, по которым браузер читает и меняет записи запросами <code>fetch</code>, как в главе 1.7;</li>
+          <li><b>панель администратора</b> — сайт для настройки базы мышью;</li>
+          <li><b>правила доступа</b> — условия, кому что можно делать с записями.</li>
+        </ul>
+
+        <p>Слова, которые встретятся дальше. <span class="term">Коллекция</span> — набор однотипных записей, как ящик картотеки: коллекция <code>requests</code> — все заявки. <span class="term">Запись</span> — одна заявка. <span class="term">Поле</span> — графа записи: название, кабинет, статус. <span class="term">Суперпользователь</span> (superuser) — администратор PocketBase, ему разрешено всё.</p>
+
+        <p>На схеме — кто с кем связан после этой главы.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Браузеры, PocketBase и его панель</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 230" role="img" aria-label="Браузер студента и браузер мастера обращаются к API PocketBase; API проверяет правила и работает с базой; суперпользователь настраивает базу через панель администратора">
+              <rect x="20" y="20" width="180" height="50" fill="#D6F0F9"/><text class="mono" x="34" y="50">браузер студента</text>
+              <rect x="20" y="90" width="180" height="50" fill="#D6F0F9"/><text class="mono" x="34" y="120">браузер мастера</text>
+              <rect x="270" y="20" width="270" height="190" fill="#ffffff"/><text class="mono" x="284" y="44">PocketBase · localhost:8090</text>
+              <rect x="286" y="60" width="110" height="46" fill="#161A2E"/><text class="mono on-dark" x="300" y="88">API</text>
+              <rect x="414" y="60" width="110" height="46" fill="#F9DDE8"/><text class="mono" x="426" y="82">правила</text><text class="soft" x="426" y="98">доступа</text>
+              <rect x="286" y="130" width="238" height="60" fill="#D4EEDF"/><text class="mono" x="300" y="156">база: коллекция</text><text class="soft" x="300" y="176">requests, 5 записей</text>
+              <path d="M200 45 C 240 45, 245 80, 280 82"/><path d="M272 76 L 280 82 L 272 88"/>
+              <path d="M200 115 C 240 115, 245 86, 280 84"/>
+              <path d="M396 83 H 408"/><path d="M402 78 L 408 83 L 402 88"/>
+              <path d="M468 106 V 124"/><path d="M462 116 L 468 124 L 474 116"/>
+              <rect x="590" y="130" width="150" height="60" fill="#161A2E"/><text class="mono on-dark" x="604" y="156">панель</text><text class="soft" x="604" y="176" style="fill:#c8d0e0">localhost:8090/_/</text>
+              <path class="ng" d="M590 160 H 532"/><text class="soft ng-text" x="560" y="214">суперпользователь</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Браузеры обращаются только к API. Каждый запрос сначала проверяется правилом коллекции, потом выполняется в базе. Суперпользователь настраивает коллекции через панель, правила на него не действуют.</p>
+        </figure>
+
+        <p class="bridge">Сначала PocketBase нужно запустить. Он будет работать в Docker, как n8n.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>PocketBase в Docker</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Запускаем PocketBase и создаём администратора</p>
+
+        <ol class="steps">
+          <li><b>Создайте Dockerfile</b><p>У PocketBase нет готового образа Docker от авторов, поэтому образ собирается по своему рецепту — файлу <code>Dockerfile</code>. В папке <code>avtomatizaciya</code> создайте папку <code>pocketbase</code>, в ней файл <code>Dockerfile</code> (без расширения). Вставьте текст и сохраните.</p>
+            <!--CODE tools/code22/pocketbase/Dockerfile | avtomatizaciya/pocketbase/Dockerfile--><figure class="code"><figcaption><span>avtomatizaciya/pocketbase/Dockerfile</span></figcaption><pre>FROM alpine:<span class="n">3.20</span>
+ARG PB_VERSION=<span class="n">0.40</span>.<span class="n">6</span>
+ARG TARGETARCH
+RUN apk add --no-cache ca-certificates unzip wget \
+ &amp;&amp; wget -q https:<span class="c">//github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_${TARGETARCH}.zip -O /tmp/pb.zip \</span>
+ &amp;&amp; unzip /tmp/pb.zip -d /pb &amp;&amp; rm /tmp/pb.zip
+EXPOSE <span class="n">8090</span>
+CMD [<span class="s">"/pb/pocketbase"</span>, <span class="s">"serve"</span>, <span class="s">"--http=0.0.0.0:8090"</span>, <span class="s">"--dir=/pb/pb_data"</span>]</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-dockerfile.png" width="1240" height="780" alt="VS Code: папка avtomatizaciya/pocketbase с файлом Dockerfile, в редакторе 8 строк рецепта" loading="lazy"><figcaption>Так должна выглядеть папка: avtomatizaciya/pocketbase/Dockerfile</figcaption></figure></li>
+          <li><b>Добавьте PocketBase в compose.yaml</b><p>Замените содержимое <code>avtomatizaciya/compose.yaml</code>. Добавленные строки подсвечены.</p>
+            <!--CODE tools/code22/compose.yaml | avtomatizaciya/compose.yaml | mark=13-18,22--><figure class="code"><figcaption><span>avtomatizaciya/compose.yaml</span></figcaption><pre>services:
+  n8n:
+    image: n8nio/n8n:<span class="n">2.45</span>.<span class="n">4</span>
+    ports:
+      - <span class="s">"5678:5678"</span>
+    environment:
+      - GENERIC_TIMEZONE=Europe/Moscow
+      - <span class="a">TZ</span>=Europe/Moscow
+      - N8N_DEFAULT_LOCALE=en
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+<span class="hl">  pocketbase:</span>
+<span class="hl">    build: ./pocketbase</span>
+<span class="hl">    ports:</span>
+<span class="hl">      - <span class="s">"8090:8090"</span></span>
+<span class="hl">    volumes:</span>
+<span class="hl">      - pb_data:/pb/pb_data</span>
+
+volumes:
+  n8n_data:
+<span class="hl">  pb_data:</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-compose.png" width="1240" height="780" alt="VS Code: compose.yaml со службами n8n и pocketbase и томами n8n_data и pb_data" loading="lazy"><figcaption>compose.yaml: службы n8n и pocketbase</figcaption></figure></li>
+          <li><b>Соберите и запустите</b><p>Запустите Docker Desktop. В терминале VS Code перейдите в папку и выполните команды. При первом запуске Docker скачает основу образа и сам PocketBase, это около минуты.</p>
+            <figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>cd avtomatizaciya
+docker compose up -d --build
+docker compose ps</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-compose-ps.png" width="1240" height="234" alt="Терминал: docker compose ps показывает avtomatizaciya-n8n-1 и avtomatizaciya-pocketbase-1 в состоянии Up, порты 5678 и 8090" loading="lazy"><figcaption>Оба контейнера работают: n8n на 5678, PocketBase на 8090</figcaption></figure></li>
+          <li><b>Создайте суперпользователя</b><p>Выполните команду, подставив свои почту и пароль (пароль не короче 8 символов). Почта нужна только как имя для входа, письма на неё не приходят.</p>
+            <figure class="code"><figcaption><span>Терминал · папка avtomatizaciya</span></figcaption><pre>docker compose exec pocketbase /pb/pocketbase superuser upsert admin@example.com Zayavki2026pb --dir=/pb/pb_data</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/04-superuser.png" width="1240" height="156" alt="Терминал: Successfully saved superuser admin@example.com" loading="lazy"><figcaption>Суперпользователь создан</figcaption></figure></li>
+          <li><b>Войдите в панель</b><p>Откройте <code>http://localhost:8090/_/</code> (в конце — подчёркивание и косая черта). Введите почту и пароль, нажмите <kbd>Enter</kbd>.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/05-login.png" width="1280" height="800" alt="PocketBase: форма Superuser login с почтой и паролем" loading="lazy"><figcaption>Вход в панель администратора PocketBase</figcaption></figure>
+            <figure class="shot" style="max-width: 1286px"><img src="img/06-dashboard.png" width="1280" height="800" alt="Панель PocketBase: слева Collections с коллекцией users и кнопкой New collection" loading="lazy"><figcaption>Панель: пока есть только служебная коллекция users</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что написано в Dockerfile и compose.yaml</p>
+
+        <!--CODE tools/code22/pocketbase/Dockerfile | Dockerfile · по строкам | pins=1:1,2:2,3:3,4:4,5:5,7:6,8:7--><figure class="code" data-read><figcaption><span>Dockerfile · по строкам</span></figcaption><pre>FROM alpine:<span class="n">3.20</span>  <span class="pin">1</span>
+ARG PB_VERSION=<span class="n">0.40</span>.<span class="n">6</span>  <span class="pin">2</span>
+ARG TARGETARCH  <span class="pin">3</span>
+RUN apk add --no-cache ca-certificates unzip wget \  <span class="pin">4</span>
+ &amp;&amp; wget -q https:<span class="c">//github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_${TARGETARCH}.zip -O /tmp/pb.zip \</span>  <span class="pin">5</span>
+ &amp;&amp; unzip /tmp/pb.zip -d /pb &amp;&amp; rm /tmp/pb.zip
+EXPOSE <span class="n">8090</span>  <span class="pin">6</span>
+CMD [<span class="s">"/pb/pocketbase"</span>, <span class="s">"serve"</span>, <span class="s">"--http=0.0.0.0:8090"</span>, <span class="s">"--dir=/pb/pb_data"</span>]  <span class="pin">7</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Основа образа — Alpine Linux, маленькая система (около 8 МБ). На неё ставится PocketBase.</p></div></li>
+          <li><span class="pin">2</span><div><p>Версия PocketBase, которую скачать. Версия закреплена, чтобы у всех студентов была одна и та же.</p></div></li>
+          <li><span class="pin">3</span><div><p>Тип процессора компьютера: Docker подставляет его сам — <code>amd64</code> для большинства компьютеров с Windows, <code>arm64</code> для Mac на Apple Silicon. Поэтому один рецепт подходит для всех.</p></div></li>
+          <li><span class="pin">4</span><div><p><code>RUN</code> — команды, которые выполняются при сборке образа. Сначала ставятся программы для скачивания и распаковки. Обратная косая черта в конце строки — «команда продолжается на следующей строке».</p></div></li>
+          <li><span class="pin">5</span><div><p>Скачать архив PocketBase нужной версии с GitHub и распаковать в папку <code>/pb</code>.</p></div></li>
+          <li><span class="pin">6</span><div><p>PocketBase слушает порт 8090.</p></div></li>
+          <li><span class="pin">7</span><div><p>Команда запуска: <code>serve</code> — работать сервером на порту 8090; <code>--dir=/pb/pb_data</code> — хранить базу в папке <code>pb_data</code>, которая в <code>compose.yaml</code> подключена к тому.</p></div></li>
+        </ol>
+
+        <p>В <code>compose.yaml</code> добавилась служба <code>pocketbase</code>. Вместо готового образа (<code>image</code>) у неё <code>build: ./pocketbase</code> — «собрать образ по Dockerfile из этой папки». Ключ <code>--build</code> в команде запуска пересобирает образ, если Dockerfile изменился. Том <code>pb_data</code> хранит базу данных: заявки переживут перезапуск контейнера. Команда <code>docker compose exec pocketbase …</code> выполняет программу внутри работающего контейнера — здесь сам PocketBase с командой <code>superuser upsert</code>: «создать суперпользователя или поменять ему пароль».</p>
+
+        <p class="bridge">PocketBase работает. Следующий шаг — ящик картотеки для заявок.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Коллекция заявок</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Создаём коллекцию requests</p>
+
+        <ol class="steps">
+          <li><b>Новая коллекция</b><p>Нажмите <strong>New collection</strong>. В поле <strong>Name</strong> введите <code>requests</code>. Тип оставьте <strong>Base</strong> — обычная коллекция записей.</p></li>
+          <li><b>Посмотрите типы полей</b><p>Нажмите <strong>New field</strong>. Откроется список типов: текст, число, да/нет, дата, выбор из списка и другие.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/07-new-field.png" width="1280" height="800" alt="Create collection: меню New field с типами Plain text, Rich editor, Number, Bool, Email, URL, Datetime, Autodate, File, Relation, Select, JSON, Geo Point" loading="lazy"><figcaption>Типы полей PocketBase</figcaption></figure></li>
+          <li><b>Поле title</b><p>Выберите <strong>Plain text</strong>. Появится строка нового поля с выделенным именем — наберите <code>title</code>. Нажмите шестерёнку справа от строки и отметьте <strong>Required</strong>: без названия заявку не сохранить. Нажмите шестерёнку ещё раз, чтобы свернуть настройки.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/08-field-options.png" width="1280" height="800" alt="Настройки поля title: Min length, Max length, Validation pattern, флажки Required, Presentable, Hidden" loading="lazy"><figcaption>Настройки поля открываются шестерёнкой: флажок Required внизу</figcaption></figure></li>
+          <li><b>Остальные поля</b><p>Так же добавьте поля по таблице. У полей типа <strong>Select</strong> щёлкните по «Add choices» и введите варианты, каждый с новой строки (<kbd>Enter</kbd> после каждого).</p>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Имя</th><th>Тип</th><th>Required</th><th>Варианты</th></tr></thead>
+                <tbody>
+                  <tr><td><code>title</code></td><td>Plain text</td><td>да</td><td>—</td></tr>
+                  <tr><td><code>room</code></td><td>Plain text</td><td>да</td><td>—</td></tr>
+                  <tr><td><code>category</code></td><td>Select</td><td>да</td><td>Компьютер, Проектор, Принтер, Интернет</td></tr>
+                  <tr><td><code>details</code></td><td>Plain text</td><td>нет</td><td>—</td></tr>
+                  <tr><td><code>status</code></td><td>Select</td><td>да</td><td>Новая, В работе, Готово</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <figure class="shot" style="max-width: 1286px"><img src="img/09-fields.png" width="1280" height="800" alt="Create collection requests: поля id, title, room, category с вариантами, details, status с вариантами, created, updated; у обязательных пометка Required" loading="lazy"><figcaption>Поля коллекции перед созданием: у обязательных пометка Required</figcaption></figure></li>
+          <li><b>Создайте коллекцию</b><p>Нажмите <strong>Create</strong>. Внизу появится «Successfully created collection "requests"», слева в списке — <code>requests</code>.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/10-collection.png" width="1280" height="800" alt="Коллекция requests создана: столбцы id, title, room, category, details, status, created; No records found" loading="lazy"><figcaption>Коллекция requests пока пустая</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как поля коллекции связаны с RequestItem</p>
+
+        <p>Поля коллекции повторяют тип <code>RequestItem</code> из <code>requests.ts</code>. Тип в TypeScript описывает заявку для доски, коллекция — для базы. Проверки похожие:</p>
+        <ul>
+          <li><b>Required</b> — то же, что обязательное поле в типе и проверка в форме главы 1.6: пустое значение база не примет;</li>
+          <li><b>Select</b> — то же, что тип-объединение <code>'Новая' | 'В работе' | 'Готово'</code>: база примет только значение из списка;</li>
+          <li><b>id</b> PocketBase придумывает сам, это строка из 15 символов, например <code>dt7udb6mjpmui08</code>. В модуле 1 номер давал <code>Date.now()</code>;</li>
+          <li><b>created</b> и <b>updated</b> — поля типа Autodate, PocketBase заполняет их временем создания и изменения записи.</li>
+        </ul>
+
+        <p>Проверки в базе нужны, даже если форма доски уже проверяет поля. Запрос к API можно отправить в обход формы — из консоли браузера или другой программой, — и только база проверит его в любом случае.</p>
+
+        <p class="bridge">Коллекция создана. Следующий шаг — первая запись.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Первая запись</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Добавляем заявку через панель</p>
+
+        <ol class="steps">
+          <li><b>Заполните форму записи</b><p>Нажмите <strong>New record</strong>. Поле <strong>id</strong> оставьте пустым. Заполните: title — «Не работает проектор», room — 214, category — «Проектор», details — «Проектор включается, но изображения на экране нет.», status — «Новая».</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/11-record-form.png" width="1280" height="800" alt="Форма Create requests record с заполненными полями title, room, category, details, status" loading="lazy"><figcaption>Форма записи: обязательные поля отмечены звёздочкой</figcaption></figure></li>
+          <li><b>Сохраните</b><p>Нажмите <strong>Create</strong>. В таблице появилась строка, PocketBase присвоил ей id.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/12-records.png" width="1280" height="800" alt="Коллекция requests: одна запись Не работает проектор, 214, Проектор, Новая" loading="lazy"><figcaption>Первая запись в коллекции</figcaption></figure></li>
+        </ol>
+
+        <p class="bridge">Панелью пользуется администратор. Доска будет обращаться к тем же записям через API — его и правила доступа разбирает следующий раздел.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>API и правила доступа</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: запрос к закрытой коллекции</p>
+
+        <ol class="steps">
+          <li><b>Откройте адрес API</b><p>В новой вкладке откройте адрес ниже. Это запрос <code>GET</code> «дай список записей коллекции requests» — такой же доска отправит в главе 2.3.</p>
+            <figure class="code"><figcaption><span>Адрес в браузере</span></figcaption><pre>http://localhost:8090/api/collections/requests/records</pre></figure>
+            <figure class="shot" style="max-width: 1106px"><img src="img/13-api-403.png" width="1100" height="63" alt="Ответ API: data пустой, message Only superusers can perform this action., status 403" loading="lazy"><figcaption>Ответ API: 403, «только суперпользователи могут это делать»</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему отказ</p>
+
+        <p>Код 403 означает «запрещено». У новой коллекции все пять правил закрыты: в панели они подписаны «Superusers only». Браузер на вкладке не вошёл в PocketBase, значит, он для API — посторонний, и записи ему не выдаются. Вход в панель на другой вкладке сюда не переносится: панель хранит вход для себя.</p>
+
+        <p>У коллекции пять правил — по одному на каждое действие:</p>
+        <ul>
+          <li><b>List/Search</b> — получить список записей;</li>
+          <li><b>View</b> — получить одну запись по id;</li>
+          <li><b>Create</b> — создать запись;</li>
+          <li><b>Update</b> — изменить запись;</li>
+          <li><b>Delete</b> — удалить запись.</li>
+        </ul>
+
+        <p>Каждое правило бывает в трёх состояниях: закрыто (замок, только суперпользователи), пусто (можно всем) или условие, которое PocketBase проверяет для каждого запроса.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Настраиваем правила</p>
+
+        <ol class="steps">
+          <li><b>Откройте правила коллекции</b><p>В панели нажмите шестерёнку рядом с названием <code>requests</code> вверху и перейдите на вкладку <strong>API rules</strong>.</p></li>
+          <li><b>Откройте чтение всем</b><p>У <strong>List/Search rule</strong> и <strong>View rule</strong> нажмите замок справа — «Unlock and set custom rule». Поле останется пустым: «Leave empty to grant everyone access» — пусто значит «можно всем».</p></li>
+          <li><b>Впишите условия</b><p>Снимите замок с трёх остальных правил и впишите условия:</p>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Правило</th><th>Условие</th></tr></thead>
+                <tbody>
+                  <tr><td>Create rule</td><td><code>@request.body.status = "Новая"</code></td></tr>
+                  <tr><td>Update rule</td><td><code>@request.body.title:isset = false &amp;&amp; @request.body.room:isset = false &amp;&amp; @request.body.details:isset = false</code></td></tr>
+                  <tr><td>Delete rule</td><td><code>status = "Готово"</code></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <figure class="shot" style="max-width: 1286px"><img src="img/14-rules.png" width="1280" height="800" alt="Вкладка API rules: List и View пустые, Create @request.body.status = Новая, Update с тремя :isset = false, Delete status = Готово" loading="lazy"><figcaption>Правила коллекции requests</figcaption></figure></li>
+          <li><b>Сохраните</b><p>Нажмите <strong>Save changes</strong>.</p></li>
+          <li><b>Повторите запрос к API</b><p>Обновите вкладку с адресом API. Теперь в ответе список: <code>items</code> с первой заявкой, <code>totalItems</code> — 1.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/15-api-list.png" width="1100" height="93" alt="Ответ API: items с записью Не работает проектор, page 1, perPage 30, totalItems 1" loading="lazy"><figcaption>Ответ API со списком записей</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как читаются условия</p>
+
+        <p>Условие правила записывается на языке фильтров PocketBase — похоже на сравнения в TypeScript. Знак <code>=</code> здесь означает «равно», как <code>===</code> в TypeScript. В условиях есть два источника данных:</p>
+        <ul>
+          <li><b>поля записи</b> — как они записаны в базе сейчас: <code>status</code>, <code>title</code>;</li>
+          <li><b><code>@request.body</code></b> — то, что пришло в теле запроса.</li>
+        </ul>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Условие</th><th>Как читается</th><th>Зачем</th></tr></thead>
+            <tbody>
+              <tr><td><code>@request.body.status = "Новая"</code></td><td>Создать можно, только если в запросе статус «Новая»</td><td>Нельзя прислать заявку сразу «Готово»</td></tr>
+              <tr><td><code>@request.body.title:isset = false &amp;&amp; …</code></td><td>Изменить можно, только если в запросе <em>нет</em> полей title, room, details. <code>:isset</code> — «поле есть в запросе», <code>&amp;&amp;</code> — «и»</td><td>Чужую заявку нельзя переписать; менять разрешено статус и категорию</td></tr>
+              <tr><td><code>status = "Готово"</code></td><td>Удалить можно запись, у которой в базе статус «Готово»</td><td>Как кнопка «Убрать с доски» в главе 1.5</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Категорию менять разрешено намеренно: в автоматизации модуля её будет определять языковая модель, а модель может ошибиться, и ошибку должно быть можно исправить. Правила пока проверяют только содержание запросов: входа для мастеров ИТ-отдела ещё нет, и любой посетитель может перевести заявку в «Готово». Вход пользователей — тема следующих модулей.</p>
+
+        <p class="bridge">Правила записаны. Проверить их проще всего запросами из консоли браузера.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Проверка правил из консоли</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Отправляем запросы в обход формы</p>
+
+        <ol class="steps">
+          <li><b>Откройте консоль на вкладке API</b><p>На вкладке с адресом <code>http://localhost:8090/api/collections/requests/records</code> нажмите <kbd>F12</kbd> и откройте <strong>Console</strong>. При первой вставке кода Chrome предупредит, что вставлять чужой код в консоль опасно, и попросит набрать <code>allow pasting</code> — наберите и нажмите <kbd>Enter</kbd>.</p></li>
+          <li><b>Попробуйте создать готовую заявку</b><p>Вставьте код и нажмите <kbd>Enter</kbd>. Адрес записан без <code>http://localhost:8090</code>: запрос идёт на тот же сервер, что и открытая страница.</p>
+            <!--CODE tools/code22/test-gotovo.js | Консоль · создать заявку со статусом «Готово»--><figure class="code"><figcaption><span>Консоль · создать заявку со статусом «Готово»</span></figcaption><pre>await <span class="f">fetch</span>(<span class="s">'/api/collections/requests/records'</span>, {
+  method: <span class="s">'POST'</span>,
+  headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },
+  body: JSON.<span class="f">stringify</span>({ title: <span class="s">'Проверка правил'</span>, room: <span class="s">'101'</span>, category: <span class="s">'Компьютер'</span>, status: <span class="s">'Готово'</span> }),
+}).<span class="f">then</span>((r) =<span class="t">&gt;</span> r.<span class="f">json</span>())</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1106px"><img src="img/16-console-gotovo.png" width="1100" height="207" alt="Консоль: POST 400 Bad Request, ответ message Failed to create record., status 400" loading="lazy"><figcaption>400: правило Create не пропустило статус «Готово»</figcaption></figure></li>
+          <li><b>Добавьте четыре заявки</b><p>Очистите консоль и выполните код ниже: он отправляет четыре заявки со статусом «Новая» — те же, что были в <code>initialRequests</code>.</p>
+            <!--CODE tools/code22/seed.js | Консоль · четыре заявки--><figure class="code"><figcaption><span>Консоль · четыре заявки</span></figcaption><pre><span class="k">const</span> zayavki = [
+  { title: <span class="s">'Нет интернета'</span>, room: <span class="s">'305'</span>, category: <span class="s">'Интернет'</span>, details: <span class="s">'На всех компьютерах в кабинете не открываются сайты.'</span> },
+  { title: <span class="s">'Замятие бумаги в принтере'</span>, room: <span class="s">'112'</span>, category: <span class="s">'Принтер'</span>, details: <span class="s">'Принтер пишет «замятие бумаги», лоток пустой.'</span> },
+  { title: <span class="s">'Не включается компьютер'</span>, room: <span class="s">'214'</span>, category: <span class="s">'Компьютер'</span>, details: <span class="s">'Компьютер преподавателя не реагирует на кнопку питания.'</span> },
+  { title: <span class="s">'Не работает мышь'</span>, room: <span class="s">'118'</span>, category: <span class="s">'Компьютер'</span>, details: <span class="s">'Курсор не двигается, мышь подключена к компьютеру № 7.'</span> },
+]
+for (<span class="k">const</span> z of zayavki) {
+  <span class="k">const</span> response = await <span class="f">fetch</span>(<span class="s">'http://localhost:8090/api/collections/requests/records'</span>, {
+    method: <span class="s">'POST'</span>,
+    headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },
+    body: JSON.<span class="f">stringify</span>({ ...z, status: <span class="s">'Новая'</span> }),
+  })
+  console.<span class="f">log</span>(response.status, z.title)
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1106px"><img src="img/17-console-seed.png" width="1100" height="390" alt="Консоль: четыре строки 200 с названиями заявок" loading="lazy"><figcaption>Четыре ответа 200: заявки созданы</figcaption></figure></li>
+          <li><b>Попробуйте изменить название</b><p>Код берёт первую заявку из списка и пытается поменять ей <code>title</code>.</p>
+            <!--CODE tools/code22/test-title.js | Консоль · изменить название первой заявки--><figure class="code"><figcaption><span>Консоль · изменить название первой заявки</span></figcaption><pre><span class="k">const</span> list = await <span class="f">fetch</span>(<span class="s">'/api/collections/requests/records'</span>).<span class="f">then</span>((r) =<span class="t">&gt;</span> r.<span class="f">json</span>())
+await <span class="f">fetch</span>(<span class="s">'/api/collections/requests/records/'</span> + list.items[<span class="n">0</span>].id, {
+  method: <span class="s">'PATCH'</span>,
+  headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },
+  body: JSON.<span class="f">stringify</span>({ title: <span class="s">'Чужое название'</span> }),
+}).<span class="f">then</span>((r) =<span class="t">&gt;</span> r.<span class="f">json</span>())</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1106px"><img src="img/18-console-title.png" width="1100" height="220" alt="Консоль: PATCH 404 Not Found, ответ The requested resource wasn't found." loading="lazy"><figcaption>404: правило Update не пропустило изменение названия</figcaption></figure></li>
+          <li><b>Посмотрите коллекцию в панели</b><p>Вернитесь на вкладку панели и нажмите кнопку обновления рядом с названием коллекции. Заявок пять.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/19-records-five.png" width="1280" height="800" alt="Коллекция requests: пять записей" loading="lazy"><figcaption>В коллекции пять заявок</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что ответил сервер</p>
+
+        <p>Каждый отказ пришёл с кодом и сообщением, а запись в базе не изменилась:</p>
+        <ul>
+          <li><b>400 «Failed to create record.»</b> — «не удалось создать запись». Правило Create не выполнено.</li>
+          <li><b>404 «The requested resource wasn't found.»</b> — «запрошенный ресурс не найден». Запись есть, но для изменения с таким телом запроса PocketBase её «не находит»: правило Update работает как фильтр, и запись в него не попала. Так сервер не сообщает постороннему лишнего.</li>
+          <li><b>200</b> — запрос выполнен, в ответе созданная запись.</li>
+        </ul>
+
+        <p>В коде заполнения <code>{ ...z, status: 'Новая' }</code> — оператор расширения из главы 1.5: все поля заявки из массива плюс статус.</p>
+
+        <p><code>for (const z of zayavki)</code> — цикл: «для каждой заявки из массива выполнить блок в фигурных скобках». <code>await</code> внутри цикла дожидается ответа на каждый запрос перед следующим.</p>
+
+        <div class="starter starter--finish">
+          <p class="starter__head">Файлы после главы</p>
+          <div class="starter__body">
+            <p>Папка <code>avtomatizaciya</code> в состоянии конца главы — тот же архив, что в начале. Коллекцию и правила архив не содержит: они хранятся в томе <code>pb_data</code> и создаются шагами главы.</p>
+            <a class="starter__btn" href="avtomatizaciya-2-2.zip" download>avtomatizaciya-2-2.zip <small>2 КБ</small></a>
+          </div>
+        </div>
+
+        <h2 id="s7"><span class="sec">§7</span>Частые ошибки</h2>
+
+        <p>Ответы получены от PocketBase 0.40.6 запросами к API.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td><code>"message":"Only superusers can perform this action.","status":403</code></td><td>Правило действия закрыто замком</td><td>Снять замок и оставить поле пустым или вписать условие</td></tr>
+              <tr><td><code>"message":"Failed to create record.","status":400</code> с пустым <code>data</code></td><td>Не выполнено условие Create rule</td><td>Проверить тело запроса: статус должен быть «Новая»</td></tr>
+              <tr><td><code>"title":{"code":"validation_required","message":"Cannot be blank."}</code></td><td>Обязательное поле пустое</td><td>Заполнить поле</td></tr>
+              <tr><td><code>"category":{"code":"validation_invalid_value","message":"Invalid value Кофемашина."}</code></td><td>Значения нет в вариантах поля Select</td><td>Отправить одно из значений списка; варианты сверить в настройках поля</td></tr>
+              <tr><td><code>"message":"The requested resource wasn't found.","status":404</code> при изменении или удалении</td><td>Запись не подходит под Update или Delete rule, или id неверный</td><td>Проверить тело запроса и статус записи</td></tr>
+              <tr><td><code>failed to upsert superuser account: password: Must be at least 8 character(s).</code></td><td>Пароль суперпользователя короче 8 символов</td><td>Придумать пароль длиннее</td></tr>
+              <tr><td>В браузере «Не удаётся получить доступ к сайту» на <code>localhost:8090</code></td><td>Контейнер PocketBase не запущен</td><td>Запустить Docker Desktop, <code>docker compose up -d</code> в папке <code>avtomatizaciya</code></td></tr>
+              <tr><td>Консоль не вставляет код, просит набрать <code>allow pasting</code></td><td>Защита Chrome от вставки чужого кода</td><td>Набрать <code>allow pasting</code> и нажать Enter</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s8"><span class="sec">§8</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Чем хранение заявок в PocketBase отличается от localStorage?</summary>
+          <p>localStorage принадлежит одному браузеру на одном компьютере. PocketBase — сервер: все браузеры обращаются к одной базе и видят одни и те же заявки.</p>
+        </details>
+        <details>
+          <summary>Что означают коллекция, запись и поле?</summary>
+          <p>Коллекция — набор однотипных записей (все заявки). Запись — одна заявка. Поле — графа записи: название, кабинет, статус.</p>
+        </details>
+        <details>
+          <summary>Зачем проверки в базе (Required, Select), если форма доски уже проверяет поля?</summary>
+          <p>Запрос к API можно отправить в обход формы — из консоли или другой программы. Проверки базы срабатывают для любого запроса.</p>
+        </details>
+        <details>
+          <summary>Чем пустое правило отличается от закрытого замком?</summary>
+          <p>Пустое правило разрешает действие всем. Закрытое — только суперпользователям.</p>
+        </details>
+        <details>
+          <summary>Что разрешает правило <code>status = "Готово"</code> в Delete rule?</summary>
+          <p>Удалять только записи, у которых в базе статус «Готово».</p>
+        </details>
+        <details>
+          <summary>Запретите в Update rule переводить заявку обратно в «Новая». Какое условие дописать?</summary>
+          <p><code>&amp;&amp; @request.body.status != "Новая"</code> — в запросе на изменение статус не может быть «Новая». <code>!=</code> означает «не равно».</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Запустить</b><code>docker compose up -d --build</code></div>
+          <div><b>Суперпользователь</b><code>docker compose exec pocketbase /pb/pocketbase superuser upsert ПОЧТА ПАРОЛЬ --dir=/pb/pb_data</code></div>
+          <div><b>Панель</b><code>http://localhost:8090/_/</code></div>
+          <div><b>Список записей</b><code>GET /api/collections/requests/records</code></div>
+          <div><b>Создать</b><code>POST /api/collections/requests/records</code></div>
+          <div><b>Изменить, удалить</b><code>PATCH</code>, <code>DELETE …/records/ID</code></div>
+          <div><b>Поле из запроса</b><code>@request.body.status</code></div>
+          <div><b>Поле есть в запросе</b><code>@request.body.title:isset</code></div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>PocketBase — бэкенд в одном файле: база данных, API, панель администратора и правила доступа. Он запускается в Docker по своему Dockerfile, база хранится в томе <code>pb_data</code>, суперпользователь создаётся командой внутри контейнера. Заявки хранятся в коллекции <code>requests</code>: поля повторяют тип <code>RequestItem</code>, Required и Select проверяют данные на сервере для любого запроса. Через API записи читают и меняют запросами GET, POST, PATCH и DELETE. У каждого действия своё правило: закрытое разрешает только суперпользователю, пустое — всем, условие проверяется для каждого запроса по полям записи и телу запроса <code>@request.body</code>. В коллекции пять заявок, правила не дают создать заявку сразу готовой, переписать чужую заявку и удалить незавершённую.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://pocketbase.io/docs/" target="_blank" rel="noreferrer">pocketbase.io — Introduction</a></li>
+          <li><a href="https://pocketbase.io/docs/collections/" target="_blank" rel="noreferrer">pocketbase.io — Collections</a></li>
+          <li><a href="https://pocketbase.io/docs/api-rules-and-filters/" target="_blank" rel="noreferrer">pocketbase.io — API rules and filters</a></li>
+          <li><a href="https://pocketbase.io/docs/api-records/" target="_blank" rel="noreferrer">pocketbase.io — API Records</a></li>
+          <li><a href="https://docs.docker.com/reference/dockerfile/" target="_blank" rel="noreferrer">docs.docker.com — Dockerfile reference</a></li>
+          <li><a href="https://github.com/pocketbase/pocketbase/releases" target="_blank" rel="noreferrer">github.com — PocketBase releases</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../21-effekty/index.html">← 2.1 Эффекты и когда они не нужны</a>
+          <a href="../../index.html">Оглавление →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

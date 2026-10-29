@@ -77,3 +77,7 @@ Dockerfile, n8n 2.45.4, Ollama + qwen2.5:3b из GGUF с Hugging Face; кноп�
 
 - 2.1 `temy/21-effekty` — заголовок вкладки, исчезающее сообщение (таймер + очистка), Esc через подписку на окно;
   опыты с журналом в консоли (StrictMode), пропущенная зависимость (exhaustive-deps), visible через эффект (set-state-in-effect).
+- 2.2 `temy/22-pocketbase` — PocketBase в Docker (свой Dockerfile, `code22/compose.yaml` = n8n + pocketbase), суперпользователь
+  командой `superuser upsert`, коллекция requests через панель, правила: list/view пусто, create `status = "Новая"`,
+  update без title/room/details (категорию можно править — ошибки модели), delete `status = "Готово"`; проверка из консоли.
+  Съёмка `tools/shots_22.py` (перед кадрами VS Code открыть App.tsx — иначе видны ошибки прошлого сеанса).
