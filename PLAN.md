@@ -55,7 +55,7 @@ React+Vite, PocketBase, n8n в Docker, Ollama / GigaChat, Telegram Bot API, GitH
   Пример варианта — `tools/proekt-obshchezhitie`.
 - Автоматизация А1 `temy/18-avtomatizaciya` — Docker + `compose.yaml` (n8n 2.45.4), бот @BotFather, getUpdates, шаблон процесса
   `tools/n8n/zayavka-telegram.json` вставляется Ctrl+V, Publish. Кадры `tools/shots_n8n.py` (токен из файла, номер чата размыт).
-  Кадры @BotFather и сообщения в Telegram — места `.shot-todo`, ждут снимков автора.
+  Кадры @BotFather (токен размыт) и сообщения бота — снимки автора, a00 и a17.
 - 1.6 `temy/16-formy` — категория в данных (`Category`, `NewRequest`), управляемые поля (`value` + `onChange`,
   опыт без `onChange`), отправка (`onSubmit`, `preventDefault`, `[created, ...requests]`, `Date.now()`),
   проверка полей с `trim()` и сообщением об ошибке. Тип события — `SubmitEvent` (`FormEvent` в @types/react помечен устаревшим).
