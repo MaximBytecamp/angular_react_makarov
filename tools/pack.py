@@ -123,3 +123,4 @@ if __name__ == "__main__":
         pack(state, target)
         if "--check" in sys.argv:
             check(target)
+    print("  дальше: ARCHIVE_PASSWORD=… python3 tools/lock.py — на сайт идут только .zip.enc")

@@ -565,6 +565,8 @@ details.more summary::before { content: "Подробнее · "; font: 600 10.5
 .starter--finish .starter__btn { background: var(--good); }
 .starter__btn:hover { color: #fff; transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--ink); }
 .starter__btn small { font: 500 12px/1 var(--mono); opacity: .85; white-space: nowrap; }
+.starter__lock { margin: -4px 0 12px; font-size: 14px; color: var(--ink-soft); }
+.starter__lock::before { content: "🔒 "; }
 .starter__steps { margin: 0 0 12px; padding-left: 22px; }
 .starter__steps li { margin-bottom: 8px; }
 .starter__body > .code { margin: 0 0 12px; }
@@ -669,3 +671,17 @@ details.more summary::before { content: "Подробнее · "; font: 600 10.5
 .obj > div { padding: 3px 9px; border-top: 1px solid var(--rule); }
 .obj > div.is-new { background: var(--ng-pale); }
 @media (max-width: 640px) { .obj-pair { grid-template-columns: 1fr; } .obj-pair > span { transform: rotate(90deg); } }
+
+/* Окно пароля для архива проекта (book.js, tools/lock.py) */
+.unlock { width: min(420px, calc(100vw - 32px)); padding: 0; border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--acc); background: var(--page); color: var(--ink); }
+.unlock::backdrop { background: rgba(22, 26, 46, .55); }
+.unlock form { padding: 0 0 16px; }
+.unlock__head { margin: 0 0 12px; padding: 9px 16px; background: var(--ink); color: var(--acc-pale); font: 600 10.5px/1.4 var(--pixel); letter-spacing: 1.2px; text-transform: uppercase; }
+.unlock__file { margin: 0 16px 10px; font: 600 14px/1.3 var(--mono); overflow-wrap: anywhere; }
+.unlock label { display: block; margin: 0 16px; font-size: 14px; color: var(--ink-soft); }
+.unlock input { display: block; width: 100%; margin-top: 6px; padding: 9px 10px; border: 2px solid var(--ink); background: #fff; color: var(--ink); font: 16px/1.3 var(--body); }
+.unlock__error { min-height: 1.4em; margin: 8px 16px; color: var(--ng); font-size: 14px; }
+.unlock__btns { display: flex; gap: 10px; margin: 0 16px; }
+.unlock button { padding: 8px 14px; border: 3px solid var(--ink); background: var(--page); color: var(--ink); font: 600 14px/1.3 var(--mono); cursor: pointer; }
+.unlock button[type="submit"] { background: var(--acc); color: #fff; box-shadow: 3px 3px 0 var(--ink); }
+.unlock button:disabled { opacity: .6; cursor: wait; }

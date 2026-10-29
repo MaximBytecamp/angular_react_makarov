@@ -3,7 +3,8 @@
    2. Переключатель фреймворка: React или Angular.
    3. Кнопка «копировать» у блоков кода.
    4. Подсветка шага цикла при наведении.
-   5. Пошаговый разбор кода (.trace). */
+   5. Пошаговый разбор кода (.trace).
+   6. Архив проекта по паролю (.zip → .zip.enc, tools/lock.py). */
 (() => {
   /* ---- Увеличение кадра ---------------------------------------- */
   const shots = [...document.querySelectorAll('.shot img')];
@@ -249,4 +250,93 @@
     trace.classList.add('is-live');
     show(0);
   });
+  /* ---- Архив проекта по паролю ---------------------------------- */
+  // На сайте лежит только зашифрованный файл имя.zip.enc. Пароль превращается в ключ так же,
+  // как в tools/lock.py: PBKDF2-SHA256, затем AES-GCM; расшифрованный архив сохраняется как .zip.
+  const archives = [...document.querySelectorAll('a[href$=".zip"]')];
+  if (archives.length) {
+    const ITER = 250000;
+    const box = document.createElement('dialog');
+    box.className = 'unlock';
+    box.innerHTML = '<form method="dialog">'
+      + '<p class="unlock__head">Архив по паролю</p>'
+      + '<p class="unlock__file"></p>'
+      + '<label>Пароль — его сообщает преподаватель'
+      + '<input type="password" autocomplete="off" required></label>'
+      + '<p class="unlock__error" aria-live="polite"></p>'
+      + '<div class="unlock__btns"><button type="submit" value="ok">Скачать</button>'
+      + '<button type="button" value="cancel">Отмена</button></div></form>';
+    document.body.appendChild(box);
+    const form = box.querySelector('form');
+    const input = box.querySelector('input');
+    const error = box.querySelector('.unlock__error');
+    const fileName = box.querySelector('.unlock__file');
+    const submit = box.querySelector('button[type="submit"]');
+    box.querySelector('button[value="cancel"]').addEventListener('click', () => box.close());
+    let link = null;
+    let saved = '';
+    try { saved = sessionStorage.getItem('archive-password') || ''; } catch (e) { /* без хранилища */ }
+
+    const unlock = async (url, password) => {
+      const response = await fetch(url + '.enc');
+      if (!response.ok) throw new Error('Файл архива не найден на сайте.');
+      const blob = new Uint8Array(await response.arrayBuffer());
+      const salt = blob.slice(4, 20);
+      const iv = blob.slice(20, 32);
+      const text = new TextEncoder().encode(password.trim().toLowerCase().normalize('NFC'));
+      const base = await crypto.subtle.importKey('raw', text, 'PBKDF2', false, ['deriveKey']);
+      const key = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: ITER },
+        base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+      try {
+        return await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, blob.slice(32));
+      } catch (e) {
+        throw new Error('Пароль не подошёл. Проверьте раскладку клавиатуры.');
+      }
+    };
+
+    const save = (data, name) => {
+      const url = URL.createObjectURL(new Blob([data], { type: 'application/zip' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    };
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      error.textContent = '';
+      submit.disabled = true;
+      submit.textContent = 'Расшифровка…';
+      try {
+        const data = await unlock(link.getAttribute('href'), input.value);
+        try { sessionStorage.setItem('archive-password', input.value); } catch (e) { /* без хранилища */ }
+        saved = input.value;
+        save(data, link.getAttribute('href').split('/').pop());
+        box.close();
+      } catch (e) {
+        error.textContent = e.message;
+        input.select();
+      } finally {
+        submit.disabled = false;
+        submit.textContent = 'Скачать';
+      }
+    });
+
+    archives.forEach(a => {
+      a.addEventListener('click', event => {
+        event.preventDefault();
+        link = a;
+        fileName.textContent = a.getAttribute('href').split('/').pop();
+        error.textContent = '';
+        input.value = saved;
+        box.showModal();
+        input.focus();
+        input.select();
+      });
+    });
+  }
 })();
