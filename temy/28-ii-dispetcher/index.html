@@ -57,6 +57,7 @@
           </ol>
         </nav>
 
+        <!-- скрыто: архив
         <div class="starter">
           <p class="starter__head">Готовые файлы для этой страницы</p>
           <div class="starter__body">
@@ -65,6 +66,7 @@
             <p class="starter__lock">Архив закрыт паролем. После нажатия на кнопку введите пароль — его сообщает преподаватель.</p>
           </div>
         </div>
+        -->
 
         <h2 id="s1"><span class="sec">§1</span>Как устроен ИИ-диспетчер</h2>
 
@@ -839,7 +841,7 @@ docker compose exec ollama sh -c 'printf "FROM /tmp/qwen.gguf\n" > /tmp/Modelfil
               <tr><td>Узел «Нажатия»: <code>"error_code":404,"description":"Not Found"</code></td><td>В адресе нет токена: файла <code>.env</code> нет или n8n запущен до его создания</td><td>Проверить <code>.env</code>, выполнить <code>docker compose up -d</code></td></tr>
               <tr><td>Узел «Нажатия»: ошибка о запрете доступа к <code>$env</code></td><td>Нет строки <code>N8N_BLOCK_ENV_ACCESS_IN_NODE=false</code></td><td>Сверить <code>compose.yaml</code>, выполнить <code>docker compose up -d</code></td></tr>
               <tr><td>Узел «Изменить сообщение»: <code>message is not modified</code></td><td>Кнопку нажали дважды</td><td>Ничего: настройка On Error → Continue пропускает эту ошибку</td></tr>
-              <tr><td>Кнопка нажата, а статус на доске не меняется</td><td>Процесс «Кнопка «Взять»» не опубликован, или на доске нет подписки из главы 2.5</td><td>Проверить публикацию и вкладку Executions; сверить проект с архивом главы 2.5</td></tr>
+              <tr><td>Кнопка нажата, а статус на доске не меняется</td><td>Процесс «Кнопка «Взять»» не опубликован, или на доске нет подписки из главы 2.5</td><td>Проверить публикацию и вкладку Executions; сверить проект с кодом главы 2.5</td></tr>
             </tbody>
           </table>
         </div>
