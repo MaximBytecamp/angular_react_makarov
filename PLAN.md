@@ -107,3 +107,20 @@ Dockerfile, n8n 2.45.4, Ollama + qwen2.5:3b из GGUF с Hugging Face; кноп�
   события, ИИ-диспетчер со своими категориями (процессы А2 правятся на месте: getUpdates отдаёт нажатие одному процессу).
   Пример «Общежитие»: `tools/proekt2-obshchezhitie` (отличия: Category, имя коллекции в api.ts/realtime.ts), коллекция
   obshchezhitie в PocketBase студента, съёмка `shots_p2.py`. Модуль 2 закончен.
+
+## Модуль 3
+
+Решения автора 30.10.2026: 3.1 Маршрутизация и 3.2 Контекст — на доске заявок; 3.3 GitHub Pages, 3.4 GitHub Actions, проект и
+автоматизация — на приложении «Мониторинг сайтов группы» (доске нужен PocketBase на localhost). Сначала прототип.
+
+Прототип — `tools/proto3` (рабочая копия /private/tmp/student/proto3/monitoring), репозиторий github.com/MaximBytecamp/monitoring-demo,
+сайт maximbytecamp.github.io/monitoring-demo/. react-router 8.5.1 (BrowserRouter с basename = BASE_URL, Routes/Route, вложенный
+маршрут с Outlet, NavLink, useParams), контекст в `monitoring.ts` + `MonitoringProvider.tsx` (без нарушения only-export-components),
+данные `public/data/sites.json` и `results.json` (30 последних проверок), Vite `base: '/monitoring-demo/'`.
+`scripts/check.mjs`: Playwright 1.64.1 (только headless shell) открывает сайты, Lighthouse 13.6.0 через порт отладки 9333 даёт
+скорость и доступность, при падении — сообщение в Telegram (секреты TELEGRAM_TOKEN, TELEGRAM_CHAT_ID).
+`deploy.yml` (push, workflow_dispatch, workflow_call; checkout ref: main; cp index.html 404.html) и `check.yml` (cron 0 21 * * * =
+00:00 МСК; коммит результатов от github-actions[bot]; затем `uses: ./.github/workflows/deploy.yml` — коммит GITHUB_TOKEN новые
+запуски не порождает). Замеры: проверка 6 сайтов локально 42 с, в Actions весь запуск 1 мин 41 с; прямая ссылка на Pages отдаёт код
+404 с приложением внутри (404.html) — для 3.3 сравнить с HashRouter. Версии действий: checkout@v7, setup-node@v7,
+upload-pages-artifact@v5, deploy-pages@v5.
