@@ -102,4 +102,8 @@ Dockerfile, n8n 2.45.4, Ollama + qwen2.5:3b из GGUF с Hugging Face; кноп�
   шаблоны `tools/n8n2/ii-dispetcher.json` (вебхук → модель с JSON-схемой → PATCH category → Telegram с кнопкой take:id)
   и `knopka-vzyat.json` (раз в 10 с getUpdates, offset = последний + 1, PATCH status, answerQuery, editMessageText,
   On Error → Continue от двойного нажатия). Замер модели: категория 4/6, срочность 6/6, ~2 с на заявку.
-  Съёмка `shots_28.py` (all / part2), снимки Telegram — от автора (b18–b20, имя размыто). Проект П2 ещё не написан.
+  Съёмка `shots_28.py` (all / part2), снимки Telegram — от автора (b18–b20, имя размыто).
+- Проект П2 `temy/29-proekt-doska-s-bazoy` — вариант П1 переезжает на PocketBase: своя коллекция с правилами 2.2, хук,
+  события, ИИ-диспетчер со своими категориями (процессы А2 правятся на месте: getUpdates отдаёт нажатие одному процессу).
+  Пример «Общежитие»: `tools/proekt2-obshchezhitie` (отличия: Category, имя коллекции в api.ts/realtime.ts), коллекция
+  obshchezhitie в PocketBase студента, съёмка `shots_p2.py`. Модуль 2 закончен.

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>Проект модуля 2 · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .check { margin: 18px 0; padding: 0; list-style: none; border: 3px solid var(--ink); background: var(--page); }
+    .check > li { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 9px 14px; border-top: 1px solid var(--rule); font-size: 15px; line-height: 1.5; }
+    .check > li:first-child { border-top: 0; }
+    .check > li::before { content: ""; width: 18px; height: 18px; margin-top: 2px; border: 2px solid var(--ink); background: #fff; }
+    .check > li > small { font: 600 11.5px/1.6 var(--mono); color: var(--ink-faint); white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 2 · Данные с сервера и ИИ-диспетчер</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 2 · проект</p>
+          <p class="running__folio">П2</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">П2</span>
+          <h1>Проект:<br>доска заявок с базой</h1>
+          <p class="lead">На этой странице — задание проекта модуля 2. В проекте модуля 1 студент сделал доску для своей службы колледжа: общежития, студсовета или своей. Заявки той доски жили в одном браузере. В проекте модуля 2 она переезжает на сервер: своя коллекция в PocketBase, загрузка с ошибкой и повтором, хук, обновление по событиям и ИИ-диспетчер со своими категориями. Ниже — требования, порядок работы на примере варианта «Общежитие», дополнительные задания, правила работы с ИИ и порядок защиты.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Режим ИИ</dt><dd>Р1 — ИИ объясняет, код пишет студент (глава 0.5)</dd></div>
+          <div><dt>Вариант</dt><dd>Тот же, что в проекте модуля 1</dd></div>
+          <div><dt>Основа</dt><dd>Проект <code>zayavki</code> после главы 2.5 и тексты своего варианта из проекта модуля 1</dd></div>
+          <div><dt>Сдаётся</dt><dd>Папка проекта, выгрузка двух процессов n8n, журнал работы с ИИ, защита у преподавателя</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>На этой странице</b>
+          <ol>
+            <li><a href="#s1">Что меняется по сравнению с проектом 1</a></li>
+            <li><a href="#s2">Обязательные требования</a></li>
+            <li><a href="#s3">Порядок работы</a></li>
+            <li><a href="#s4">Дополнительные задания</a></li>
+            <li><a href="#s5">Работа с ИИ</a></li>
+            <li><a href="#s6">Сдача и защита</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Что меняется по сравнению с проектом 1</h2>
+
+        <p>Тексты, поле места и категории варианта остаются прежними. Меняется место хранения заявок и всё, что из этого следует. В таблице — что было в проекте модуля 1 и что должно стать.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что</th><th>Проект модуля 1</th><th>Проект модуля 2</th><th>Глава</th></tr></thead>
+            <tbody>
+              <tr><td>Где хранятся заявки</td><td>localStorage одного браузера</td><td>Своя коллекция в PocketBase</td><td>2.2</td></tr>
+              <tr><td>Кто что может</td><td>Любой — что угодно</td><td>Правила: создать только новую, чужие тексты не менять, удалить только готовую</td><td>2.2</td></tr>
+              <tr><td>Начало работы доски</td><td>Список готов сразу</td><td>Загрузка, ошибка с кнопкой «Повторить», список</td><td>2.3</td></tr>
+              <tr><td>Код работы с данными</td><td>В <code>App.tsx</code></td><td>В хуке <code>useRequests</code></td><td>2.4</td></tr>
+              <tr><td>Изменения из другого окна</td><td>Не видны</td><td>Появляются без F5</td><td>2.5</td></tr>
+              <tr><td>Уведомление</td><td>Текст заявки в Telegram</td><td>Категория и срочность от модели, кнопка «Взять»</td><td>А2</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Так выглядит вариант «Общежитие» после переезда на PocketBase. Заявки, тексты и категории — из примера проекта модуля 1.</p>
+
+        <figure class="shot" style="max-width: 1106px"><img src="img/01-obshchezhitie.png" width="1100" height="900" alt="Доска Заявки в общежитие: поле Комната, категория Сантехника, карточки комн. 214 · Сантехника, комн. 308 · Электрика, комн. 112 · Мебель, комн. 4 этаж · Интернет" loading="lazy"><figcaption>Пример: вариант «Общежитие», заявки из коллекции obshchezhitie</figcaption></figure>
+
+        <h2 id="s2"><span class="sec">§2</span>Обязательные требования</h2>
+
+        <p>Работа принимается, если выполнены все пункты. Справа — глава, где разобран нужный механизм.</p>
+
+        <ul class="check">
+          <li><span>Шапка, форма, карточка и категории — своего варианта, как в проекте модуля 1</span><small>П1</small></li>
+          <li><span>Своя коллекция в PocketBase: поля как у <code>requests</code>, варианты категории — свои, обязательные поля отмечены Required</span><small>2.2</small></li>
+          <li><span>Правила коллекции как в главе 2.2: чтение всем, создать — только со статусом «Новая», изменить — без названия, места и подробностей, удалить — только «Готово»</span><small>2.2</small></li>
+          <li><span>В коллекции не меньше пяти своих заявок разных статусов</span><small>2.2</small></li>
+          <li><span>Список загружается из PocketBase, пока его нет — надпись о загрузке</span><small>2.3</small></li>
+          <li><span>Если PocketBase остановлен, на доске сообщение и кнопка «Повторить»; после запуска сервера кнопка загружает список</span><small>2.3</small></li>
+          <li><span>Добавление, смена статуса и удаление отправляются на сервер и сохраняются после F5</span><small>2.3</small></li>
+          <li><span>Код данных — в хуке <code>useRequests</code>; в <code>App.tsx</code> нет <code>fetch</code> и <code>useEffect</code> загрузки</span><small>2.4</small></li>
+          <li><span>Заявка, добавленная в одном окне, появляется в другом без F5 и без повторов</span><small>2.5</small></li>
+          <li><span>В проекте нет <code>localStorage</code> и файла <code>storage.ts</code></span><small>2.3</small></li>
+          <li><span>ИИ-диспетчер работает со своими категориями: категория от модели записывается в свою коллекцию, в Telegram приходит сообщение с кнопкой «Взять»</span><small>А2</small></li>
+          <li><span>Нажатие «Взять» переводит заявку своей коллекции в «В работе», доска показывает это без F5</span><small>А2</small></li>
+          <li><span><code>npm run build</code> и <code>npm run lint</code> проходят без ошибок и предупреждений</span><small>1.1</small></li>
+        </ul>
+
+        <h2 id="s3"><span class="sec">§3</span>Порядок работы</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Переносим свой вариант на сервер</p>
+
+        <ol class="steps">
+          <li><b>Возьмите основу</b><p>Скопируйте папку <code>zayavki</code> после главы 2.5 в новую, например <code>zayavki-obshchezhitie</code>, или распакуйте <a href="../25-obnovlenie-po-sobytiyam/zayavki-konec-2-5.zip">архив конца главы 2.5</a> (пароль сообщает преподаватель) и переименуйте папку. В новой папке выполните <code>npm install</code>. Остановите доску ИТ-отдела (<kbd>Ctrl</kbd>+<kbd>C</kbd> в её терминале) и запустите свою: <code>npm run dev</code>. Доска должна работать на порту 5173 — с этого адреса n8n принимает заявки.</p></li>
+          <li><b>Перенесите тексты варианта</b><p>Из своего проекта модуля 1 скопируйте <code>Header.tsx</code>, <code>RequestCard.tsx</code> и <code>RequestForm.tsx</code> в <code>src/components</code>. В <code>requests.ts</code> замените только тип <code>Category</code> на свои четыре категории: остальное в этом файле — из главы 2.5.</p>
+            <!--CODE tools/proekt2-obshchezhitie/requests.ts | src/requests.ts · строка 3 в варианте «Общежитие» | lines=3-3--><figure class="code"><figcaption><span>src/requests.ts · строка 3 в варианте «Общежитие»</span></figcaption><pre><span class="k">export</span> <span class="k">type</span> Category = <span class="s">'Сантехника'</span> | <span class="s">'Электрика'</span> | <span class="s">'Мебель'</span> | <span class="s">'Интернет'</span></pre></figure><!--/CODE--></li>
+          <li><b>Создайте коллекцию</b><p>В панели PocketBase создайте коллекцию с именем своего варианта латиницей, например <code>obshchezhitie</code>, так же, как <code>requests</code> в главе 2.2 §3. В поле <code>category</code> впишите свои четыре категории. Настройте пять правил, как в главе 2.2 §5, и добавьте пять заявок разных статусов.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/03-kollekciya.png" width="1280" height="800" alt="Панель PocketBase: коллекция obshchezhitie рядом с requests, пять заявок общежития" loading="lazy"><figcaption>Коллекция obshchezhitie в панели PocketBase</figcaption></figure></li>
+          <li><b>Подключите доску к своей коллекции</b><p>Имя коллекции записано в двух файлах. Замените <code>requests</code> на имя своей коллекции в <code>api.ts</code> (строка 3) и <code>realtime.ts</code> (строка 12).</p>
+            <!--CODE tools/proekt2-obshchezhitie/api.ts | src/api.ts · строка 3 | lines=3-3--><figure class="code"><figcaption><span>src/api.ts · строка 3</span></figcaption><pre><span class="k">const</span> API_URL = <span class="s">'http://localhost:8090/api/collections/obshchezhitie/records'</span></pre></figure><!--/CODE-->
+            <!--CODE tools/proekt2-obshchezhitie/realtime.ts | src/realtime.ts · строка 12 | lines=12-12--><figure class="code"><figcaption><span>src/realtime.ts · строка 12</span></figcaption><pre>  <span class="k">const</span> pending = pb.<span class="f">collection</span>(<span class="s">'obshchezhitie'</span>).subscribe&lt;RequestItem&gt;(<span class="s">'*'</span>, onEvent)</pre></figure><!--/CODE--></li>
+          <li><b>Проверьте два окна</b><p>Обновите страницу: на доске заявки своей коллекции. Откройте второе окно и добавьте заявку в первом — она должна появиться в обоих по одному разу.</p>
+            <figure class="shot" style="max-width: 1298px"><img src="img/02-dva-okna.png" width="1292" height="680" alt="Два окна доски общежития: в обоих сверху Не закрывается окно, комн. 215 · Мебель" loading="lazy"><figcaption>Заявка из окна 1 появилась в окне 2</figcaption></figure></li>
+          <li><b>Проверьте ошибку</b><p>Остановите PocketBase (<code>docker compose stop pocketbase</code>), обновите доску — должны появиться сообщение и кнопка «Повторить». Запустите PocketBase (<code>docker compose start pocketbase</code>) и нажмите «Повторить».</p></li>
+          <li><b>Настройте ИИ-диспетчер</b><p>В n8n откройте процесс «ИИ-диспетчер». В узле <strong>Модель</strong> замените категории в двух местах: в тексте инструкции (<code>role: 'system'</code>) и в списке <code>enum</code>. Замените подпись «Кабинет» в узле <strong>Telegram</strong> на своё поле места. В узле <strong>Категория в базу</strong> замените <code>requests</code> в адресе на имя своей коллекции. Сохраните и опубликуйте процесс заново.</p></li>
+          <li><b>Настройте кнопку «Взять»</b><p>В процессе «Кнопка «Взять»» в узле <strong>Статус в базу</strong> замените <code>requests</code> в адресе на имя своей коллекции. Сохраните и опубликуйте.</p></li>
+          <li><b>Проверьте весь путь</b><p>Добавьте заявку с доски, дождитесь сообщения бота, нажмите «Взять» и проверьте статус на доске. Пройдите список из §2 по порядку. Во втором терминале выполните <code>npm run build</code> и <code>npm run lint</code>.</p></li>
+        </ol>
+
+        <div class="margin-note">
+          <b>Почему процессы правятся на месте</b>
+          <p>Нажатия кнопок забирает из Telegram только один процесс: <code>getUpdates</code> отдаёт каждое нажатие один раз, тому, кто первым спросил. Если опубликованы два процесса «Кнопка «Взять»» с одним ботом, нажатия случайно достаются то одному, то другому. Поэтому для своего варианта правятся процессы со страницы автоматизации, а копии не создаются.</p>
+        </div>
+
+        <h2 id="s4"><span class="sec">§4</span>Дополнительные задания</h2>
+
+        <p>Задания выполняются по выбору; сколько их нужно для какой оценки, сообщает преподаватель.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Задание</th><th>Что получится</th><th>Подсказка</th></tr></thead>
+            <tbody>
+              <tr><td>Срочные заявки</td><td>Карточки, которые модель назвала срочными, выделены рамкой</td><td>Поле <code>urgent</code> типа Bool в коллекции; в узле «Категория в базу» отправлять <code>{ category, urgent }</code>; в карточке класс по условию (глава 1.5). Правило Update менять не нужно: оно запрещает только title, room, details</td></tr>
+              <tr><td>Кто взял</td><td>На карточке «Взял: имя мастера»</td><td>Поле <code>master</code> типа Plain text; в узле «Статус в базу» отправлять ещё <code>master</code> из узла «Кто и что нажал»</td></tr>
+              <tr><td>Время заявки</td><td>На карточке «создана 30.10 в 07:25»</td><td>Поле <code>created</code> приходит в каждой записи; добавить его в тип и вывести через <code>new Date(created).toLocaleString('ru')</code></td></tr>
+              <tr><td>Поиск по названию</td><td>Над списком поле, список сужается по мере ввода</td><td>Как в проекте модуля 1: управляемое поле и условие в <code>visible</code></td></tr>
+              <tr><td>Опрос вместо событий</td><td>Сравнение двух способов из главы 2.5 на своей доске</td><td>Во втором эффекте <code>setInterval</code> раз в 10 секунд меняет <code>attempt</code>; в Network сравнить число запросов за минуту с подпиской</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s5"><span class="sec">§5</span>Работа с ИИ</h2>
+
+        <p>Проект выполняется в режиме Р1 из главы 0.5, как проект модуля 1: ИИ объясняет, код пишет студент, автодополнение ИИ в редакторе отключено. Журнал <code>ai-log.md</code> ведётся так же. Токен бота, номер чата и пароль суперпользователя PocketBase в чат ИИ не вставляются.</p>
+
+        <p>Модель qwen2.5:3b в автоматизации — часть продукта, её ответы в журнал не пишутся. В журнал записывается, если менялась инструкция модели: что было, что стало и сколько заявок из проверочных она после этого разобрала верно.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Сдача и защита</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Готовим работу к сдаче</p>
+
+        <ol class="steps">
+          <li><b>Проверьте сборку</b><p>Во втором терминале выполните обе команды. Ошибок и предупреждений быть не должно.</p>
+            <figure class="code"><figcaption><span>Терминал · папка проекта</span></figcaption><pre>npm run build
+npm run lint</pre></figure></li>
+          <li><b>Проверьте, что секретов нет в коде</b><p>В VS Code нажмите <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> и найдите в папке проекта начало своего токена и пароль суперпользователя PocketBase. Совпадений быть не должно.</p></li>
+          <li><b>Выгрузите процессы n8n</b><p>Откройте каждый из двух процессов, нажмите <strong>…</strong> рядом с названием и выберите <strong>Export JSON</strong>. n8n сохранит файл процесса. Учётные данные бота в файл не попадают, номер чата — попадает: перед сдачей сотрите его в файле «ИИ-диспетчера» (поле <code>chatId</code>).</p></li>
+          <li><b>Соберите архив</b><p>Удалите папки <code>node_modules</code> и <code>dist</code>. Упакуйте папку проекта вместе с <code>ai-log.md</code> и двумя файлами процессов. Файл <code>.env</code> из папки <code>avtomatizaciya</code> в архив не кладётся.</p></li>
+          <li><b>Приложите снимки</b><p>Снимок сообщения бота с кнопкой и снимок после нажатия «Взять».</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как проходит защита</p>
+
+        <p>На защите студент запускает PocketBase, n8n и доску на своём компьютере и проходит список из §2: два окна, остановленный сервер, сообщение бота, нажатие кнопки. Затем преподаватель указывает на строки кода и спрашивает, что они делают и почему так написаны. Ответ «так написал ИИ» оценивается как отсутствие ответа. Примеры вопросов:</p>
+        <ul>
+          <li>Что ответит PocketBase, если отправить заявку со статусом «Готово», и какое правило за это отвечает?</li>
+          <li>Зачем в эффекте загрузки флажок <code>ignore</code>? Что было бы без него?</li>
+          <li>Почему <code>setLoading(false)</code> стоит после <code>try</code> и <code>catch</code>, а не внутри <code>try</code>?</li>
+          <li>Что изменится, если вызвать <code>useRequests</code> ещё и в шапке?</li>
+          <li>Почему своя новая заявка не появляется на доске дважды?</li>
+          <li>Зачем запросу к модели JSON-схема и что будет без неё?</li>
+          <li>Почему нажатия кнопки обрабатываются раз в 10 секунд, а не сразу?</li>
+          <li>Модель поставила неверную категорию. Что сделает мастер и увидит ли это студент, который отправил заявку?</li>
+        </ul>
+
+        <div class="pager">
+          <a href="../28-ii-dispetcher/index.html">← Автоматизация: ИИ-диспетчер</a>
+          <a href="../../index.html">Оглавление →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>
