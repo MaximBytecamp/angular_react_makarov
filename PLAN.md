@@ -96,3 +96,10 @@ Dockerfile, n8n 2.45.4, Ollama + qwen2.5:3b из GGUF с Hugging Face; кноп�
   (ответ POST + событие create, предупреждение о ключах) → `upsertRequest` в `requests.ts`; правка категории в панели доходит до доски;
   поток во вкладке Network → realtime → EventStream. Код `tools/code25` (+ package.json/lock с библиотекой: pack.py принимает ключи
   `/package.json`), съёмка `shots_25.py` (пары окон рядом; DevTools открывать до второго окна), обрезка `crop_25.py`.
+
+- Автоматизация А2 `temy/28-ii-dispetcher` — Ollama 0.40.12 в `code28/compose.yaml` (+ `TELEGRAM_TOKEN` из `.env`,
+  `N8N_BLOCK_ENV_ACCESS_IN_NODE=false`), модель qwen2.5:3b (запасной путь — GGUF с Hugging Face + `ollama create`),
+  шаблоны `tools/n8n2/ii-dispetcher.json` (вебхук → модель с JSON-схемой → PATCH category → Telegram с кнопкой take:id)
+  и `knopka-vzyat.json` (раз в 10 с getUpdates, offset = последний + 1, PATCH status, answerQuery, editMessageText,
+  On Error → Continue от двойного нажатия). Замер модели: категория 4/6, срочность 6/6, ~2 с на заявку.
+  Съёмка `shots_28.py` (all / part2), снимки Telegram — от автора (b18–b20, имя размыто). Проект П2 ещё не написан.

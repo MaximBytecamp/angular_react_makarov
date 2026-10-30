@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>Автоматизация модуля 2 · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; stroke-dasharray: 6 4; }
+    .sch .ng-text { fill: #C2185B; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 2 · Данные с сервера и ИИ-диспетчер</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 2 · автоматизация</p>
+          <p class="running__folio">А2</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">А2</span>
+          <h1>ИИ-диспетчер<br>и кнопка «Взять»</h1>
+          <p class="lead">На этой странице заявку с доски разбирает языковая модель, которая работает на вашем компьютере. Модель определяет категорию и срочность и пишет короткое описание. n8n записывает категорию в PocketBase и присылает мастеру сообщение в Telegram с кнопкой «Взять». По нажатию кнопки заявка переходит в работу, и доска показывает это без обновления страницы — подпиской из главы 2.5. В конце страницы проверено, как часто модель ошибается, и разобрано, что с этим делать.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>Автоматизация, языковая модель</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Папка <code>avtomatizaciya</code> после главы 2.2, бот Telegram и его токен со страницы «Автоматизация» модуля 1, проект <code>zayavki</code> после главы 2.5, около 10 ГБ свободного места на диске и 8 ГБ оперативной памяти</dd></div>
+          <div><dt>Результат</dt><dd>Заявка с доски получает категорию от модели и приходит в Telegram с кнопкой; нажатие «Взять» переводит её в работу на доске</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>На этой странице</b>
+          <ol>
+            <li><a href="#s1">Как устроен ИИ-диспетчер</a></li>
+            <li><a href="#s2">Ollama и модель</a></li>
+            <li><a href="#s3">Процесс «ИИ-диспетчер»</a></li>
+            <li><a href="#s4">Процесс «Кнопка «Взять»»</a></li>
+            <li><a href="#s5">Проверка: от заявки до нажатия</a></li>
+            <li><a href="#s6">Частые ошибки</a></li>
+            <li><a href="#s7">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <div class="starter">
+          <p class="starter__head">Готовые файлы для этой страницы</p>
+          <div class="starter__body">
+            <p>В архиве папка <code>avtomatizaciya</code> в состоянии конца страницы: <code>compose.yaml</code> с n8n, PocketBase и Ollama, <code>pocketbase/Dockerfile</code>, образец <code>.env.example</code> и два шаблона процессов для вставки в n8n. Распакуйте её в <code>react-kurs</code> вместо прежней: данные n8n, PocketBase и модель хранятся в томах Docker и при замене файлов не пропадают. Проект доски после главы 2.5 — в <a href="../25-obnovlenie-po-sobytiyam/zayavki-konec-2-5.zip">архиве главы 2.5</a>.</p>
+            <a class="starter__btn" href="avtomatizaciya-a2.zip" download>avtomatizaciya-a2.zip <small>5 КБ</small></a>
+            <p class="starter__lock">Архив закрыт паролем. После нажатия на кнопку введите пароль — его сообщает преподаватель.</p>
+          </div>
+        </div>
+
+        <h2 id="s1"><span class="sec">§1</span>Как устроен ИИ-диспетчер</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Кто что делает</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В большом ИТ-отделе заявки сначала читает диспетчер. Он исправляет категорию, если автор ошибся, помечает срочные и пересказывает суть в одной строке. Потом раздаёт заявки мастерам, и мастер отвечает «беру». Мастеру не нужно читать длинный текст, чтобы понять, его ли это работа.</p>
+          <p class="miss">Диспетчер-человек переспросит автора, если не понял заявку. Модель не переспрашивает: она отвечает всегда, в том числе когда ошибается. Поэтому её ответ — подсказка, и категорию на доске можно исправить.</p>
+        </div></div>
+
+        <p>Новые инструменты этой страницы:</p>
+        <ul>
+          <li><span class="term">Языковая модель</span> — программа, которая по тексту запроса продолжает текст ответа. Её обучили на больших объёмах текстов, поэтому она умеет пересказывать и раскладывать текст по категориям. Модель, которую используем, называется qwen2.5:3b: «3b» — три миллиарда параметров, это маленькая модель. Её файл занимает 2,1 ГБ, и она работает без видеокарты.</li>
+          <li><span class="term">Ollama</span> — программа, которая запускает языковые модели на своём компьютере и даёт к ним API по адресу <code>http://localhost:11434</code>. Запросы к модели не уходят в интернет, данные заявок остаются у вас, и это бесплатно.</li>
+          <li><span class="term">Кнопка под сообщением</span> (inline-кнопка) — кнопка, которую бот прикрепляет к своему сообщению в Telegram. При нажатии Telegram сохраняет у себя событие «нажата кнопка» с короткой строкой данных, например <code>take:ID заявки</code>.</li>
+        </ul>
+
+        <p>Автоматизация состоит из двух процессов n8n. Первый запускается заявкой с доски, второй — нажатием кнопки. На схеме — оба пути.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Два процесса: заявка → модель → Telegram и кнопка → база → доска</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 330" role="img" aria-label="Процесс ИИ-диспетчер: доска отправляет заявку на вебхук n8n, n8n спрашивает модель в Ollama, записывает категорию в PocketBase и отправляет сообщение с кнопкой в Telegram. Процесс Кнопка Взять: раз в 10 секунд n8n забирает нажатия из Telegram, меняет статус в PocketBase, и доска получает событие">
+              <text class="mono" x="20" y="24">процесс «ИИ-диспетчер»</text>
+              <rect x="20" y="40" width="120" height="56" fill="#D6F0F9"/><text class="mono" x="32" y="64">доска</text><text class="soft" x="32" y="84">заявка</text>
+              <rect x="190" y="40" width="120" height="56" fill="#ffffff"/><text class="mono" x="202" y="64">n8n</text><text class="soft" x="202" y="84">вебхук</text>
+              <rect x="360" y="40" width="120" height="56" fill="#161A2E"/><text class="mono on-dark" x="372" y="64">Ollama</text><text class="soft" x="372" y="84" style="fill:#c8d0e0">qwen2.5:3b</text>
+              <rect x="530" y="40" width="210" height="56" fill="#ffffff"/><text class="mono" x="542" y="64">PocketBase</text><text class="soft" x="542" y="84">category ← ответ модели</text>
+              <rect x="530" y="120" width="210" height="56" fill="#D4EEDF"/><text class="mono" x="542" y="144">Telegram</text><text class="soft" x="542" y="164">сообщение + «Взять»</text>
+              <path d="M140 68 H 182"/><path d="M174 62 L 182 68 L 174 74"/>
+              <path d="M310 68 H 352"/><path d="M344 62 L 352 68 L 344 74"/>
+              <path d="M480 68 H 522"/><path d="M514 62 L 522 68 L 514 74"/>
+              <path d="M635 96 V 112"/><path d="M629 104 L 635 112 L 641 104"/>
+              <text class="mono" x="300" y="214">процесс «Кнопка «Взять»»</text>
+              <rect x="530" y="230" width="210" height="56" fill="#D4EEDF"/><text class="mono" x="542" y="254">Telegram</text><text class="soft" x="542" y="274">мастер нажал «Взять»</text>
+              <rect x="300" y="230" width="180" height="56" fill="#ffffff"/><text class="mono" x="312" y="254">n8n</text><text class="soft" x="312" y="274">раз в 10 с: нажатия?</text>
+              <rect x="20" y="230" width="230" height="56" fill="#ffffff"/><text class="mono" x="32" y="254">PocketBase</text><text class="soft" x="32" y="274">status ← «В работе»</text>
+              <path class="ng" d="M530 258 H 488"/><path d="M496 252 L 488 258 L 496 264" style="stroke:#C2185B"/>
+              <text class="soft ng-text" x="482" y="306">n8n сам спрашивает Telegram</text>
+              <path d="M300 258 H 258"/><path d="M266 252 L 258 258 L 266 264"/>
+              <path d="M80 230 V 104"/><path d="M74 112 L 80 104 L 86 112"/><text class="soft" x="90" y="170">событие update (глава 2.5)</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Чёрные стрелки — запросы, которые отправляет n8n. Пунктир — нажатия: Telegram не может сам постучаться в n8n на вашем компьютере, поэтому n8n раз в 10 секунд забирает их сам. Стрелка вверх слева — событие PocketBase, по которому доска меняет статус без F5.</p>
+        </figure>
+
+        <p>Почему кнопки обрабатываются опросом. Telegram умеет сам отправлять нажатия по адресу, но только на публичный адрес в интернете с HTTPS. У n8n на вашем компьютере такого адреса нет: <code>localhost</code> виден только с этого компьютера. Поэтому n8n раз в 10 секунд сам запрашивает у Telegram новые нажатия методом <code>getUpdates</code> — тем же, которым в модуле 1 узнавали номер чата. Это опрос из главы 2.5, и у него тот же недостаток: нажатие обрабатывается с задержкой до 10 секунд.</p>
+
+        <p class="bridge">Начнём с модели: её нужно запустить и скачать.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Ollama и модель</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Запускаем Ollama и скачиваем модель</p>
+
+        <ol class="steps">
+          <li><b>Дополните compose.yaml</b><p>Замените содержимое <code>avtomatizaciya/compose.yaml</code>. Добавленные строки подсвечены: служба <code>ollama</code>, её том и две переменные окружения для n8n.</p>
+            <!--CODE tools/code28/compose.yaml | avtomatizaciya/compose.yaml | mark=10-11,22-27,32--><figure class="code"><figcaption><span>avtomatizaciya/compose.yaml</span></figcaption><pre>services:
+  n8n:
+    image: n8nio/n8n:<span class="n">2.45</span>.<span class="n">4</span>
+    ports:
+      - <span class="s">"5678:5678"</span>
+    environment:
+      - GENERIC_TIMEZONE=Europe/Moscow
+      - <span class="a">TZ</span>=Europe/Moscow
+      - N8N_DEFAULT_LOCALE=en
+<span class="hl">      - N8N_BLOCK_ENV_ACCESS_IN_NODE=<span class="k">false</span></span>
+<span class="hl">      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}</span>
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+  pocketbase:
+    build: ./pocketbase
+    ports:
+      - <span class="s">"8090:8090"</span>
+    volumes:
+      - pb_data:/pb/pb_data
+
+<span class="hl">  ollama:</span>
+<span class="hl">    image: ollama/ollama:<span class="n">0.40</span>.<span class="n">12</span></span>
+<span class="hl">    ports:</span>
+<span class="hl">      - <span class="s">"11434:11434"</span></span>
+<span class="hl">    volumes:</span>
+<span class="hl">      - ollama_data:/root/.ollama</span>
+
+volumes:
+  n8n_data:
+  pb_data:
+<span class="hl">  ollama_data:</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/b01-compose.png" width="1240" height="780" alt="VS Code: compose.yaml со службами n8n, pocketbase и ollama, у n8n переменные N8N_BLOCK_ENV_ACCESS_IN_NODE и TELEGRAM_TOKEN" loading="lazy"><figcaption>compose.yaml: три службы</figcaption></figure></li>
+          <li><b>Создайте файл .env</b><p>В папке <code>avtomatizaciya</code> создайте файл <code>.env</code> (с точкой в начале, без расширения). Впишите одну строку: после знака <code>=</code> — токен вашего бота от @BotFather из модуля 1, без пробелов и кавычек.</p>
+            <figure class="code"><figcaption><span>avtomatizaciya/.env</span></figcaption><pre>TELEGRAM_TOKEN=ваш-токен-от-BotFather</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/b02-env.png" width="1240" height="780" alt="VS Code: файл .env в папке avtomatizaciya со строкой TELEGRAM_TOKEN= и образцом токена" loading="lazy"><figcaption>Файл .env рядом с compose.yaml. На кадре — образец вместо токена</figcaption></figure></li>
+          <li><b>Запустите службы</b><p>В терминале VS Code перейдите в папку и выполните команды. Docker скачает образ Ollama (на диске он занимает около 7 ГБ) и пересоздаст контейнер n8n с новыми переменными.</p>
+            <figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>cd avtomatizaciya
+docker compose up -d
+docker compose ps</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/b03-compose-up.png" width="1240" height="390" alt="Терминал: docker compose ps показывает avtomatizaciya-n8n-1, avtomatizaciya-ollama-1, avtomatizaciya-pocketbase-1 в состоянии Up" loading="lazy"><figcaption>Три контейнера работают: n8n, Ollama, PocketBase</figcaption></figure></li>
+          <li><b>Скачайте модель</b><p>Выполните команду. Модель занимает 2,1 ГБ, загрузка идёт несколько минут; терминал показывает проценты.</p>
+            <figure class="code"><figcaption><span>Терминал · папка avtomatizaciya</span></figcaption><pre>docker compose exec ollama ollama pull qwen2.5:3b</pre></figure>
+            <details class="more">
+              <summary>Если загрузка обрывается или не начинается</summary>
+              <p>Файлы моделей Ollama раздаются с серверов, которые бывают недоступны из российских сетей. Тогда модель ставится из файла с сайта Hugging Face. Откройте в браузере страницу <a href="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/tree/main" target="_blank" rel="noreferrer">Qwen2.5-3B-Instruct-GGUF</a> и скачайте файл <code>qwen2.5-3b-instruct-q4_k_m.gguf</code> (2,1 ГБ). Положите его в папку <code>avtomatizaciya</code> и выполните две команды: первая копирует файл в контейнер, вторая регистрирует модель под именем <code>qwen2.5:3b</code> и удаляет копию.</p>
+              <figure class="code"><figcaption><span>Терминал · папка avtomatizaciya</span></figcaption><pre>docker compose cp qwen2.5-3b-instruct-q4_k_m.gguf ollama:/tmp/qwen.gguf
+docker compose exec ollama sh -c 'printf "FROM /tmp/qwen.gguf\n" > /tmp/Modelfile && ollama create qwen2.5:3b -f /tmp/Modelfile && rm /tmp/qwen.gguf'</pre></figure>
+              <p>После этого файл в папке <code>avtomatizaciya</code> можно удалить: модель хранится в томе <code>ollama_data</code>.</p>
+            </details></li>
+          <li><b>Проверьте список моделей</b><p>Выполните команду. В списке — <code>qwen2.5:3b</code>.</p>
+            <figure class="code"><figcaption><span>Терминал · папка avtomatizaciya</span></figcaption><pre>docker compose exec ollama ollama list</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/b04-ollama-list.png" width="1240" height="156" alt="Терминал: ollama list показывает qwen2.5:3b размером 2.1 GB" loading="lazy"><figcaption>Модель qwen2.5:3b установлена</figcaption></figure></li>
+          <li><b>Задайте модели вопрос</b><p>Команда <code>ollama run</code> отправляет модели текст и печатает ответ. Первый ответ занимает несколько секунд: модель загружается в память.</p>
+            <figure class="code"><figcaption><span>Терминал · папка avtomatizaciya</span></figcaption><pre>docker compose exec ollama ollama run qwen2.5:3b "Одним словом: к какой категории относится заявка «не включается проектор» — Компьютер, Проектор, Принтер или Интернет?"</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/b05-ollama-run.png" width="1240" height="218" alt="Терминал: ollama run qwen2.5:3b с вопросом о категории, ответ модели" loading="lazy"><figcaption>Модель отвечает в терминале</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что добавилось в compose.yaml и зачем .env</p>
+
+        <ul>
+          <li><b>Служба <code>ollama</code></b> — готовый образ от авторов Ollama, версия закреплена. Порт 11434 открыт для проверки из браузера и терминала. n8n обращается к модели внутри Docker по имени службы: <code>http://ollama:11434</code>, как к PocketBase — <code>http://pocketbase:8090</code>.</li>
+          <li><b>Том <code>ollama_data</code></b> хранит скачанные модели. Без него модель пришлось бы качать заново после каждого пересоздания контейнера.</li>
+          <li><b><code>TELEGRAM_TOKEN=${TELEGRAM_TOKEN}</code></b> — переменная окружения для n8n. Запись <code>${…}</code> Docker заменяет значением из файла <code>.env</code> в той же папке. Второму процессу токен нужен в адресе запроса к Telegram, и он прочитает его отсюда.</li>
+          <li><b><code>N8N_BLOCK_ENV_ACCESS_IN_NODE=false</code></b> — разрешение узлам n8n читать переменные окружения. В n8n 2.x доступ к ним по умолчанию закрыт.</li>
+        </ul>
+
+        <p>Токен вынесен в <code>.env</code>, чтобы его не было в <code>compose.yaml</code>. Файл <code>compose.yaml</code> можно показать преподавателю или выложить в репозиторий. Файл <code>.env</code> — нельзя: в нём пароль бота. Если папка <code>avtomatizaciya</code> попадает в Git, допишите строку <code>.env</code> в <code>.gitignore</code>.</p>
+
+        <p class="bridge">Модель отвечает. Теперь её можно вызвать из процесса n8n.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Процесс «ИИ-диспетчер»</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Вставляем первый шаблон</p>
+
+        <ol class="steps">
+          <li><b>Снимите с публикации процесс модуля 1</b><p>Откройте n8n <code>http://localhost:5678</code> и процесс «Заявка → Telegram». Нажмите стрелку справа от кнопки <strong>Publish</strong> и выберите <strong>Unpublish</strong>. Новый процесс будет принимать заявки на тот же адрес вебхука <code>/webhook/zayavka</code>, а один адрес может слушать только один опубликованный процесс.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/b06-unpublish.png" width="1280" height="800" alt="n8n: процесс Заявка → Telegram, открыто меню рядом с Publish с пунктами Publish, View timeline, Unpublish" loading="lazy"><figcaption>Пункт Unpublish в меню рядом с Publish</figcaption></figure></li>
+          <li><b>Вставьте шаблон</b><p>На главной странице n8n создайте новый процесс (<strong>+</strong> слева вверху → <strong>Workflow</strong>). Скопируйте шаблон ниже целиком, щёлкните по пустому холсту и нажмите <kbd>Ctrl</kbd>+<kbd>V</kbd>. Если n8n спросит «Pasting this from an AI tool?», нажмите <strong>Skip</strong>. Сохраните: <kbd>Ctrl</kbd>+<kbd>S</kbd>.</p>
+            <!--CODE tools/n8n2/ii-dispetcher.json | Шаблон процесса «ИИ-диспетчер»--><figure class="code"><figcaption><span>Шаблон процесса «ИИ-диспетчер»</span></figcaption><pre>{
+  <span class="s">"name"</span>: <span class="s">"ИИ-диспетчер"</span>,
+  <span class="s">"nodes"</span>: [
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"httpMethod"</span>: <span class="s">"POST"</span>,
+        <span class="s">"path"</span>: <span class="s">"zayavka"</span>,
+        <span class="s">"options"</span>: {
+          <span class="s">"allowedOrigins"</span>: <span class="s">"http://localhost:5173"</span>
+        }
+      },
+      <span class="s">"name"</span>: <span class="s">"Webhook"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.webhook"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">2.1</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">0</span>,
+        <span class="n">0</span>
+      ],
+      <span class="s">"webhookId"</span>: <span class="s">"zayavka"</span>
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"method"</span>: <span class="s">"POST"</span>,
+        <span class="s">"url"</span>: <span class="s">"http://ollama:11434/api/chat"</span>,
+        <span class="s">"sendBody"</span>: <span class="k">true</span>,
+        <span class="s">"specifyBody"</span>: <span class="s">"json"</span>,
+        <span class="s">"jsonBody"</span>: <span class="s">"={{ {\n  model: 'qwen2.5:3b',\n  stream: false,\n  format: {\n    type: 'object',\n    properties: {\n      category: { type: 'string', enum: ['Компьютер', 'Проектор', 'Принтер', 'Интернет'] },\n      urgent: { type: 'boolean' },\n      summary: { type: 'string' }\n    },\n    required: ['category', 'urgent', 'summary']\n  },\n  messages: [\n    { role: 'system', content: 'Ты диспетчер ИТ-отдела колледжа. По заявке определи категорию (Компьютер, Проектор, Принтер, Интернет), срочность и напиши краткое описание до 12 слов. Срочно — если срывается занятие или экзамен, пропал интернет у целого кабинета или есть риск для безопасности. Отвечай только JSON.' },\n    { role: 'user', content: 'Что случилось: ' + $json.body.title + '\\nКабинет: ' + $json.body.room + '\\nКатегория от автора: ' + $json.body.category + '\\nПодробности: ' + $json.body.details }\n  ]\n} }}"</span>,
+        <span class="s">"options"</span>: {
+          <span class="s">"timeout"</span>: <span class="n">120000</span>
+        }
+      },
+      <span class="s">"name"</span>: <span class="s">"Модель"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.httpRequest"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">4.2</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">220</span>,
+        <span class="n">0</span>
+      ]
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"assignments"</span>: {
+          <span class="s">"assignments"</span>: [
+            {
+              <span class="s">"id"</span>: <span class="s">"a1"</span>,
+              <span class="s">"name"</span>: <span class="s">"id"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ $('Webhook').item.json.body.id }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"string"</span>
+            },
+            {
+              <span class="s">"id"</span>: <span class="s">"a2"</span>,
+              <span class="s">"name"</span>: <span class="s">"title"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ $('Webhook').item.json.body.title }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"string"</span>
+            },
+            {
+              <span class="s">"id"</span>: <span class="s">"a3"</span>,
+              <span class="s">"name"</span>: <span class="s">"room"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ $('Webhook').item.json.body.room }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"string"</span>
+            },
+            {
+              <span class="s">"id"</span>: <span class="s">"a4"</span>,
+              <span class="s">"name"</span>: <span class="s">"category"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ JSON.parse($json.message.content).category }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"string"</span>
+            },
+            {
+              <span class="s">"id"</span>: <span class="s">"a5"</span>,
+              <span class="s">"name"</span>: <span class="s">"urgent"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ JSON.parse($json.message.content).urgent }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"boolean"</span>
+            },
+            {
+              <span class="s">"id"</span>: <span class="s">"a6"</span>,
+              <span class="s">"name"</span>: <span class="s">"summary"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ JSON.parse($json.message.content).summary }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"string"</span>
+            }
+          ]
+        },
+        <span class="s">"options"</span>: {}
+      },
+      <span class="s">"name"</span>: <span class="s">"Ответ модели"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.set"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">3.4</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">440</span>,
+        <span class="n">0</span>
+      ]
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"method"</span>: <span class="s">"PATCH"</span>,
+        <span class="s">"url"</span>: <span class="s">"=http://pocketbase:8090/api/collections/requests/records/{{ $json.id }}"</span>,
+        <span class="s">"sendBody"</span>: <span class="k">true</span>,
+        <span class="s">"specifyBody"</span>: <span class="s">"json"</span>,
+        <span class="s">"jsonBody"</span>: <span class="s">"={{ { category: $json.category } }}"</span>,
+        <span class="s">"options"</span>: {}
+      },
+      <span class="s">"name"</span>: <span class="s">"Категория в базу"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.httpRequest"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">4.2</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">660</span>,
+        <span class="n">0</span>
+      ]
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"chatId"</span>: <span class="s">""</span>,
+        <span class="s">"text"</span>: <span class="s">"={{ $('Ответ модели').item.json.urgent ? '🔴 СРОЧНО\\n' : '' }}Заявка: {{ $('Ответ модели').item.json.title }}\nКабинет: {{ $('Ответ модели').item.json.room }} · {{ $('Ответ модели').item.json.category }}\n{{ $('Ответ модели').item.json.summary }}"</span>,
+        <span class="s">"replyMarkup"</span>: <span class="s">"inlineKeyboard"</span>,
+        <span class="s">"inlineKeyboard"</span>: {
+          <span class="s">"rows"</span>: [
+            {
+              <span class="s">"row"</span>: {
+                <span class="s">"buttons"</span>: [
+                  {
+                    <span class="s">"text"</span>: <span class="s">"Взять"</span>,
+                    <span class="s">"additionalFields"</span>: {
+                      <span class="s">"callback_data"</span>: <span class="s">"=take:{{ $('Ответ модели').item.json.id }}"</span>
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        <span class="s">"additionalFields"</span>: {
+          <span class="s">"appendAttribution"</span>: <span class="k">false</span>
+        }
+      },
+      <span class="s">"name"</span>: <span class="s">"Telegram"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.telegram"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">1.2</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">880</span>,
+        <span class="n">0</span>
+      ]
+    }
+  ],
+  <span class="s">"connections"</span>: {
+    <span class="s">"Webhook"</span>: {
+      <span class="s">"main"</span>: [
+        [
+          {
+            <span class="s">"node"</span>: <span class="s">"Модель"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          }
+        ]
+      ]
+    },
+    <span class="s">"Модель"</span>: {
+      <span class="s">"main"</span>: [
+        [
+          {
+            <span class="s">"node"</span>: <span class="s">"Ответ модели"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          }
+        ]
+      ]
+    },
+    <span class="s">"Ответ модели"</span>: {
+      <span class="s">"main"</span>: [
+        [
+          {
+            <span class="s">"node"</span>: <span class="s">"Категория в базу"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          }
+        ]
+      ]
+    },
+    <span class="s">"Категория в базу"</span>: {
+      <span class="s">"main"</span>: [
+        [
+          {
+            <span class="s">"node"</span>: <span class="s">"Telegram"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          }
+        ]
+      ]
+    }
+  }
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1286px"><img src="img/b07-canvas-dispetcher.png" width="1280" height="800" alt="n8n: процесс из пяти узлов Webhook, Модель, Ответ модели, Категория в базу, Telegram" loading="lazy"><figcaption>Процесс «ИИ-диспетчер»: пять узлов</figcaption></figure></li>
+          <li><b>Посмотрите узел «Модель»</b><p>Дважды щёлкните по узлу <strong>Модель</strong>. Это запрос POST к Ollama: в поле JSON — текст для модели и описание ответа, которое разобрано ниже. Закройте узел (<kbd>Esc</kbd>).</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/b08-model.png" width="1280" height="800" alt="n8n: узел Модель, HTTP Request POST http://ollama:11434/api/chat, тело JSON с model qwen2.5:3b, format и messages" loading="lazy"><figcaption>Узел «Модель»: запрос к Ollama</figcaption></figure></li>
+          <li><b>Подключите бота</b><p>Дважды щёлкните по узлу <strong>Telegram</strong>. В поле <strong>Credential to connect with</strong> должно стоять «Telegram account» — учётные данные бота из модуля 1. Если поле пустое, выберите их в списке. В поле <strong>Chat ID</strong> впишите номер вашего чата из модуля 1. Закройте узел и сохраните процесс.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/b09-telegram.png" width="1280" height="800" alt="n8n: узел Telegram, Credential Telegram account, Chat ID (размыт), текст сообщения, Reply Markup Inline Keyboard с кнопкой Взять" loading="lazy"><figcaption>Узел Telegram: бот, номер чата и кнопка «Взять»</figcaption></figure></li>
+          <li><b>Опубликуйте</b><p>Нажмите <strong>Publish</strong>, в окне — ещё раз <strong>Publish</strong>.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/b10-published-dispetcher.png" width="1280" height="800" alt="n8n: процесс ИИ-диспетчер опубликован" loading="lazy"><figcaption>Процесс «ИИ-диспетчер» опубликован</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что делает каждый узел</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Узел</th><th>Что делает</th><th>Что передаёт дальше</th></tr></thead>
+            <tbody>
+              <tr><td><b>Webhook</b></td><td>Принимает заявку с доски, как в модуле 1. Доска отправляет её после сохранения в PocketBase, поэтому в заявке уже есть <code>id</code></td><td><code>body</code>: id, title, room, category, details, status</td></tr>
+              <tr><td><b>Модель</b></td><td>Отправляет заявку в Ollama и ждёт ответа до 2 минут</td><td><code>message.content</code> — ответ модели строкой JSON</td></tr>
+              <tr><td><b>Ответ модели</b></td><td>Разбирает строку ответа и собирает поля для следующих узлов</td><td>id, title, room, category, urgent, summary</td></tr>
+              <tr><td><b>Категория в базу</b></td><td>Запрос PATCH к PocketBase: меняет категорию заявки. Правило Update из главы 2.2 разрешает менять категорию</td><td>Изменённую запись</td></tr>
+              <tr><td><b>Telegram</b></td><td>Отправляет сообщение с кнопкой «Взять». Данные кнопки — <code>take:</code> и <code>id</code> заявки</td><td>Ответ Telegram</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Основная часть процесса — тело запроса к модели в узле «Модель». В нём три части:</p>
+        <ul>
+          <li><b><code>model</code></b> — имя модели в Ollama: <code>qwen2.5:3b</code>.</li>
+          <li><b><code>messages</code></b> — переписка с моделью. Сообщение с ролью <code>system</code> — инструкция: «Ты диспетчер ИТ-отдела колледжа. По заявке определи категорию, срочность и напиши краткое описание до 12 слов…». Сообщение с ролью <code>user</code> — сама заявка: что случилось, кабинет, категория от автора, подробности. Инструкцию для модели называют <span class="term">промптом</span>.</li>
+          <li><b><code>format</code></b> — описание ответа: объект с полями <code>category</code> (одно из четырёх значений), <code>urgent</code> (да или нет) и <code>summary</code> (строка). Это <span class="term">JSON-схема</span>. Ollama заставляет модель отвечать строго по ней, поэтому ответ всегда можно разобрать, а категория всегда из списка — как поле Select в PocketBase.</li>
+        </ul>
+
+        <p>Ответ модели приходит строкой, например <code>{"category": "Проектор", "urgent": true, "summary": "…"}</code>. Узел «Ответ модели» превращает её в объект выражением <code>JSON.parse($json.message.content)</code> и берёт из него поля. <code>JSON.parse</code> — обратная операция к <code>JSON.stringify</code> из главы 1.7: строку JSON превращает в объект. Остальные поля узел берёт из вебхука: запись <code>$('Webhook').item.json.body.id</code> значит «поле id из данных, которые пришли в узел Webhook».</p>
+
+        <p class="bridge">Сообщение с кнопкой уходит в Telegram. Нажатие кнопки обрабатывает второй процесс.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Процесс «Кнопка «Взять»»</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Вставляем второй шаблон</p>
+
+        <ol class="steps">
+          <li><b>Вставьте шаблон</b><p>Создайте ещё один процесс и вставьте в него шаблон ниже так же, как первый. Сохраните.</p>
+            <!--CODE tools/n8n2/knopka-vzyat.json | Шаблон процесса «Кнопка «Взять»»--><figure class="code"><figcaption><span>Шаблон процесса «Кнопка «Взять»»</span></figcaption><pre>{
+  <span class="s">"name"</span>: <span class="s">"Кнопка «Взять»"</span>,
+  <span class="s">"nodes"</span>: [
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"rule"</span>: {
+          <span class="s">"interval"</span>: [
+            {
+              <span class="s">"field"</span>: <span class="s">"seconds"</span>,
+              <span class="s">"secondsInterval"</span>: <span class="n">10</span>
+            }
+          ]
+        }
+      },
+      <span class="s">"name"</span>: <span class="s">"Каждые 10 секунд"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.scheduleTrigger"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">1.2</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">0</span>,
+        <span class="n">0</span>
+      ]
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"url"</span>: <span class="s">"=https://api.telegram.org/bot{{ $env.TELEGRAM_TOKEN }}/getUpdates"</span>,
+        <span class="s">"sendQuery"</span>: <span class="k">true</span>,
+        <span class="s">"queryParameters"</span>: {
+          <span class="s">"parameters"</span>: [
+            {
+              <span class="s">"name"</span>: <span class="s">"timeout"</span>,
+              <span class="s">"value"</span>: <span class="s">"0"</span>
+            },
+            {
+              <span class="s">"name"</span>: <span class="s">"allowed_updates"</span>,
+              <span class="s">"value"</span>: <span class="s">"[\"</span>callback_query\<span class="s">"]"</span>
+            }
+          ]
+        },
+        <span class="s">"options"</span>: {}
+      },
+      <span class="s">"name"</span>: <span class="s">"Нажатия"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.httpRequest"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">4.2</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">220</span>,
+        <span class="n">0</span>
+      ]
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"conditions"</span>: {
+          <span class="s">"options"</span>: {
+            <span class="s">"caseSensitive"</span>: <span class="k">true</span>,
+            <span class="s">"leftValue"</span>: <span class="s">""</span>,
+            <span class="s">"typeValidation"</span>: <span class="s">"strict"</span>,
+            <span class="s">"version"</span>: <span class="n">2</span>
+          },
+          <span class="s">"conditions"</span>: [
+            {
+              <span class="s">"id"</span>: <span class="s">"c1"</span>,
+              <span class="s">"leftValue"</span>: <span class="s">"={{ $json.result.length }}"</span>,
+              <span class="s">"rightValue"</span>: <span class="n">0</span>,
+              <span class="s">"operator"</span>: {
+                <span class="s">"type"</span>: <span class="s">"number"</span>,
+                <span class="s">"operation"</span>: <span class="s">"gt"</span>
+              }
+            }
+          ],
+          <span class="s">"combinator"</span>: <span class="s">"and"</span>
+        },
+        <span class="s">"options"</span>: {}
+      },
+      <span class="s">"name"</span>: <span class="s">"Есть нажатия?"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.if"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">2.2</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">440</span>,
+        <span class="n">0</span>
+      ]
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"url"</span>: <span class="s">"=https://api.telegram.org/bot{{ $env.TELEGRAM_TOKEN }}/getUpdates"</span>,
+        <span class="s">"sendQuery"</span>: <span class="k">true</span>,
+        <span class="s">"queryParameters"</span>: {
+          <span class="s">"parameters"</span>: [
+            {
+              <span class="s">"name"</span>: <span class="s">"offset"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ $json.result[$json.result.length - 1].update_id + 1 }}"</span>
+            },
+            {
+              <span class="s">"name"</span>: <span class="s">"timeout"</span>,
+              <span class="s">"value"</span>: <span class="s">"0"</span>
+            }
+          ]
+        },
+        <span class="s">"options"</span>: {}
+      },
+      <span class="s">"name"</span>: <span class="s">"Отметить прочитанными"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.httpRequest"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">4.2</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">660</span>,
+        -<span class="n">140</span>
+      ]
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"fieldToSplitOut"</span>: <span class="s">"result"</span>,
+        <span class="s">"options"</span>: {}
+      },
+      <span class="s">"name"</span>: <span class="s">"По одному"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.splitOut"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">1</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">660</span>,
+        <span class="n">100</span>
+      ]
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"assignments"</span>: {
+          <span class="s">"assignments"</span>: [
+            {
+              <span class="s">"id"</span>: <span class="s">"b1"</span>,
+              <span class="s">"name"</span>: <span class="s">"id"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ $json.callback_query.data.replace('take:', '') }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"string"</span>
+            },
+            {
+              <span class="s">"id"</span>: <span class="s">"b2"</span>,
+              <span class="s">"name"</span>: <span class="s">"queryId"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ $json.callback_query.id }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"string"</span>
+            },
+            {
+              <span class="s">"id"</span>: <span class="s">"b3"</span>,
+              <span class="s">"name"</span>: <span class="s">"chatId"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ $json.callback_query.message.chat.id }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"string"</span>
+            },
+            {
+              <span class="s">"id"</span>: <span class="s">"b4"</span>,
+              <span class="s">"name"</span>: <span class="s">"messageId"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ $json.callback_query.message.message_id }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"string"</span>
+            },
+            {
+              <span class="s">"id"</span>: <span class="s">"b5"</span>,
+              <span class="s">"name"</span>: <span class="s">"text"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ $json.callback_query.message.text }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"string"</span>
+            },
+            {
+              <span class="s">"id"</span>: <span class="s">"b6"</span>,
+              <span class="s">"name"</span>: <span class="s">"master"</span>,
+              <span class="s">"value"</span>: <span class="s">"={{ $json.callback_query.from.first_name }}"</span>,
+              <span class="s">"type"</span>: <span class="s">"string"</span>
+            }
+          ]
+        },
+        <span class="s">"options"</span>: {}
+      },
+      <span class="s">"name"</span>: <span class="s">"Кто и что нажал"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.set"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">3.4</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">880</span>,
+        <span class="n">100</span>
+      ]
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"method"</span>: <span class="s">"PATCH"</span>,
+        <span class="s">"url"</span>: <span class="s">"=http://pocketbase:8090/api/collections/requests/records/{{ $json.id }}"</span>,
+        <span class="s">"sendBody"</span>: <span class="k">true</span>,
+        <span class="s">"specifyBody"</span>: <span class="s">"json"</span>,
+        <span class="s">"jsonBody"</span>: <span class="s">"={{ { status: 'В работе' } }}"</span>,
+        <span class="s">"options"</span>: {}
+      },
+      <span class="s">"name"</span>: <span class="s">"Статус в базу"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.httpRequest"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">4.2</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">1100</span>,
+        <span class="n">100</span>
+      ]
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"resource"</span>: <span class="s">"callback"</span>,
+        <span class="s">"queryId"</span>: <span class="s">"={{ $('Кто и что нажал').item.json.queryId }}"</span>,
+        <span class="s">"additionalFields"</span>: {
+          <span class="s">"text"</span>: <span class="s">"Заявка ваша"</span>
+        }
+      },
+      <span class="s">"name"</span>: <span class="s">"Ответ на нажатие"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.telegram"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">1.2</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">1320</span>,
+        <span class="n">100</span>
+      ],
+      <span class="s">"onError"</span>: <span class="s">"continueRegularOutput"</span>
+    },
+    {
+      <span class="s">"parameters"</span>: {
+        <span class="s">"operation"</span>: <span class="s">"editMessageText"</span>,
+        <span class="s">"chatId"</span>: <span class="s">"={{ $('Кто и что нажал').item.json.chatId }}"</span>,
+        <span class="s">"messageId"</span>: <span class="s">"={{ $('Кто и что нажал').item.json.messageId }}"</span>,
+        <span class="s">"text"</span>: <span class="s">"={{ $('Кто и что нажал').item.json.text }}\n\n✅ Взял: {{ $('Кто и что нажал').item.json.master }}"</span>,
+        <span class="s">"additionalFields"</span>: {}
+      },
+      <span class="s">"name"</span>: <span class="s">"Изменить сообщение"</span>,
+      <span class="s">"type"</span>: <span class="s">"n8n-nodes-base.telegram"</span>,
+      <span class="s">"typeVersion"</span>: <span class="n">1.2</span>,
+      <span class="s">"position"</span>: [
+        <span class="n">1540</span>,
+        <span class="n">100</span>
+      ],
+      <span class="s">"onError"</span>: <span class="s">"continueRegularOutput"</span>
+    }
+  ],
+  <span class="s">"connections"</span>: {
+    <span class="s">"Каждые 10 секунд"</span>: {
+      <span class="s">"main"</span>: [
+        [
+          {
+            <span class="s">"node"</span>: <span class="s">"Нажатия"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          }
+        ]
+      ]
+    },
+    <span class="s">"Нажатия"</span>: {
+      <span class="s">"main"</span>: [
+        [
+          {
+            <span class="s">"node"</span>: <span class="s">"Есть нажатия?"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          }
+        ]
+      ]
+    },
+    <span class="s">"Есть нажатия?"</span>: {
+      <span class="s">"main"</span>: [
+        [
+          {
+            <span class="s">"node"</span>: <span class="s">"Отметить прочитанными"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          },
+          {
+            <span class="s">"node"</span>: <span class="s">"По одному"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          }
+        ],
+        []
+      ]
+    },
+    <span class="s">"По одному"</span>: {
+      <span class="s">"main"</span>: [
+        [
+          {
+            <span class="s">"node"</span>: <span class="s">"Кто и что нажал"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          }
+        ]
+      ]
+    },
+    <span class="s">"Кто и что нажал"</span>: {
+      <span class="s">"main"</span>: [
+        [
+          {
+            <span class="s">"node"</span>: <span class="s">"Статус в базу"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          }
+        ]
+      ]
+    },
+    <span class="s">"Статус в базу"</span>: {
+      <span class="s">"main"</span>: [
+        [
+          {
+            <span class="s">"node"</span>: <span class="s">"Ответ на нажатие"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          }
+        ]
+      ]
+    },
+    <span class="s">"Ответ на нажатие"</span>: {
+      <span class="s">"main"</span>: [
+        [
+          {
+            <span class="s">"node"</span>: <span class="s">"Изменить сообщение"</span>,
+            <span class="s">"type"</span>: <span class="s">"main"</span>,
+            <span class="s">"index"</span>: <span class="n">0</span>
+          }
+        ]
+      ]
+    }
+  }
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1286px"><img src="img/b11-canvas-knopka.png" width="1280" height="800" alt="n8n: процесс Кнопка Взять: Каждые 10 секунд, Нажатия, Есть нажатия?, две ветки: Отметить прочитанными и По одному, Кто и что нажал, Статус в базу, Ответ на нажатие, Изменить сообщение" loading="lazy"><figcaption>Процесс «Кнопка «Взять»»</figcaption></figure></li>
+          <li><b>Посмотрите узел «Нажатия»</b><p>Дважды щёлкните по узлу <strong>Нажатия</strong>. В адресе — выражение <code>{{ $env.TELEGRAM_TOKEN }}</code>: n8n подставит токен из файла <code>.env</code>. Узлы Telegram в этом процессе подключились к учётным данным бота сами; если у них поле Credential пустое, выберите «Telegram account».</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/b12-getupdates.png" width="1280" height="800" alt="n8n: узел Нажатия, GET https://api.telegram.org/bot{{ $env.TELEGRAM_TOKEN }}/getUpdates с параметрами timeout и allowed_updates" loading="lazy"><figcaption>Узел «Нажатия»: запрос getUpdates с токеном из .env</figcaption></figure></li>
+          <li><b>Опубликуйте</b><p>Нажмите <strong>Publish</strong> и подтвердите. С этого момента процесс запускается каждые 10 секунд.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/b13-published-knopka.png" width="1280" height="800" alt="n8n: процесс Кнопка Взять опубликован" loading="lazy"><figcaption>Процесс «Кнопка «Взять»» опубликован</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как обрабатываются нажатия</p>
+
+        <p>Telegram хранит нажатия кнопок, пока их не заберут, — как почтовый ящик. Метод <code>getUpdates</code> возвращает всё, что лежит в ящике, массивом <code>result</code>. У каждого элемента есть номер <code>update_id</code>, а внутри — <code>callback_query</code>: кто нажал, на какое сообщение и какие данные были у кнопки.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Узел</th><th>Что делает</th></tr></thead>
+            <tbody>
+              <tr><td><b>Каждые 10 секунд</b></td><td>Запускает процесс по расписанию</td></tr>
+              <tr><td><b>Нажатия</b></td><td>Запрос <code>getUpdates</code>: что лежит в ящике. <code>allowed_updates</code> — брать только нажатия кнопок</td></tr>
+              <tr><td><b>Есть нажатия?</b></td><td>Условие: в <code>result</code> больше нуля элементов. Если нет, процесс заканчивается</td></tr>
+              <tr><td><b>Отметить прочитанными</b></td><td>Ещё один <code>getUpdates</code> с <code>offset</code> = последний <code>update_id</code> + 1. Так Telegram узнаёт, что всё до этого номера забрано, и больше не отдаёт эти нажатия</td></tr>
+              <tr><td><b>По одному</b></td><td>Раскладывает массив <code>result</code> на отдельные элементы: следующие узлы выполнятся для каждого нажатия</td></tr>
+              <tr><td><b>Кто и что нажал</b></td><td>Берёт из нажатия <code>id</code> заявки (данные кнопки без <code>take:</code>), имя мастера, номер чата и сообщения</td></tr>
+              <tr><td><b>Статус в базу</b></td><td>PATCH к PocketBase: статус «В работе». Доска получит событие <code>update</code></td></tr>
+              <tr><td><b>Ответ на нажатие</b></td><td>Сообщает Telegram, что нажатие обработано, и показывает мастеру «Заявка ваша»</td></tr>
+              <tr><td><b>Изменить сообщение</b></td><td>Дописывает в сообщение «✅ Взял: имя». Кнопка пропадает: новый текст отправлен без неё</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>У двух последних узлов включена настройка <strong>On Error → Continue</strong>: при ошибке процесс не останавливается. Она нужна на случай двойного нажатия. Если мастер нажал кнопку дважды, до обработки в ящике оказываются два нажатия. Первое меняет сообщение, второе пытается записать тот же текст, и Telegram отвечает ошибкой «message is not modified» — «сообщение не изменилось». Это случилось при проверке этой страницы.</p>
+
+        <p class="bridge">Оба процесса опубликованы. Остаётся отправить заявку с доски и пройти весь путь.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Проверка: от заявки до нажатия</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Заявка, модель, кнопка</p>
+
+        <ol class="steps">
+          <li><b>Отправьте заявку</b><p>Проверьте, что доска запущена (<code>npm run dev</code> в папке <code>zayavki</code>), и откройте <code>http://localhost:5173/</code>. Добавьте заявку: «Не показывает экран на стене», кабинет 214, категория «Компьютер», подробности «Через 10 минут экзамен, изображения на стене нет.».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/b14-doska-otpravleno.png" width="1100" height="900" alt="Доска: сообщение Заявка добавлена, уведомление отправлено; сверху Не показывает экран на стене, каб. 214 · Компьютер, Новая" loading="lazy"><figcaption>Заявка добавлена, уведомление отправлено в n8n</figcaption></figure></li>
+          <li><b>Получите сообщение</b><p>Через несколько секунд бот присылает сообщение: срочность, заявка, кабинет, категория от модели и её краткое описание. Под сообщением — кнопка <strong>Взять</strong>.</p>
+            <figure class="shot" style="max-width: 453px"><img src="img/b18-tg-soobshchenie.png" width="447" height="207" alt="Telegram: сообщение бота СРОЧНО, Заявка: Не показывает экран на стене, Кабинет: 214 · Компьютер, краткое описание и кнопка Взять" loading="lazy"><figcaption>Сообщение бота с кнопкой «Взять»</figcaption></figure></li>
+          <li><b>Посмотрите ответ модели в n8n</b><p>В n8n откройте процесс «ИИ-диспетчер», вкладку <strong>Executions</strong>, и выберите последний запуск. Дважды щёлкните по узлу <strong>Ответ модели</strong>: справа — поля, которые вернула модель.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/b15-execution.png" width="1280" height="800" alt="n8n: вкладка Executions, последний запуск ИИ-диспетчера, все пять узлов выполнены" loading="lazy"><figcaption>Запуск процесса: все узлы выполнены</figcaption></figure>
+            <figure class="shot" style="max-width: 1286px"><img src="img/b16-otvet-modeli.png" width="1280" height="800" alt="n8n: узел Ответ модели в запуске, справа поля id, title, room, category Компьютер, urgent true, summary" loading="lazy"><figcaption>Ответ модели: категория, срочность, краткое описание</figcaption></figure></li>
+          <li><b>Нажмите «Взять»</b><p>В Telegram нажмите кнопку <strong>Взять</strong> один раз. Пока n8n не забрал нажатие, Telegram показывает «Загрузка…» — до 10 секунд.</p>
+            <figure class="shot" style="max-width: 284px"><img src="img/b19-tg-zagruzka.png" width="278" height="116" alt="Telegram: всплывающая надпись Загрузка…" loading="lazy"><figcaption>Telegram ждёт ответа на нажатие</figcaption></figure></li>
+          <li><b>Посмотрите сообщение и доску</b><p>Сообщение изменилось: кнопки нет, внизу «✅ Взял» и ваше имя в Telegram. На доске заявка перешла в «В работе» без обновления страницы.</p>
+            <figure class="shot" style="max-width: 455px"><img src="img/b20-tg-vzyal.png" width="449" height="197" alt="Telegram: то же сообщение без кнопки, внизу Взял: имя (размыто)" loading="lazy"><figcaption>Сообщение после нажатия: «✅ Взял: …»</figcaption></figure>
+            <figure class="shot" style="max-width: 1106px"><img src="img/b17-doska-v-rabote.png" width="1100" height="900" alt="Доска: Не показывает экран на стене со статусом В работе и кнопкой Завершить" loading="lazy"><figcaption>Доска: заявка в работе</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Насколько можно доверять модели</p>
+
+        <p>В этой заявке модель ошиблась: «экран на стене» — это проектор, а она оставила категорию «Компьютер», которую выбрал автор. Срочность она определила верно: до экзамена 10 минут.</p>
+
+        <p>Чтобы понять, как часто так бывает, модель проверили на шести заявках, для которых правильный ответ известен. В двух заявках автор выбрал категорию неверно.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Заявка</th><th>Категория автора</th><th>Ответ модели</th><th>Верно</th><th>Срочно</th></tr></thead>
+            <tbody>
+              <tr><td>Не работает проектор, через 10 минут экзамен</td><td>Проектор</td><td>Проектор</td><td>да</td><td>да, верно</td></tr>
+              <tr><td>Нет интернета во всём кабинете</td><td>Компьютер</td><td>Интернет</td><td>да</td><td>да, верно</td></tr>
+              <tr><td>Замятие бумаги, не срочно</td><td>Принтер</td><td>Принтер</td><td>да</td><td>нет, верно</td></tr>
+              <tr><td>Колёсико мыши иногда не крутится</td><td>Интернет</td><td>Интернет</td><td>нет: Компьютер</td><td>нет, верно</td></tr>
+              <tr><td>Розетка под компьютером искрит</td><td>Компьютер</td><td>Компьютер</td><td>да</td><td>да, верно</td></tr>
+              <tr><td>Не показывает экран на стене, экзамен</td><td>Компьютер</td><td>Компьютер</td><td>нет: Проектор</td><td>да, верно</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Категория верна в 4 заявках из 6, срочность — в 6 из 6. Обе ошибки одинаковые: модель повторила неверную категорию автора. Одну ошибку исправить она смогла («Нет интернета» вместо «Компьютер»), две — нет. На шести заявках это не точная оценка, но вывод из неё ясен: маленькая модель полезна как помощник, а решение остаётся за человеком. Поэтому правило Update разрешает менять категорию, и мастер исправляет её в панели PocketBase — доска покажет исправление сразу, как в главе 2.5.</p>
+
+        <p>Каждый ответ занял около 2 секунд, первый — около 7: модель загружалась в память. Это на ноутбуке без видеокарты. На компьютере с меньшим объёмом памяти ответ займёт больше времени, а модели больше 3b могут не поместиться в память вовсе.</p>
+
+        <div class="starter starter--finish">
+          <p class="starter__head">Файлы после страницы</p>
+          <div class="starter__body">
+            <p>Тот же архив, что в начале страницы. Процессы n8n, модель и записи PocketBase архив не содержит: они хранятся в томах Docker и создаются шагами страницы. Файл <code>.env</code> с токеном создайте сами по образцу <code>.env.example</code>.</p>
+            <a class="starter__btn" href="avtomatizaciya-a2.zip" download>avtomatizaciya-a2.zip <small>5 КБ</small></a>
+            <p class="starter__lock">Архив закрыт паролем. После нажатия на кнопку введите пароль — его сообщает преподаватель.</p>
+          </div>
+        </div>
+
+        <h2 id="s6"><span class="sec">§6</span>Частые ошибки</h2>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td><code>ollama pull</code> обрывается или долго стоит на 0%</td><td>Сервер файлов Ollama недоступен из вашей сети</td><td>Поставить модель из файла Hugging Face, как в шаге «Скачайте модель»</td></tr>
+              <tr><td>Публикация не проходит: n8n сообщает о конфликте вебхука <code>zayavka</code></td><td>Процесс модуля 1 ещё опубликован</td><td>Снять его с публикации: Unpublish</td></tr>
+              <tr><td>Узел «Модель»: <code>model 'qwen2.5:3b' not found</code></td><td>Модель не скачана или скачана под другим именем</td><td><code>docker compose exec ollama ollama list</code>; скачать модель</td></tr>
+              <tr><td>Узел «Модель» работает больше минуты</td><td>Модели не хватает оперативной памяти</td><td>Закрыть лишние программы; в Docker Desktop выделить больше памяти</td></tr>
+              <tr><td>Узел «Нажатия»: <code>"error_code":404,"description":"Not Found"</code></td><td>В адресе нет токена: файла <code>.env</code> нет или n8n запущен до его создания</td><td>Проверить <code>.env</code>, выполнить <code>docker compose up -d</code></td></tr>
+              <tr><td>Узел «Нажатия»: ошибка о запрете доступа к <code>$env</code></td><td>Нет строки <code>N8N_BLOCK_ENV_ACCESS_IN_NODE=false</code></td><td>Сверить <code>compose.yaml</code>, выполнить <code>docker compose up -d</code></td></tr>
+              <tr><td>Узел «Изменить сообщение»: <code>message is not modified</code></td><td>Кнопку нажали дважды</td><td>Ничего: настройка On Error → Continue пропускает эту ошибку</td></tr>
+              <tr><td>Кнопка нажата, а статус на доске не меняется</td><td>Процесс «Кнопка «Взять»» не опубликован, или на доске нет подписки из главы 2.5</td><td>Проверить публикацию и вкладку Executions; сверить проект с архивом главы 2.5</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s7"><span class="sec">§7</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Зачем запросу к модели поле <code>format</code>?</summary>
+          <p>Оно описывает ответ JSON-схемой. Ollama заставляет модель отвечать строго по ней: всегда объект с полями category, urgent, summary, категория — из списка. Без схемы модель могла бы ответить свободным текстом, и узел «Ответ модели» не смог бы его разобрать.</p>
+        </details>
+        <details>
+          <summary>Почему нажатия кнопки забираются опросом раз в 10 секунд?</summary>
+          <p>Сам Telegram отправляет нажатия только на публичный адрес с HTTPS. У n8n на своём компьютере такого адреса нет, поэтому n8n сам запрашивает нажатия методом getUpdates.</p>
+        </details>
+        <details>
+          <summary>Что будет, если убрать узел «Отметить прочитанными»?</summary>
+          <p>Telegram будет отдавать те же нажатия при каждом запросе. Каждые 10 секунд процесс заново менял бы статус и пытался изменить сообщение.</p>
+        </details>
+        <details>
+          <summary>Почему токен лежит в <code>.env</code>, а не прямо в адресе узла «Нажатия»?</summary>
+          <p>Шаблон процесса и <code>compose.yaml</code> можно передавать другим и выкладывать. Токен — пароль бота, и он хранится в одном файле, который никуда не попадает.</p>
+        </details>
+        <details>
+          <summary>Модель поставила неверную категорию. Как её исправить и увидят ли это другие?</summary>
+          <p>Изменить категорию в панели PocketBase. Правило Update разрешает менять категорию, а доска получает событие update и показывает исправление во всех открытых окнах.</p>
+        </details>
+        <details>
+          <summary>Добавьте в сообщение бота строку «Автор указал: …» с категорией, которую выбрал автор. Где её взять?</summary>
+          <p>Из данных вебхука: <code>{{ $('Webhook').item.json.body.category }}</code>. Узел «Категория в базу» уже записал в базу ответ модели, а в вебхуке осталась категория автора.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Скачать модель</b><code>docker compose exec ollama ollama pull qwen2.5:3b</code></div>
+          <div><b>Список моделей</b><code>docker compose exec ollama ollama list</code></div>
+          <div><b>Вопрос модели</b><code>docker compose exec ollama ollama run qwen2.5:3b "…"</code></div>
+          <div><b>API модели</b><code>POST http://ollama:11434/api/chat</code></div>
+          <div><b>Ответ по схеме</b><code>format: { type: 'object', properties: … }</code></div>
+          <div><b>Строку в объект</b><code>JSON.parse(строка)</code></div>
+          <div><b>Переменная из .env</b><code>{{ $env.TELEGRAM_TOKEN }}</code></div>
+          <div><b>Нажатия кнопок</b><code>getUpdates</code>, затем <code>offset</code> = последний + 1</div>
+        </div>
+
+        <h3>Итог страницы</h3>
+        <p>Заявку с доски разбирает языковая модель qwen2.5:3b, запущенная в Ollama на своём компьютере: данные не уходят в интернет, и это бесплатно. Процесс «ИИ-диспетчер» отправляет заявку модели с промптом и JSON-схемой ответа, записывает категорию в PocketBase и присылает мастеру сообщение с кнопкой «Взять». Процесс «Кнопка «Взять»» раз в 10 секунд забирает нажатия из Telegram методом getUpdates, переводит заявку в работу и меняет сообщение. Доска показывает новый статус по подписке из главы 2.5. Модель ошибается: на шести проверочных заявках категория верна в четырёх, срочность — во всех. Поэтому её ответ — подсказка, и категорию можно исправить в панели.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://github.com/ollama/ollama/blob/main/docs/api.md" target="_blank" rel="noreferrer">github.com — Ollama API</a></li>
+          <li><a href="https://ollama.com/blog/structured-outputs" target="_blank" rel="noreferrer">ollama.com — Structured outputs</a> <span class="vendor">производитель</span></li>
+          <li><a href="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF" target="_blank" rel="noreferrer">huggingface.co — Qwen2.5-3B-Instruct-GGUF</a></li>
+          <li><a href="https://core.telegram.org/bots/api#getupdates" target="_blank" rel="noreferrer">core.telegram.org — Bot API: getUpdates</a></li>
+          <li><a href="https://core.telegram.org/bots/api#inlinekeyboardmarkup" target="_blank" rel="noreferrer">core.telegram.org — Bot API: InlineKeyboardMarkup</a></li>
+          <li><a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/" target="_blank" rel="noreferrer">docs.n8n.io — HTTP Request node</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../25-obnovlenie-po-sobytiyam/index.html">← 2.5 Обновление по событиям</a>
+          <a href="../../index.html">Оглавление →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>
