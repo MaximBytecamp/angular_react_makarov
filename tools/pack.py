@@ -62,6 +62,13 @@ AFTER_23 = {k: v for k, v in AFTER_21.items() if k != "storage.ts"} | {
 
 AFTER_24 = {**AFTER_23, "App.tsx": "code24/App.tsx", "useRequests.ts": "code24/useRequests.ts"}
 
+# В главе 2.5 ставится библиотека pocketbase: package.json и package-lock.json берутся из code25.
+AFTER_25 = {
+    **AFTER_24, "requests.ts": "code25/requests.ts", "useRequests.ts": "code25/useRequests.ts",
+    "realtime.ts": "code25/realtime.ts",
+    "/package.json": "code25/package.json", "/package-lock.json": "code25/package-lock.json",
+}
+
 ARCHIVES = [
     ("11-node-npm-vite", "zayavki-konec-1-1.zip", AFTER_11),
     ("12-jsx-i-komponenty", "zayavki-nachalo-1-2.zip", AFTER_11),
@@ -82,6 +89,8 @@ ARCHIVES = [
     ("23-zagruzka", "zayavki-konec-2-3.zip", AFTER_23),
     ("24-sobstvennyy-huk", "zayavki-nachalo-2-4.zip", AFTER_23),
     ("24-sobstvennyy-huk", "zayavki-konec-2-4.zip", AFTER_24),
+    ("25-obnovlenie-po-sobytiyam", "zayavki-nachalo-2-5.zip", AFTER_24),
+    ("25-obnovlenie-po-sobytiyam", "zayavki-konec-2-5.zip", AFTER_25),
 ]
 
 
@@ -95,6 +104,10 @@ def assemble(state: dict[str, str], dest: Path) -> None:
     src.mkdir()
     shutil.copy(BASE / "src/main.tsx", src / "main.tsx")
     for rel, source in state.items():
+        if rel.startswith("/"):
+            # Файл в корне проекта, например package.json с новой библиотекой.
+            shutil.copy(TOOLS / source, dest / rel[1:])
+            continue
         (src / rel).parent.mkdir(parents=True, exist_ok=True)
         if "\n" in source:
             (src / rel).write_text(source)

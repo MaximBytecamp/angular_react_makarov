@@ -91,3 +91,8 @@ Dockerfile, n8n 2.45.4, Ollama + qwen2.5:3b из GGUF с Hugging Face; кноп�
   не выходит; try/catch остаётся в обработчиках App), опыт «Header сам вызывает хук» (4 запроса, счётчик расходится),
   опыт «return перед хуком» (oxlint rules-of-hooks, «Rendered fewer hooks than expected»), разбор порядка ячеек хуков.
   Код `tools/code24`, съёмка `shots_24.py`, обрезка `crop_24.py`. После главы в базе 7 заявок («Нет звука в колонках» в работе).
+- 2.5 `temy/25-obnovlenie-po-sobytiyam` — опыт с двумя окнами (без F5 заявки не видно), опрос и SSE, `npm install pocketbase@0.28.1`,
+  `realtime.ts` (`subscribe('*')`, отписка через `pending.then`), эффект подписки в хуке; опыт с повтором своей заявки
+  (ответ POST + событие create, предупреждение о ключах) → `upsertRequest` в `requests.ts`; правка категории в панели доходит до доски;
+  поток во вкладке Network → realtime → EventStream. Код `tools/code25` (+ package.json/lock с библиотекой: pack.py принимает ключи
+  `/package.json`), съёмка `shots_25.py` (пары окон рядом; DevTools открывать до второго окна), обрезка `crop_25.py`.
