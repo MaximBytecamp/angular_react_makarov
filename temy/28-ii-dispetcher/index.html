@@ -60,7 +60,7 @@
         <div class="starter">
           <p class="starter__head">Готовые файлы для этой страницы</p>
           <div class="starter__body">
-            <p>В архиве папка <code>avtomatizaciya</code> в состоянии конца страницы: <code>compose.yaml</code> с n8n, PocketBase и Ollama, <code>pocketbase/Dockerfile</code>, образец <code>.env.example</code> и два шаблона процессов для вставки в n8n. Распакуйте её в <code>react-kurs</code> вместо прежней: данные n8n, PocketBase и модель хранятся в томах Docker и при замене файлов не пропадают. Проект доски после главы 2.5 — в <a href="../25-obnovlenie-po-sobytiyam/zayavki-konec-2-5.zip">архиве главы 2.5</a>.</p>
+            <p>В архиве папка <code>avtomatizaciya</code> в состоянии конца страницы: <code>compose.yaml</code> с n8n, PocketBase и Ollama, <code>pocketbase/Dockerfile</code>, образец <code>.env.example</code> и два шаблона процессов для вставки в n8n. Распакуйте её в <code>react-kurs</code> вместо прежней: данные n8n, PocketBase и модель хранятся в томах Docker и при замене файлов не пропадают.</p>
             <a class="starter__btn" href="avtomatizaciya-a2.zip" download>avtomatizaciya-a2.zip <small>5 КБ</small></a>
             <p class="starter__lock">Архив закрыт паролем. После нажатия на кнопку введите пароль — его сообщает преподаватель.</p>
           </div>
@@ -815,6 +815,7 @@ docker compose exec ollama sh -c 'printf "FROM /tmp/qwen.gguf\n" > /tmp/Modelfil
 
         <p>Каждый ответ занял около 2 секунд, первый — около 7: модель загружалась в память. Это на ноутбуке без видеокарты. На компьютере с меньшим объёмом памяти ответ займёт больше времени, а модели больше 3b могут не поместиться в память вовсе.</p>
 
+        <!-- скрыто: архив конца главы
         <div class="starter starter--finish">
           <p class="starter__head">Файлы после страницы</p>
           <div class="starter__body">
@@ -823,6 +824,7 @@ docker compose exec ollama sh -c 'printf "FROM /tmp/qwen.gguf\n" > /tmp/Modelfil
             <p class="starter__lock">Архив закрыт паролем. После нажатия на кнопку введите пароль — его сообщает преподаватель.</p>
           </div>
         </div>
+        -->
 
         <h2 id="s6"><span class="sec">§6</span>Частые ошибки</h2>
 
