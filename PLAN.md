@@ -124,3 +124,11 @@ Dockerfile, n8n 2.45.4, Ollama + qwen2.5:3b из GGUF с Hugging Face; кноп�
 запуски не порождает). Замеры: проверка 6 сайтов локально 42 с, в Actions весь запуск 1 мин 41 с; прямая ссылка на Pages отдаёт код
 404 с приложением внутри (404.html) — для 3.3 сравнить с HashRouter. Версии действий: checkout@v7, setup-node@v7,
 upload-pages-artifact@v5, deploy-pages@v5.
+
+- 3.1 `temy/31-marshrutizaciya` — опыт «/stats до роутера = та же доска», `npm install react-router@8.5.1`, `BrowserRouter` в `main.tsx`,
+  страницы в `src/pages` (BoardPage — фильтр, Esc, форма и список из App; StatsPage — две таблицы; NotFoundPage с `useLocation`;
+  RequestPage с `useParams`, `useNavigate`, `find`), маршруты `/`, `/stats`, `/requests/:id`, `*`; `notice` под шапкой для всех страниц;
+  опыт `<a href>` (31 запрос в Network) против `NavLink` (запросов нет; `end` для `/` в v8 не нужен); сброс фильтра при уходе со страницы;
+  §5 — 14 props через App как подводка к 3.2. Код `tools/code31` (стили — `index-add.css` в конец index.css), проверка всех
+  промежуточных состояний `tools/verify_31.sh`, съёмка `shots_31.py` (база — `code31/db-start.json`, адресная строка над кадрами
+  браузера дорисовывается `addrbar.py` из `page.url`), обрезка `crop_31.py`.

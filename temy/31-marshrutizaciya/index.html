@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>3.1 Маршрутизация · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch .on-dark-soft { fill: #c8d0e0; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; stroke-dasharray: 6 4; }
+    .sch .ng-text { fill: #C2185B; }
+    .sch .dash { stroke-dasharray: 6 4; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 3 · Несколько экранов, публикация, расписание</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 3 · несколько экранов, публикация, расписание</p>
+          <p class="running__folio">3.1</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">3.1</span>
+          <h1>Маршрутизация</h1>
+          <p class="lead">В этой главе у доски заявок появляются отдельные страницы со своими адресами: список заявок по адресу <code>/</code>, статистика по адресу <code>/stats</code> и страница одной заявки по адресу вида <code>/requests/sb54xjym6egnk8y</code>. Страницы выбирает библиотека react-router по адресу в строке браузера. Переходы между страницами выполняются без перезагрузки: опыт с обычной ссылкой показывает, чем она отличается от ссылки react-router. В конце главы разобрано, как данные из <code>App</code> доходят до каждой страницы.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>React, маршрутизация</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после модуля 2 и запущенный PocketBase с коллекцией <code>requests</code></dd></div>
+          <div><dt>Результат</dt><dd>Папка <code>src/pages</code> с четырьмя страницами, меню в шапке, у каждой заявки — своя страница и свой адрес</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Адрес и экран</a></li>
+            <li><a href="#s2">Маршруты: Routes и Route</a></li>
+            <li><a href="#s3">Переходы: Link и NavLink</a></li>
+            <li><a href="#s4">Адрес с параметром: страница заявки</a></li>
+            <li><a href="#s5">Как данные доходят до страниц</a></li>
+            <li><a href="#s6">Частые ошибки</a></li>
+            <li><a href="#s7">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Адрес и экран</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: открываем адрес /stats</p>
+
+        <ol class="steps">
+          <li><b>Откройте другой адрес</b><p>Проверьте, что в терминале VS Code работает <code>npm run dev</code>, а в Docker Desktop запущен контейнер <code>avtomatizaciya-pocketbase-1</code>. В адресной строке браузера наберите <code>localhost:5173/stats</code> и нажмите <kbd>Enter</kbd>. Открылась та же доска заявок, что по адресу <code>localhost:5173</code>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/01-stats-do.png" width="1100" height="952" alt="Браузер, адрес localhost:5173/stats: на странице обычная доска заявок с формой и списком" loading="lazy"><figcaption>Адрес /stats: на экране та же доска</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему адрес ни на что не влияет</p>
+
+        <p>Адрес в браузере состоит из двух частей. <code>localhost:5173</code> — сервер, к которому обращается браузер. <code>/stats</code> — <span class="term">путь</span> (path): какую страницу этого сервера нужно показать. На обычном сайте каждому пути соответствует свой файл или свой ответ сервера.</p>
+
+        <p>Сервер Vite на любой путь отдаёт один и тот же файл <code>index.html</code>. В нём подключён <code>main.tsx</code>, который отрисовывает <code>App</code>. В коде <code>App</code> путь нигде не читается, поэтому по адресам <code>/</code>, <code>/stats</code> и <code>/abc</code> на экране одна и та же доска. Такое приложение называют <span class="term">одностраничным</span> (single-page application, SPA): HTML-страница одна, а всё, что видно на экране, рисует JavaScript.</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В бизнес-центре один вход и одна стойка охраны. Посетитель называет номер офиса, и охранник по списку говорит, на какой этаж идти. Здание одно, а по номеру посетитель попадает в разные помещения.</p>
+          <p class="miss">Пока у стойки нет списка, охранник всех отправляет в один и тот же офис. Так сейчас устроена доска: путь есть, а списка «путь → экран» нет.</p>
+        </div></div>
+
+        <p>Такой список называется списком <span class="term">маршрутов</span>. <span class="term">Маршрут</span> (route) — правило «путь → компонент»: по пути <code>/stats</code> показать компонент статистики. <span class="term">Маршрутизация</span> (routing) — выбор компонента по пути из адресной строки. В React её выполняет отдельная библиотека. В этой главе используется библиотека react-router.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Как путь из адреса превращается в экран</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 240" role="img" aria-label="Адрес localhost:5173/stats: сервер Vite отдаёт index.html; BrowserRouter читает путь /stats; Routes сравнивает его со списком маршрутов и отрисовывает StatsPage">
+              <rect x="20" y="20" width="200" height="60" fill="#ffffff"/><text class="mono" x="34" y="46">localhost:5173/stats</text><text class="soft" x="34" y="66">адресная строка</text>
+              <path d="M220 50 H 262"/><path d="M254 44 L 262 50 L 254 56"/>
+              <rect x="270" y="20" width="200" height="60" fill="#D6F0F9"/><text class="mono" x="284" y="46">сервер Vite</text><text class="soft" x="284" y="66">всегда index.html</text>
+              <path d="M370 80 V 112"/><path d="M364 104 L 370 112 L 376 104"/>
+              <rect x="270" y="120" width="200" height="60" fill="#161A2E"/><text class="mono on-dark" x="284" y="146">BrowserRouter</text><text class="soft on-dark-soft" x="284" y="166">читает путь /stats</text>
+              <path d="M470 150 H 512"/><path d="M504 144 L 512 150 L 504 156"/>
+              <rect x="520" y="100" width="220" height="120" fill="#D4EEDF"/><text class="mono" x="534" y="124">Routes</text>
+              <text class="soft" x="534" y="148">/       → BoardPage</text><text class="soft" x="534" y="170" style="font-weight:700">/stats  → StatsPage</text><text class="soft" x="534" y="192">*       → NotFoundPage</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Сервер Vite в выборе не участвует: он отдаёт <code>index.html</code> на любой путь. Путь читает <code>BrowserRouter</code> в браузере, а <code>Routes</code> находит в списке подходящий маршрут и отрисовывает его компонент.</p>
+        </figure>
+
+        <p>Страницы приложения будут такими:</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Путь</th><th>Страница</th><th>Компонент</th></tr></thead>
+            <tbody>
+              <tr><td><code>/</code></td><td>форма и список заявок с фильтром — доска, как сейчас</td><td><code>BoardPage</code></td></tr>
+              <tr><td><code>/stats</code></td><td>число заявок по статусам и категориям</td><td><code>StatsPage</code></td></tr>
+              <tr><td><code>/requests/…</code></td><td>одна заявка: описание, номер, кнопка действия</td><td><code>RequestPage</code></td></tr>
+              <tr><td>любой другой</td><td>сообщение «Страница не найдена»</td><td><code>NotFoundPage</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="bridge">Первый шаг — установить react-router и описать два маршрута: <code>/</code> и <code>/stats</code>.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Маршруты: Routes и Route</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Ставим библиотеку и выносим доску в страницу</p>
+
+        <ol class="steps">
+          <li><b>Установите react-router</b><p>Откройте второй терминал (<strong>Terminal → New Terminal</strong>): в первом работает <code>npm run dev</code>. Выполните две команды.</p>
+            <figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>cd zayavki
+npm install react-router@8.5.1</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-npm-install.png" width="1240" height="281" alt="Терминал: npm install react-router@8.5.1, added 3 packages, found 0 vulnerabilities, предупреждение npm warn install-scripts про fsevents" loading="lazy"><figcaption>react-router установлен: добавлено 3 пакета</figcaption></figure>
+            <p>Строки <code>npm warn install-scripts</code> относятся к пакету <code>fsevents</code>, который используется сервером Vite на macOS. На установку react-router они не влияют. На Windows этих строк нет.</p></li>
+          <li><b>Подключите BrowserRouter</b><p>Замените содержимое <code>src/main.tsx</code>. Добавлен импорт и тег <code>&lt;BrowserRouter&gt;</code> вокруг <code>&lt;App /&gt;</code>.</p>
+            <!--CODE tools/code31/main.tsx | zayavki/src/main.tsx | mark=3,9,11--><figure class="code"><figcaption><span>zayavki/src/main.tsx</span></figcaption><pre><span class="k">import</span> { StrictMode } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> { createRoot } <span class="k">from</span> <span class="s">'react-dom/client'</span>
+<span class="hl"><span class="k">import</span> { BrowserRouter } <span class="k">from</span> <span class="s">'react-router'</span></span>
+<span class="k">import</span> <span class="s">'./index.css'</span>
+<span class="k">import</span> App <span class="k">from</span> <span class="s">'./App.tsx'</span>
+
+<span class="f">createRoot</span>(document.<span class="f">getElementById</span>(<span class="s">'root'</span>)!).<span class="f">render</span>(
+  <span class="t">&lt;StrictMode</span><span class="t">&gt;</span>
+<span class="hl">    <span class="t">&lt;BrowserRouter</span><span class="t">&gt;</span></span>
+      <span class="t">&lt;App</span> <span class="t">/&gt;</span>
+<span class="hl">    <span class="t">&lt;/BrowserRouter</span><span class="t">&gt;</span></span>
+  <span class="t">&lt;/StrictMode</span><span class="t">&gt;</span>,
+)</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-main.png" width="1240" height="780" alt="VS Code: main.tsx, App внутри BrowserRouter внутри StrictMode" loading="lazy"><figcaption>main.tsx: App внутри BrowserRouter</figcaption></figure></li>
+          <li><b>Создайте страницу доски</b><p>В папке <code>src</code> создайте папку <code>pages</code>, в ней — файл <code>BoardPage.tsx</code>. Вставьте код. В него из <code>App.tsx</code> перенесены фильтр, обработка клавиши Esc и разметка формы и списка.</p>
+            <!--CODE tools/code31/BoardPage-2.tsx | zayavki/src/pages/BoardPage.tsx--><figure class="code"><figcaption><span>zayavki/src/pages/BoardPage.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'../components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'../components/RequestCard'</span>
+<span class="k">import</span> <span class="k">type</span> { NewRequest, RequestItem, Status } <span class="k">from</span> <span class="s">'../requests'</span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="k">type</span> BoardPageProps = {
+  requests: RequestItem[]
+  loading: boolean
+  error: string
+  onRetry: () =<span class="t">&gt;</span> void
+  onAdd: (data: NewRequest) =<span class="t">&gt;</span> void
+  onNext: (id: string, status: Status) =<span class="t">&gt;</span> void
+  onRemove: (id: string) =<span class="t">&gt;</span> void
+}
+
+<span class="k">function</span> <span class="f">BoardPage</span>({ requests, loading, error, onRetry, onAdd, onNext, onRemove }: BoardPageProps) {
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">function</span> <span class="f">handleKey</span>(event: KeyboardEvent) {
+      <span class="k">if</span> (event.key === <span class="s">'Escape'</span>) {
+        <span class="f">setFilter</span>(<span class="s">'Все'</span>)
+      }
+    }
+    window.<span class="f">addEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+    <span class="k">return</span> () =<span class="t">&gt;</span> window.<span class="f">removeEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+  }, [])
+
+  <span class="k">return</span> (
+    <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+      <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={onAdd} <span class="t">/&gt;</span>
+      <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+        <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+        <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+          {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+            <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+              {f}
+            <span class="t">&lt;/button</span><span class="t">&gt;</span>
+          ))}
+        <span class="t">&lt;/div</span><span class="t">&gt;</span>
+        {loading &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявок…<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+        {error !== <span class="s">''</span> &amp;&amp; (
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"load-error"</span><span class="t">&gt;</span>
+            <span class="t">&lt;p</span><span class="t">&gt;</span>{error}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+            <span class="t">&lt;button</span> <span class="a">onClick</span>={onRetry}<span class="t">&gt;</span>Повторить<span class="t">&lt;/button</span><span class="t">&gt;</span>
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+        )}
+        {!loading &amp;&amp; error === <span class="s">''</span> &amp;&amp; visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+        {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+          <span class="t">&lt;RequestCard</span>
+            <span class="a">key</span>={r.id}
+            <span class="a">title</span>={r.title}
+            <span class="a">room</span>={r.room}
+            <span class="a">category</span>={r.category}
+            <span class="a">details</span>={r.details}
+            <span class="a">status</span>={r.status}
+            <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">onNext</span>(r.id, r.status)}
+            <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">onRemove</span>(r.id)}
+          <span class="t">/&gt;</span>
+        ))}
+      <span class="t">&lt;/section</span><span class="t">&gt;</span>
+    <span class="t">&lt;/main</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> BoardPage</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/04-boardpage.png" width="1240" height="780" alt="VS Code: папка src/pages с файлом BoardPage.tsx, тип BoardPageProps и функция BoardPage" loading="lazy"><figcaption>Новая папка pages и файл BoardPage.tsx</figcaption></figure></li>
+          <li><b>Создайте страницу статистики</b><p>В папке <code>src/pages</code> создайте файл <code>StatsPage.tsx</code>.</p>
+            <!--CODE tools/code31/StatsPage.tsx | zayavki/src/pages/StatsPage.tsx--><figure class="code"><figcaption><span>zayavki/src/pages/StatsPage.tsx</span></figcaption><pre><span class="k">import</span> <span class="k">type</span> { Category, RequestItem, Status } <span class="k">from</span> <span class="s">'../requests'</span>
+
+<span class="k">const</span> STATUSES: Status[] = [<span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+<span class="k">const</span> CATEGORIES: Category[] = [<span class="s">'Компьютер'</span>, <span class="s">'Проектор'</span>, <span class="s">'Принтер'</span>, <span class="s">'Интернет'</span>]
+
+<span class="k">type</span> StatsPageProps = {
+  requests: RequestItem[]
+  loading: boolean
+}
+
+<span class="k">function</span> <span class="f">StatsPage</span>({ requests, loading }: StatsPageProps) {
+  <span class="k">if</span> (loading) {
+    <span class="k">return</span> (
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявок…<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    )
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>Статистика<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>Всего заявок: {requests.length}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"stats"</span><span class="t">&gt;</span>
+        <span class="t">&lt;table</span><span class="t">&gt;</span>
+          <span class="t">&lt;thead</span><span class="t">&gt;</span>
+            <span class="t">&lt;tr</span><span class="t">&gt;</span><span class="t">&lt;th</span><span class="t">&gt;</span>Статус<span class="t">&lt;/th</span><span class="t">&gt;</span><span class="t">&lt;th</span><span class="t">&gt;</span>Заявок<span class="t">&lt;/th</span><span class="t">&gt;</span><span class="t">&lt;/tr</span><span class="t">&gt;</span>
+          <span class="t">&lt;/thead</span><span class="t">&gt;</span>
+          <span class="t">&lt;tbody</span><span class="t">&gt;</span>
+            {STATUSES.<span class="f">map</span>((s) =<span class="t">&gt;</span> (
+              <span class="t">&lt;tr</span> <span class="a">key</span>={s}<span class="t">&gt;</span>
+                <span class="t">&lt;td</span><span class="t">&gt;</span>{s}<span class="t">&lt;/td</span><span class="t">&gt;</span>
+                <span class="t">&lt;td</span><span class="t">&gt;</span>{requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === s).length}<span class="t">&lt;/td</span><span class="t">&gt;</span>
+              <span class="t">&lt;/tr</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/tbody</span><span class="t">&gt;</span>
+        <span class="t">&lt;/table</span><span class="t">&gt;</span>
+        <span class="t">&lt;table</span><span class="t">&gt;</span>
+          <span class="t">&lt;thead</span><span class="t">&gt;</span>
+            <span class="t">&lt;tr</span><span class="t">&gt;</span><span class="t">&lt;th</span><span class="t">&gt;</span>Категория<span class="t">&lt;/th</span><span class="t">&gt;</span><span class="t">&lt;th</span><span class="t">&gt;</span>Заявок<span class="t">&lt;/th</span><span class="t">&gt;</span><span class="t">&lt;/tr</span><span class="t">&gt;</span>
+          <span class="t">&lt;/thead</span><span class="t">&gt;</span>
+          <span class="t">&lt;tbody</span><span class="t">&gt;</span>
+            {CATEGORIES.<span class="f">map</span>((c) =<span class="t">&gt;</span> (
+              <span class="t">&lt;tr</span> <span class="a">key</span>={c}<span class="t">&gt;</span>
+                <span class="t">&lt;td</span><span class="t">&gt;</span>{c}<span class="t">&lt;/td</span><span class="t">&gt;</span>
+                <span class="t">&lt;td</span><span class="t">&gt;</span>{requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.category === c).length}<span class="t">&lt;/td</span><span class="t">&gt;</span>
+              <span class="t">&lt;/tr</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/tbody</span><span class="t">&gt;</span>
+        <span class="t">&lt;/table</span><span class="t">&gt;</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+    <span class="t">&lt;/main</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> StatsPage</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-statspage.png" width="1240" height="780" alt="VS Code: StatsPage.tsx, массивы STATUSES и CATEGORIES, таблица со счётчиками" loading="lazy"><figcaption>StatsPage.tsx</figcaption></figure></li>
+          <li><b>Добавьте стили страниц</b><p>Откройте <code>src/index.css</code> и вставьте в конец файла правила ниже. В них оформление меню, страниц, таблиц статистики и страницы заявки — для всех шагов этой главы.</p>
+            <!--CODE tools/code31/index-add.css | zayavki/src/index.css · в конец файла--><figure class="code"><figcaption><span>zayavki/src/index.css · в конец файла</span></figcaption><pre>
+.nav {
+  <span class="a">display</span>: flex;
+  <span class="a">justify-content</span>: center;
+  <span class="a">gap</span>: <span class="n">8px</span>;
+  <span class="a">margin-top</span>: <span class="n">16px</span>;
+}
+
+.nav a {
+  <span class="a">padding</span>: <span class="n">6px</span> <span class="n">14px</span>;
+  <span class="a">border-radius</span>: <span class="n">16px</span>;
+  <span class="a">color</span>: <span class="n">#b8c0d4</span>;
+  <span class="a">text-decoration</span>: none;
+}
+
+.nav a.active {
+  <span class="a">background</span>: <span class="n">#ffffff</span>;
+  <span class="a">color</span>: <span class="n">#1f2430</span>;
+}
+
+.notice--page {
+  <span class="a">box-sizing</span>: border-box;
+  <span class="a">max-width</span>: <span class="n">960px</span>;
+  <span class="a">margin</span>: <span class="n">16px</span> auto <span class="n">0</span>;
+}
+
+.page {
+  <span class="a">max-width</span>: <span class="n">960px</span>;
+  <span class="a">margin</span>: <span class="n">0</span> auto;
+  <span class="a">padding</span>: <span class="n">24px</span> <span class="n">20px</span>;
+}
+
+.page h2 {
+  <span class="a">margin</span>: <span class="n">0</span> <span class="n">0</span> <span class="n">12px</span>;
+}
+
+.stats {
+  <span class="a">display</span>: grid;
+  <span class="a">grid-template-columns</span>: <span class="n">1fr</span> <span class="n">1fr</span>;
+  <span class="a">gap</span>: <span class="n">24px</span>;
+  <span class="a">margin-top</span>: <span class="n">16px</span>;
+}
+
+.stats table {
+  <span class="a">border-collapse</span>: collapse;
+  <span class="a">background</span>: <span class="n">#ffffff</span>;
+  <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#dde1ea</span>;
+}
+
+.stats th,
+.stats td {
+  <span class="a">padding</span>: <span class="n">8px</span> <span class="n">12px</span>;
+  <span class="a">border-bottom</span>: <span class="n">1px</span> solid <span class="n">#dde1ea</span>;
+  <span class="a">text-align</span>: left;
+}
+
+.stats <span class="a">td</span>:last-child {
+  <span class="a">text-align</span>: right;
+}
+
+.card h3 a {
+  <span class="a">color</span>: inherit;
+  <span class="a">text-decoration</span>: none;
+}
+
+.card h3 <span class="a">a</span>:hover {
+  <span class="a">color</span>: <span class="n">#2f6fde</span>;
+  <span class="a">text-decoration</span>: underline;
+}
+
+.back {
+  <span class="a">display</span>: inline-block;
+  <span class="a">margin-bottom</span>: <span class="n">16px</span>;
+  <span class="a">color</span>: <span class="n">#2f6fde</span>;
+  <span class="a">text-decoration</span>: none;
+}
+
+.request h2 {
+  <span class="a">margin</span>: <span class="n">8px</span> <span class="n">0</span>;
+  <span class="a">font-size</span>: <span class="n">24px</span>;
+}
+
+.request .request__id {
+  <span class="a">margin-top</span>: <span class="n">12px</span>;
+  <span class="a">color</span>: <span class="n">#8a93a6</span>;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/05a-index-css.png" width="1240" height="780" alt="VS Code: index.css, со строки 231 новые правила .nav, .nav a, .nav a.active, .notice--page, .page" loading="lazy"><figcaption>Новые правила в конце index.css</figcaption></figure></li>
+          <li><b>Замените App.tsx</b><p>Замените содержимое <code>src/App.tsx</code>. Фильтр, Esc и разметка доски из него ушли в <code>BoardPage</code>. Вместо разметки — список маршрутов в строках 63–79. Сообщение <code>notice</code> теперь выводится под шапкой, строка 62. Изменённые строки подсвечены.</p>
+            <!--CODE tools/code31/App-routes.tsx | zayavki/src/App.tsx | mark=2,4-5,62-79--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="hl"><span class="k">import</span> { Route, Routes } <span class="k">from</span> <span class="s">'react-router'</span></span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="hl"><span class="k">import</span> BoardPage <span class="k">from</span> <span class="s">'./pages/BoardPage'</span></span>
+<span class="hl"><span class="k">import</span> StatsPage <span class="k">from</span> <span class="s">'./pages/StatsPage'</span></span>
+<span class="k">import</span> <span class="k">type</span> { NewRequest, Status } <span class="k">from</span> <span class="s">'./requests'</span>
+<span class="k">import</span> { useRequests } <span class="k">from</span> <span class="s">'./useRequests'</span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> { requests, loading, error, retry, add, next, remove } = <span class="f">useRequests</span>()
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+  }, [newCount])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">if</span> (notice === <span class="s">''</span>) {
+      <span class="k">return</span>
+    }
+    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)
+    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)
+  }, [notice])
+
+  async <span class="k">function</span> <span class="f">handleNext</span>(id: string, status: Status) {
+    try {
+      await <span class="f">next</span>(id, status)
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    try {
+      <span class="k">const</span> created = await <span class="f">add</span>(data)
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+      <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+      <span class="k">if</span> (sent) {
+        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+      } <span class="k">else</span> {
+        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+      }
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  async <span class="k">function</span> <span class="f">handleRemove</span>(id: string) {
+    try {
+      await <span class="f">remove</span>(id)
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+<span class="hl">      {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice notice--page"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}</span>
+<span class="hl">      <span class="t">&lt;Routes</span><span class="t">&gt;</span></span>
+<span class="hl">        <span class="t">&lt;Route</span></span>
+<span class="hl">          <span class="a">path</span>=<span class="s">"/"</span></span>
+<span class="hl">          <span class="a">element</span>={</span>
+<span class="hl">            <span class="t">&lt;BoardPage</span></span>
+<span class="hl">              <span class="a">requests</span>={requests}</span>
+<span class="hl">              <span class="a">loading</span>={loading}</span>
+<span class="hl">              <span class="a">error</span>={error}</span>
+<span class="hl">              <span class="a">onRetry</span>={retry}</span>
+<span class="hl">              <span class="a">onAdd</span>={handleAdd}</span>
+<span class="hl">              <span class="a">onNext</span>={handleNext}</span>
+<span class="hl">              <span class="a">onRemove</span>={handleRemove}</span>
+<span class="hl">            <span class="t">/&gt;</span></span>
+<span class="hl">          }</span>
+<span class="hl">        <span class="t">/&gt;</span></span>
+<span class="hl">        <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"/stats"</span> <span class="a">element</span>={<span class="t">&lt;StatsPage</span> <span class="a">requests</span>={requests} <span class="a">loading</span>={loading} <span class="t">/&gt;</span>} <span class="t">/&gt;</span></span>
+<span class="hl">      <span class="t">&lt;/Routes</span><span class="t">&gt;</span></span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/06-app-routes.png" width="1240" height="780" alt="VS Code: App.tsx, конец файла: Route с BoardPage и props, Route path=/stats с StatsPage, закрывающий тег Routes" loading="lazy"><figcaption>Список маршрутов в App.tsx</figcaption></figure></li>
+          <li><b>Проверьте путь /</b><p>Откройте <code>localhost:5173</code> и обновите страницу (<kbd>F5</kbd>). Доска выглядит как раньше.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/07-glavnaya.png" width="1100" height="952" alt="Браузер, адрес localhost:5173/: доска заявок с формой и списком" loading="lazy"><figcaption>По пути / — доска</figcaption></figure></li>
+          <li><b>Проверьте путь /stats</b><p>Наберите в адресной строке <code>localhost:5173/stats</code>. Открылась страница статистики: всего 11 заявок, две таблицы.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/08-stats.png" width="1100" height="497" alt="Браузер, адрес localhost:5173/stats: Статистика, всего заявок 11; таблица статусов Новая 6, В работе 4, Готово 1; таблица категорий Компьютер 4, Проектор 1, Принтер 3, Интернет 3" loading="lazy"><figcaption>По пути /stats — статистика</figcaption></figure></li>
+          <li><b>Проверьте несуществующий путь</b><p>Откройте DevTools (<kbd>F12</kbd>) на вкладке <strong>Console</strong> и наберите адрес <code>localhost:5173/abc</code>. Под шапкой пусто, в консоли предупреждения <code>No routes matched location "/abc"</code> — «ни один маршрут не подошёл к адресу /abc».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/09-abc-pusto.png" width="1100" height="970" alt="Браузер, адрес localhost:5173/abc: только шапка; в консоли четыре предупреждения No routes matched location /abc" loading="lazy"><figcaption>Путь /abc: маршрута нет, страница пустая</figcaption></figure></li>
+          <li><b>Создайте страницу «Не найдено»</b><p>В папке <code>src/pages</code> создайте файл <code>NotFoundPage.tsx</code>.</p>
+            <!--CODE tools/code31/NotFoundPage.tsx | zayavki/src/pages/NotFoundPage.tsx--><figure class="code"><figcaption><span>zayavki/src/pages/NotFoundPage.tsx</span></figcaption><pre><span class="k">import</span> { useLocation } <span class="k">from</span> <span class="s">'react-router'</span>
+
+<span class="k">function</span> <span class="f">NotFoundPage</span>() {
+  <span class="k">const</span> { pathname } = <span class="f">useLocation</span>()
+
+  <span class="k">return</span> (
+    <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>Страница не найдена<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>Адреса {pathname} в приложении нет.<span class="t">&lt;/p</span><span class="t">&gt;</span>
+    <span class="t">&lt;/main</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> NotFoundPage</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/10-notfound-code.png" width="1240" height="780" alt="VS Code: NotFoundPage.tsx, useLocation и вывод pathname" loading="lazy"><figcaption>NotFoundPage.tsx</figcaption></figure></li>
+          <li><b>Добавьте маршрут «*»</b><p>В <code>src/App.tsx</code> после строки 5 добавьте импорт страницы:</p>
+            <!--CODE tools/code31/App-notfound.tsx | App.tsx · строка 6 | lines=6-6--><figure class="code"><figcaption><span>App.tsx · строка 6</span></figcaption><pre><span class="k">import</span> NotFoundPage <span class="k">from</span> <span class="s">'./pages/NotFoundPage'</span></pre></figure><!--/CODE-->
+            <p>После строки с маршрутом <code>/stats</code> (теперь это строка 79) добавьте маршрут для всех остальных путей:</p>
+            <!--CODE tools/code31/App-notfound.tsx | App.tsx · строка 80 | lines=80-80--><figure class="code"><figcaption><span>App.tsx · строка 80</span></figcaption><pre>        <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"*"</span> <span class="a">element</span>={<span class="t">&lt;NotFoundPage</span> <span class="t">/&gt;</span>} <span class="t">/&gt;</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/11-app-notfound.png" width="1240" height="780" alt="VS Code: App.tsx, строка 80 Route path=* element NotFoundPage перед закрывающим Routes" loading="lazy"><figcaption>Маршрут «*» — последний в списке</figcaption></figure></li>
+          <li><b>Проверьте путь /abc ещё раз</b><p>Обновите страницу <code>localhost:5173/abc</code> (<kbd>F5</kbd>). Под шапкой сообщение «Страница не найдена» с путём из адреса.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/12-notfound.png" width="1100" height="305" alt="Браузер, адрес localhost:5173/abc: Страница не найдена. Адреса /abc в приложении нет." loading="lazy"><figcaption>Путь /abc: страница «Не найдено»</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Три части маршрутизации</p>
+
+        <p>В react-router маршрутизацию собирают из трёх компонентов, и стоят они на разных уровнях приложения. Два из них — в <code>App</code>.</p>
+
+        <!--CODE tools/code31/App-routes.tsx | App.tsx · строки 63–79 | lines=63-79 pins=63:1,65:2,66:3,78:4--><figure class="code" data-read><figcaption><span>App.tsx · строки 63–79</span></figcaption><pre>      <span class="t">&lt;Routes</span><span class="t">&gt;</span>  <span class="pin">1</span>
+        <span class="t">&lt;Route</span>
+          <span class="a">path</span>=<span class="s">"/"</span>  <span class="pin">2</span>
+          <span class="a">element</span>={  <span class="pin">3</span>
+            <span class="t">&lt;BoardPage</span>
+              <span class="a">requests</span>={requests}
+              <span class="a">loading</span>={loading}
+              <span class="a">error</span>={error}
+              <span class="a">onRetry</span>={retry}
+              <span class="a">onAdd</span>={handleAdd}
+              <span class="a">onNext</span>={handleNext}
+              <span class="a">onRemove</span>={handleRemove}
+            <span class="t">/&gt;</span>
+          }
+        <span class="t">/&gt;</span>
+        <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"/stats"</span> <span class="a">element</span>={<span class="t">&lt;StatsPage</span> <span class="a">requests</span>={requests} <span class="a">loading</span>={loading} <span class="t">/&gt;</span>} <span class="t">/&gt;</span>  <span class="pin">4</span>
+      <span class="t">&lt;/Routes</span><span class="t">&gt;</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p><code>&lt;Routes&gt;</code> — место на экране, где появляется страница. Он берёт путь из адреса, по очереди сравнивает его с путями вложенных <code>&lt;Route&gt;</code> и отрисовывает компонент первого подходящего маршрута. Всё, что стоит вне <code>&lt;Routes&gt;</code>, видно на всех страницах: так шапка <code>Header</code> в строке 61 остаётся сверху и на доске, и на статистике.</p></div></li>
+          <li><span class="pin">2</span><div><p><code>path="/"</code> — путь, при котором маршрут подходит. Путь <code>/</code> совпадает только с корнем сайта, путь <code>/stats</code> — только с <code>/stats</code>.</p></div></li>
+          <li><span class="pin">3</span><div><p><code>element</code> — что отрисовать: готовый тег компонента вместе с props. Значение записано в фигурных скобках, потому что это выражение JSX. <code>BoardPage</code> получает от <code>App</code> список, состояние загрузки и обработчики — так же, как раньше их получали <code>RequestForm</code> и <code>RequestCard</code>.</p></div></li>
+          <li><span class="pin">4</span><div><p>Короткий маршрут в одну строку. Статистике нужны только список и признак загрузки.</p></div></li>
+        </ol>
+
+        <p><code>&lt;BrowserRouter&gt;</code> в <code>main.tsx</code> — третья часть. Он читает путь из адресной строки, следит за его изменениями и сообщает путь вложенным компонентам. Поэтому <code>&lt;BrowserRouter&gt;</code> оборачивает всё приложение: <code>&lt;Routes&gt;</code>, ссылки и хуки react-router работают только внутри него.</p>
+
+        <p>Маршрут <code>path="*"</code> подходит к любому пути. <code>&lt;Routes&gt;</code> выбирает маршрут с самым точным совпадением, поэтому <code>*</code> срабатывает, только когда другие маршруты не подошли. Без него на пути <code>/abc</code> не подходит ничего, <code>&lt;Routes&gt;</code> ничего не отрисовывает, и под шапкой пусто.</p>
+
+        <p>Компонент <code>NotFoundPage</code> узнаёт путь хуком <code>useLocation</code>. Хук возвращает объект с текущим адресом, а поле <code>pathname</code> — путь без сервера: <code>/abc</code>. Хуки react-router подчиняются тем же правилам, что <code>useState</code>: вызываются на верхнем уровне компонента, до любого <code>return</code>.</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Как Routes выбирает маршрут для пути /abc</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code31/App-notfound.tsx | | bare lines=64-81--><pre class="trace__code" data-start="64">      <span class="t">&lt;Routes</span><span class="t">&gt;</span>
+        <span class="t">&lt;Route</span>
+          <span class="a">path</span>=<span class="s">"/"</span>
+          <span class="a">element</span>={
+            <span class="t">&lt;BoardPage</span>
+              <span class="a">requests</span>={requests}
+              <span class="a">loading</span>={loading}
+              <span class="a">error</span>={error}
+              <span class="a">onRetry</span>={retry}
+              <span class="a">onAdd</span>={handleAdd}
+              <span class="a">onNext</span>={handleNext}
+              <span class="a">onRemove</span>={handleRemove}
+            <span class="t">/&gt;</span>
+          }
+        <span class="t">/&gt;</span>
+        <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"/stats"</span> <span class="a">element</span>={<span class="t">&lt;StatsPage</span> <span class="a">requests</span>={requests} <span class="a">loading</span>={loading} <span class="t">/&gt;</span>} <span class="t">/&gt;</span>
+        <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"*"</span> <span class="a">element</span>={<span class="t">&lt;NotFoundPage</span> <span class="t">/&gt;</span>} <span class="t">/&gt;</span>
+      <span class="t">&lt;/Routes</span><span class="t">&gt;</span></pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="64"><b>Путь из адреса</b>
+                  <p><code>BrowserRouter</code> прочитал адрес <code>localhost:5173/abc</code> и передал <code>Routes</code> путь.</p>
+                  <div class="vars"><span class="var var--new"><i>pathname</i><span>/abc</span></span></div></li>
+                <li data-lines="65-66"><b>Маршрут /</b>
+                  <p>Путь <code>/</code> совпадает только с корнем. <code>/abc</code> — не корень, маршрут не подходит.</p></li>
+                <li data-lines="79"><b>Маршрут /stats</b>
+                  <p><code>/abc</code> и <code>/stats</code> — разные пути. Не подходит.</p></li>
+                <li data-lines="80"><b>Маршрут *</b>
+                  <p>Звёздочка подходит к любому пути. Других совпадений нет, поэтому выбран этот маршрут.</p>
+                  <div class="vars"><span class="var var--new"><i>выбран</i><span>NotFoundPage</span></span></div></li>
+                <li data-lines="80"><b>Отрисовка</b>
+                  <p><code>Routes</code> отрисовывает элемент маршрута: <code>&lt;NotFoundPage /&gt;</code>. Внутри него <code>useLocation</code> возвращает тот же путь <code>/abc</code>, и он попадает в текст сообщения.</p></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p class="bridge">Страницы открываются, но пока только набором адреса вручную. Нужно меню со ссылками.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Переходы: Link и NavLink</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: меню на обычных ссылках</p>
+
+        <ol class="steps">
+          <li><b>Добавьте меню в шапку</b><p>Замените содержимое <code>src/components/Header.tsx</code>. Под счётчиком — меню <code>&lt;nav&gt;</code> из двух обычных ссылок HTML.</p>
+            <!--CODE tools/code31/Header-a.tsx | zayavki/src/components/Header.tsx · опыт | mark=11-14--><figure class="code"><figcaption><span>zayavki/src/components/Header.tsx · опыт</span></figcaption><pre><span class="k">type</span> HeaderProps = {
+  newCount: number
+}
+
+<span class="k">function</span> <span class="f">Header</span>({ newCount }: HeaderProps) {
+  <span class="k">return</span> (
+    <span class="t">&lt;header</span> <span class="a">className</span>=<span class="s">"header"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h1</span><span class="t">&gt;</span>Доска заявок<span class="t">&lt;/h1</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>ИТ-отдел колледжа · заявки студентов и преподавателей<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"header__count"</span><span class="t">&gt;</span>Новых заявок: {newCount}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+<span class="hl">      <span class="t">&lt;nav</span> <span class="a">className</span>=<span class="s">"nav"</span><span class="t">&gt;</span></span>
+<span class="hl">        <span class="t">&lt;a</span> <span class="a">href</span>=<span class="s">"/"</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/a</span><span class="t">&gt;</span></span>
+<span class="hl">        <span class="t">&lt;a</span> <span class="a">href</span>=<span class="s">"/stats"</span><span class="t">&gt;</span>Статистика<span class="t">&lt;/a</span><span class="t">&gt;</span></span>
+<span class="hl">      <span class="t">&lt;/nav</span><span class="t">&gt;</span></span>
+    <span class="t">&lt;/header</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> Header</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/13-header-a.png" width="1240" height="780" alt="VS Code: Header.tsx, nav с двумя ссылками a href=/ и a href=/stats" loading="lazy"><figcaption>Меню из двух тегов &lt;a&gt;</figcaption></figure></li>
+          <li><b>Перейдите на статистику</b><p>Откройте <code>localhost:5173</code>. В DevTools перейдите на вкладку <strong>Network</strong> и выберите фильтр <strong>All</strong>. Нажмите кнопку очистки списка <strong>⊘</strong> (Clear network log), затем в меню на странице — <strong>Статистика</strong>. Внизу панели — <code>31 requests</code>: браузер заново загрузил страницу, модули приложения, список заявок и подписку на события.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/14-a-network.png" width="1100" height="1120" alt="Страница статистики и вкладка Network: api.ts, requests.ts, realtime.ts, pocketbase.js, два запроса records?sort=-created, realtime; внизу 31 requests" loading="lazy"><figcaption>Переход по &lt;a href&gt;: 31 запрос</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--do"><span>Делаем</span>Меню на NavLink</p>
+
+        <ol class="steps">
+          <li><b>Замените ссылки на NavLink</b><p>Замените содержимое <code>src/components/Header.tsx</code>. Теги <code>&lt;a href&gt;</code> заменены компонентом <code>NavLink</code> из react-router.</p>
+            <!--CODE tools/code31/Header.tsx | zayavki/src/components/Header.tsx | mark=1,14-15--><figure class="code"><figcaption><span>zayavki/src/components/Header.tsx</span></figcaption><pre><span class="hl"><span class="k">import</span> { NavLink } <span class="k">from</span> <span class="s">'react-router'</span></span>
+
+<span class="k">type</span> HeaderProps = {
+  newCount: number
+}
+
+<span class="k">function</span> <span class="f">Header</span>({ newCount }: HeaderProps) {
+  <span class="k">return</span> (
+    <span class="t">&lt;header</span> <span class="a">className</span>=<span class="s">"header"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h1</span><span class="t">&gt;</span>Доска заявок<span class="t">&lt;/h1</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>ИТ-отдел колледжа · заявки студентов и преподавателей<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"header__count"</span><span class="t">&gt;</span>Новых заявок: {newCount}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;nav</span> <span class="a">className</span>=<span class="s">"nav"</span><span class="t">&gt;</span>
+<span class="hl">        <span class="t">&lt;NavLink</span> <span class="a">to</span>=<span class="s">"/"</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/NavLink</span><span class="t">&gt;</span></span>
+<span class="hl">        <span class="t">&lt;NavLink</span> <span class="a">to</span>=<span class="s">"/stats"</span><span class="t">&gt;</span>Статистика<span class="t">&lt;/NavLink</span><span class="t">&gt;</span></span>
+      <span class="t">&lt;/nav</span><span class="t">&gt;</span>
+    <span class="t">&lt;/header</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> Header</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/15-header-navlink.png" width="1240" height="780" alt="VS Code: Header.tsx, import NavLink from react-router, NavLink to=/ и NavLink to=/stats" loading="lazy"><figcaption>Меню на NavLink</figcaption></figure></li>
+          <li><b>Повторите переход</b><p>Обновите страницу <code>localhost:5173</code> (<kbd>F5</kbd>), очистите список Network кнопкой <strong>⊘</strong> и нажмите <strong>Статистика</strong>. Адрес сменился на <code>/stats</code>, в Network одна строка — значок вкладки <code>favicon.svg</code>. Заявки заново не загружались. Пункт меню «Статистика» выделен белым.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/16-navlink-network.png" width="1100" height="1120" alt="Страница статистики, пункт меню Статистика выделен; во вкладке Network одна строка favicon.svg, внизу 1 requests" loading="lazy"><figcaption>Переход по NavLink: запросов к серверу нет</figcaption></figure></li>
+          <li><b>Выберите фильтр</b><p>Закройте DevTools. Нажмите пункт меню <strong>Заявки</strong>, затем фильтр <strong>Новая</strong>. В списке только новые заявки.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/17-filtr-novaya.png" width="1100" height="952" alt="Доска, пункт меню Заявки выделен, выбран фильтр Новая, в списке только заявки со статусом Новая" loading="lazy"><figcaption>Фильтр «Новая» на доске</figcaption></figure></li>
+          <li><b>Уйдите и вернитесь</b><p>Нажмите <strong>Статистика</strong>, затем <strong>Заявки</strong>. Фильтр снова «Все».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/18-filtr-sbros.png" width="1100" height="952" alt="Доска после возврата со статистики: выбран фильтр Все, в списке заявки всех статусов" loading="lazy"><figcaption>После возврата фильтр сброшен на «Все»</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Чем NavLink отличается от &lt;a&gt;</p>
+
+        <p>Обычная ссылка <code>&lt;a href="/stats"&gt;</code> — команда браузеру открыть новую страницу. Браузер выгружает текущую страницу целиком и запрашивает адрес у сервера заново. Vite отдаёт тот же <code>index.html</code>, и приложение запускается с нуля: все модули загружаются снова, <code>useRequests</code> заново загружает список и подписывается на события. Всё состояние — список, сообщение, фильтр — теряется. Отсюда 31 запрос в опыте.</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Чтобы сменить канал, телевизор не выключают из розетки: нажимают кнопку на пульте, и меняется только картинка. Обычная ссылка в одностраничном приложении похожа на выключение из розетки: после включения телевизор заново загружается и ищет каналы.</p>
+        </div></div>
+
+        <p><span class="term">Link</span> — компонент react-router для ссылки внутри приложения. Он отрисовывает тот же тег <code>&lt;a&gt;</code>, но перехватывает нажатие. Вместо загрузки новой страницы <code>Link</code> меняет адрес в строке браузера средствами History API (функция <code>history.pushState</code>) и сообщает <code>BrowserRouter</code> новый путь. <code>Routes</code> отрисовывает другой маршрут, а <code>App</code>, хук <code>useRequests</code> и список заявок остаются в памяти. Атрибут <code>to</code> — путь, куда ведёт ссылка, вместо <code>href</code>.</p>
+
+        <p><span class="term">NavLink</span> — тот же <code>Link</code> для меню. Если его путь совпадает с текущим, <code>NavLink</code> добавляет тегу класс <code>active</code>. Правило <code>.nav a.active</code> из <code>index.css</code> выделяет такой пункт белым фоном. Для пути <code>/</code> совпадение только точное, поэтому на странице <code>/stats</code> пункт «Заявки» не выделен.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Переход на /stats по &lt;a href&gt; и по NavLink</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 270" role="img" aria-label="Слева: обычная ссылка — браузер запрашивает /stats у Vite, приложение запускается заново, useRequests снова загружает список, 31 запрос. Справа: NavLink — pushState меняет адрес, Routes отрисовывает StatsPage, App и список заявок остаются, запросов к серверу нет">
+              <rect x="20" y="20" width="340" height="230" fill="#F9DDE8"/><text class="mono" x="36" y="46">&lt;a href="/stats"&gt;</text>
+              <text class="soft" x="36" y="80">1. страница выгружается</text><text class="soft" x="36" y="104">2. GET /stats → index.html</text><text class="soft" x="36" y="128">3. модули загружаются заново</text><text class="soft" x="36" y="152">4. App с пустым состоянием</text><text class="soft" x="36" y="176">5. useRequests: GET records</text><text class="soft" x="36" y="200">6. новая подписка realtime</text><text class="mono ng-text" x="36" y="232">31 запрос</text>
+              <rect x="400" y="20" width="340" height="230" fill="#D4EEDF"/><text class="mono" x="416" y="46">&lt;NavLink to="/stats"&gt;</text>
+              <text class="soft" x="416" y="80">1. нажатие перехвачено</text><text class="soft" x="416" y="104">2. pushState: адрес /stats</text><text class="soft" x="416" y="128">3. Routes: StatsPage</text><text class="soft" x="416" y="152">4. App, список и подписка</text><text class="soft" x="416" y="176">   остаются в памяти</text><text class="mono" x="416" y="232">запросов к серверу нет</text>
+            </svg>
+          </div>
+          <p class="scheme__note">В обоих случаях в адресной строке <code>/stats</code> и на экране статистика. Различаются шаги между нажатием и появлением страницы.</p>
+        </figure>
+
+        <p>Кнопки браузера «Назад» и «Вперёд» тоже работают без перезагрузки: <code>pushState</code> записывает каждый переход в историю вкладки, и <code>BrowserRouter</code> отслеживает переходы по ней.</p>
+
+        <p>Фильтр сбросился по другой причине. При переходе на <code>/stats</code> маршрут <code>/</code> перестаёт подходить, и <code>Routes</code> убирает <code>BoardPage</code> с экрана. Компонент удаляется вместе со своим состоянием <code>filter</code>, а эффект Esc выполняет очистку из главы 2.1 и снимает подписку на клавиатуру. При возврате на <code>/</code> создаётся новый <code>BoardPage</code>, и <code>useState</code> снова начинает с <code>'Все'</code>. Состояние, которое должно пережить смену страниц, хранят выше <code>Routes</code> — в <code>App</code>. Так хранится список заявок, поэтому он не загружается заново.</p>
+
+        <p class="bridge">Меню ведёт на две постоянные страницы. Страниц заявок столько, сколько заявок в базе, и для них нужен один маршрут с изменяемой частью пути.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Адрес с параметром: страница заявки</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Ссылка с карточки и страница заявки</p>
+
+        <ol class="steps">
+          <li><b>Сделайте заголовок карточки ссылкой</b><p>Замените содержимое <code>src/components/RequestCard.tsx</code>. Карточка получает номер заявки в prop <code>id</code>, а заголовок становится ссылкой на страницу заявки.</p>
+            <!--CODE tools/code31/RequestCard.tsx | zayavki/src/components/RequestCard.tsx | mark=2,6,16,25-27--><figure class="code"><figcaption><span>zayavki/src/components/RequestCard.tsx</span></figcaption><pre><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="hl"><span class="k">import</span> { Link } <span class="k">from</span> <span class="s">'react-router'</span></span>
+<span class="k">import</span> <span class="k">type</span> { Category, Status } <span class="k">from</span> <span class="s">'../requests'</span>
+
+<span class="k">type</span> RequestCardProps = {
+<span class="hl">  id: string</span>
+  title: string
+  room: string
+  category: Category
+  details: string
+  status: Status
+  onNext: () =<span class="t">&gt;</span> void
+  onRemove: () =<span class="t">&gt;</span> void
+}
+
+<span class="hl"><span class="k">function</span> <span class="f">RequestCard</span>({ id, title, room, category, details, status, onNext, onRemove }: RequestCardProps) {</span>
+  <span class="k">const</span> [open, setOpen] = <span class="f">useState</span>(<span class="k">false</span>)
+
+  <span class="k">return</span> (
+    <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {room} · {category}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{status}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+<span class="hl">      <span class="t">&lt;h3</span><span class="t">&gt;</span></span>
+<span class="hl">        <span class="t">&lt;Link</span> <span class="a">to</span>={<span class="s">`/requests/${id}`</span>}<span class="t">&gt;</span>{title}<span class="t">&lt;/Link</span><span class="t">&gt;</span></span>
+<span class="hl">      <span class="t">&lt;/h3</span><span class="t">&gt;</span></span>
+      {open &amp;&amp; <span class="t">&lt;p</span><span class="t">&gt;</span>{details}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__actions"</span><span class="t">&gt;</span>
+        <span class="t">&lt;button</span> <span class="a">className</span>=<span class="s">"card__more"</span> <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setOpen</span>(!open)}<span class="t">&gt;</span>
+          {open ? <span class="s">'Скрыть'</span> : <span class="s">'Подробнее'</span>}
+        <span class="t">&lt;/button</span><span class="t">&gt;</span>
+        {status === <span class="s">'Готово'</span> ? (
+          <span class="t">&lt;button</span> <span class="a">onClick</span>={onRemove}<span class="t">&gt;</span>Убрать с доски<span class="t">&lt;/button</span><span class="t">&gt;</span>
+        ) : (
+          <span class="t">&lt;button</span> <span class="a">onClick</span>={onNext}<span class="t">&gt;</span>{status === <span class="s">'Новая'</span> ? <span class="s">'Взять в работу'</span> : <span class="s">'Завершить'</span>}<span class="t">&lt;/button</span><span class="t">&gt;</span>
+        )}
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+    <span class="t">&lt;/article</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestCard</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/19-requestcard.png" width="1240" height="780" alt="VS Code: RequestCard.tsx, строка 26 Link to=/requests/${id} с заголовком; в проводнике у BoardPage.tsx метка ошибки 1" loading="lazy"><figcaption>Заголовок карточки — ссылка Link</figcaption></figure>
+            <p>В проводнике у <code>BoardPage.tsx</code> появилась красная метка: карточке теперь нужен <code>id</code>, а страница его ещё не передаёт.</p></li>
+          <li><b>Передайте id в карточку</b><p>Откройте <code>src/pages/BoardPage.tsx</code>. После строки 57 <code>key={r.id}</code> добавьте строку:</p>
+            <!--CODE tools/code31/BoardPage.tsx | BoardPage.tsx · строка 58 | lines=58-58--><figure class="code"><figcaption><span>BoardPage.tsx · строка 58</span></figcaption><pre>            <span class="a">id</span>={r.id}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/20-boardpage-id.png" width="1240" height="780" alt="VS Code: BoardPage.tsx, у RequestCard строки key={r.id} и id={r.id}" loading="lazy"><figcaption>BoardPage передаёт карточке id</figcaption></figure></li>
+          <li><b>Создайте страницу заявки</b><p>В папке <code>src/pages</code> создайте файл <code>RequestPage.tsx</code>.</p>
+            <!--CODE tools/code31/RequestPage.tsx | zayavki/src/pages/RequestPage.tsx--><figure class="code"><figcaption><span>zayavki/src/pages/RequestPage.tsx</span></figcaption><pre><span class="k">import</span> { Link, useNavigate, useParams } <span class="k">from</span> <span class="s">'react-router'</span>
+<span class="k">import</span> <span class="k">type</span> { RequestItem, Status } <span class="k">from</span> <span class="s">'../requests'</span>
+
+<span class="k">type</span> RequestPageProps = {
+  requests: RequestItem[]
+  loading: boolean
+  onNext: (id: string, status: Status) =<span class="t">&gt;</span> void
+  onRemove: (id: string) =<span class="t">&gt;</span> void
+}
+
+<span class="k">function</span> <span class="f">RequestPage</span>({ requests, loading, onNext, onRemove }: RequestPageProps) {
+  <span class="k">const</span> { id } = <span class="f">useParams</span>()
+  <span class="k">const</span> navigate = <span class="f">useNavigate</span>()
+
+  <span class="k">if</span> (loading) {
+    <span class="k">return</span> (
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявки…<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    )
+  }
+
+  <span class="k">const</span> request = requests.<span class="f">find</span>((r) =<span class="t">&gt;</span> r.id === id)
+  <span class="k">if</span> (request === <span class="k">undefined</span>) {
+    <span class="k">return</span> (
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+        <span class="t">&lt;Link</span> <span class="a">to</span>=<span class="s">"/"</span> <span class="a">className</span>=<span class="s">"back"</span><span class="t">&gt;</span>← Все заявки<span class="t">&lt;/Link</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявки с номером {id} нет: её удалили или в адресе ошибка.<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    )
+  }
+
+  <span class="k">function</span> <span class="f">handleRemove</span>(requestId: string) {
+    <span class="f">onRemove</span>(requestId)
+    <span class="f">navigate</span>(<span class="s">'/'</span>)
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+      <span class="t">&lt;Link</span> <span class="a">to</span>=<span class="s">"/"</span> <span class="a">className</span>=<span class="s">"back"</span><span class="t">&gt;</span>← Все заявки<span class="t">&lt;/Link</span><span class="t">&gt;</span>
+      <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card request"</span><span class="t">&gt;</span>
+        <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+          <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {request.room} · {request.category}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+          <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{request.status}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+        <span class="t">&lt;/div</span><span class="t">&gt;</span>
+        <span class="t">&lt;h2</span><span class="t">&gt;</span>{request.title}<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span><span class="t">&gt;</span>{request.details === <span class="s">''</span> ? <span class="s">'Подробностей нет.'</span> : request.details}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"request__id"</span><span class="t">&gt;</span>Номер заявки: {request.id}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+        <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__actions"</span><span class="t">&gt;</span>
+          {request.status === <span class="s">'Готово'</span> ? (
+            <span class="t">&lt;button</span> <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(request.id)}<span class="t">&gt;</span>Убрать с доски<span class="t">&lt;/button</span><span class="t">&gt;</span>
+          ) : (
+            <span class="t">&lt;button</span> <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">onNext</span>(request.id, request.status)}<span class="t">&gt;</span>
+              {request.status === <span class="s">'Новая'</span> ? <span class="s">'Взять в работу'</span> : <span class="s">'Завершить'</span>}
+            <span class="t">&lt;/button</span><span class="t">&gt;</span>
+          )}
+        <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;/article</span><span class="t">&gt;</span>
+    <span class="t">&lt;/main</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestPage</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/21-requestpage.png" width="1240" height="780" alt="VS Code: RequestPage.tsx, useParams и useNavigate в начале компонента, проверка loading, поиск заявки find" loading="lazy"><figcaption>RequestPage.tsx</figcaption></figure></li>
+          <li><b>Добавьте маршрут заявки</b><p>В <code>src/App.tsx</code> после строки 5 добавьте импорт:</p>
+            <!--CODE tools/code31/App.tsx | App.tsx · строка 6 | lines=6-6--><figure class="code"><figcaption><span>App.tsx · строка 6</span></figcaption><pre><span class="k">import</span> RequestPage <span class="k">from</span> <span class="s">'./pages/RequestPage'</span></pre></figure><!--/CODE-->
+            <p>Между маршрутами <code>/stats</code> и <code>*</code> (после строки 80) добавьте маршрут заявки:</p>
+            <!--CODE tools/code31/App.tsx | App.tsx · строки 81–84 | lines=81-84--><figure class="code"><figcaption><span>App.tsx · строки 81–84</span></figcaption><pre>        <span class="t">&lt;Route</span>
+          <span class="a">path</span>=<span class="s">"/requests/:id"</span>
+          <span class="a">element</span>={<span class="t">&lt;RequestPage</span> <span class="a">requests</span>={requests} <span class="a">loading</span>={loading} <span class="a">onNext</span>={handleNext} <span class="a">onRemove</span>={handleRemove} <span class="t">/&gt;</span>}
+        <span class="t">/&gt;</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/22-app-route.png" width="1240" height="780" alt="VS Code: App.tsx, Route path=/requests/:id с RequestPage между маршрутами /stats и *" loading="lazy"><figcaption>Маршрут /requests/:id в App.tsx</figcaption></figure></li>
+          <li><b>Откройте заявку</b><p>Обновите доску (<kbd>F5</kbd>) и нажмите на заголовок верхней заявки «Не показывает экран на стене». Адрес сменился на <code>/requests/…</code> с номером заявки из PocketBase, на странице — описание и кнопка «Завершить». Номер в адресе у вас будет другим: его выдаёт база.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/23-zayavka.png" width="1100" height="508" alt="Браузер, адрес localhost:5173/requests/sb54xjym6egnk8y: ссылка Все заявки, карточка Не показывает экран на стене, каб. 214, В работе, описание, номер заявки, кнопка Завершить" loading="lazy"><figcaption>Страница заявки по адресу /requests/…</figcaption></figure></li>
+          <li><b>Обновите страницу заявки</b><p>Нажмите <kbd>F5</kbd>. На мгновение появляется «Загрузка заявки…», затем та же страница, что на кадре выше.</p></li>
+          <li><b>Откройте номер, которого нет</b><p>Наберите адрес <code>localhost:5173/requests/abc</code>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/24-net-zayavki.png" width="1100" height="407" alt="Браузер, адрес localhost:5173/requests/abc: ссылка Все заявки и сообщение Заявки с номером abc нет: её удалили или в адресе ошибка." loading="lazy"><figcaption>Заявки с таким номером нет</figcaption></figure></li>
+          <li><b>Завершите заявку</b><p>Нажмите в браузере кнопку «Назад», чтобы вернуться на страницу заявки, и нажмите <strong>Завершить</strong>. Статус сменился на «Готово», кнопка — на «Убрать с доски».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/25-zavershena.png" width="1100" height="508" alt="Страница заявки Не показывает экран на стене со статусом Готово и кнопкой Убрать с доски" loading="lazy"><figcaption>Заявка завершена со своей страницы</figcaption></figure></li>
+          <li><b>Уберите заявку</b><p>Нажмите <strong>Убрать с доски</strong>. Открылась доска по адресу <code>/</code>, заявки «Не показывает экран на стене» в списке нет.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/26-ubrana.png" width="1100" height="952" alt="Доска по адресу localhost:5173/: заявки Не показывает экран на стене нет, сверху Не работает сканер" loading="lazy"><figcaption>После удаления — переход на доску</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Параметр пути и переход из кода</p>
+
+        <p>В пути маршрута <code>/requests/:id</code> часть с двоеточием — <span class="term">параметр пути</span>. Маршрут подходит к любому пути вида <code>/requests/что-угодно</code>, а то, что стоит на месте <code>:id</code>, react-router запоминает под именем <code>id</code>. Один маршрут обслуживает все заявки, как один бланк с пустой графой «номер кабинета» подходит для любого кабинета.</p>
+
+        <p>Ссылка в карточке собирает путь шаблонной строкой: <code>`/requests/${id}`</code>. Для заявки с номером <code>sb54xjym6egnk8y</code> получается <code>/requests/sb54xjym6egnk8y</code>, и на странице этот номер достаётся обратно.</p>
+
+        <!--CODE tools/code31/RequestPage.tsx | RequestPage.tsx · строки 11–36 | lines=11-36 pins=12:1,13:2,15:3,23:4,24:5,35:6--><figure class="code" data-read><figcaption><span>RequestPage.tsx · строки 11–36</span></figcaption><pre><span class="k">function</span> <span class="f">RequestPage</span>({ requests, loading, onNext, onRemove }: RequestPageProps) {
+  <span class="k">const</span> { id } = <span class="f">useParams</span>()  <span class="pin">1</span>
+  <span class="k">const</span> navigate = <span class="f">useNavigate</span>()  <span class="pin">2</span>
+
+  <span class="k">if</span> (loading) {  <span class="pin">3</span>
+    <span class="k">return</span> (
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявки…<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    )
+  }
+
+  <span class="k">const</span> request = requests.<span class="f">find</span>((r) =<span class="t">&gt;</span> r.id === id)  <span class="pin">4</span>
+  <span class="k">if</span> (request === <span class="k">undefined</span>) {  <span class="pin">5</span>
+    <span class="k">return</span> (
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+        <span class="t">&lt;Link</span> <span class="a">to</span>=<span class="s">"/"</span> <span class="a">className</span>=<span class="s">"back"</span><span class="t">&gt;</span>← Все заявки<span class="t">&lt;/Link</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявки с номером {id} нет: её удалили или в адресе ошибка.<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    )
+  }
+
+  <span class="k">function</span> <span class="f">handleRemove</span>(requestId: string) {
+    <span class="f">onRemove</span>(requestId)
+    <span class="f">navigate</span>(<span class="s">'/'</span>)  <span class="pin">6</span>
+  }</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p><code>useParams</code> — хук react-router, который возвращает параметры пути текущего маршрута. Для адреса <code>/requests/sb54xjym6egnk8y</code> он вернёт <code>{ id: 'sb54xjym6egnk8y' }</code>, и распаковка кладёт номер в переменную <code>id</code>. Тип <code>id</code> — <code>string | undefined</code>: в типе хука не записано, к какому маршруту относится компонент, поэтому TypeScript допускает отсутствие параметра.</p></div></li>
+          <li><span class="pin">2</span><div><p><code>useNavigate</code> возвращает функцию <code>navigate</code> — переход по пути из кода, без нажатия на ссылку. Оба хука стоят до первого <code>return</code>: правило из главы 2.4.</p></div></li>
+          <li><span class="pin">3</span><div><p>Пока список загружается, заявки в нём нет. Без этой проверки после <kbd>F5</kbd> на мгновение показалось бы сообщение «Заявки нет».</p></div></li>
+          <li><span class="pin">4</span><div><p><code>find</code> ищет в массиве первый элемент, для которого функция вернула <code>true</code>, и возвращает его. Если такого нет — <code>undefined</code>. Номер из адреса сравнивается с <code>id</code> каждой заявки.</p></div></li>
+          <li><span class="pin">5</span><div><p>Заявки нет: номер в адресе с ошибкой или заявку удалили. Страница показывает сообщение и ссылку на доску.</p></div></li>
+          <li><span class="pin">6</span><div><p>После удаления заявки её страница больше не нужна, и <code>navigate('/')</code> переводит на доску. <code>onRemove</code> отправляет запрос, а переход выполняется сразу, не дожидаясь ответа. Если сервер вернёт ошибку, её текст появится в сообщении под шапкой: <code>notice</code> выводит <code>App</code> на всех страницах.</p></div></li>
+        </ol>
+
+        <p>Страница заявки открывается и по прямому адресу, и после <kbd>F5</kbd>, потому что каждый шаг повторяется с нуля: Vite отдаёт <code>index.html</code>, <code>BrowserRouter</code> читает путь, <code>Routes</code> выбирает маршрут <code>/requests/:id</code>, а <code>useRequests</code> в <code>App</code> загружает список. Пока он загружается, <code>RequestPage</code> показывает «Загрузка заявки…».</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Открытие адреса /requests/sb54xjym6egnk8y после F5</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code31/RequestPage.tsx | | bare lines=11-31--><pre class="trace__code" data-start="11"><span class="k">function</span> <span class="f">RequestPage</span>({ requests, loading, onNext, onRemove }: RequestPageProps) {
+  <span class="k">const</span> { id } = <span class="f">useParams</span>()
+  <span class="k">const</span> navigate = <span class="f">useNavigate</span>()
+
+  <span class="k">if</span> (loading) {
+    <span class="k">return</span> (
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявки…<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    )
+  }
+
+  <span class="k">const</span> request = requests.<span class="f">find</span>((r) =<span class="t">&gt;</span> r.id === id)
+  <span class="k">if</span> (request === <span class="k">undefined</span>) {
+    <span class="k">return</span> (
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+        <span class="t">&lt;Link</span> <span class="a">to</span>=<span class="s">"/"</span> <span class="a">className</span>=<span class="s">"back"</span><span class="t">&gt;</span>← Все заявки<span class="t">&lt;/Link</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявки с номером {id} нет: её удалили или в адресе ошибка.<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    )
+  }</pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="12"><b>Параметр из адреса</b>
+                  <p><code>Routes</code> выбрал маршрут <code>/requests/:id</code>. <code>useParams</code> возвращает часть пути на месте <code>:id</code>.</p>
+                  <div class="vars"><span class="var var--new"><i>id</i><span>'sb54xjym6egnk8y'</span></span></div></li>
+                <li data-lines="15-21"><b>Первая отрисовка: загрузка</b>
+                  <p>Список ещё не пришёл, <code>loading</code> равен <code>true</code>. Компонент возвращает надпись «Загрузка заявки…».</p>
+                  <div class="vars"><span class="var"><i>loading</i><span>true</span></span><span class="var"><i>requests</i><span>[ ]</span></span></div></li>
+                <li data-lines="23"><b>Список пришёл</b>
+                  <p><code>App</code> получил 11 заявок и отрисовался заново, <code>RequestPage</code> — вместе с ним. <code>find</code> проверяет заявки по очереди и находит ту, у которой <code>id</code> совпал.</p>
+                  <div class="vars"><span class="var"><i>loading</i><span>false</span></span><span class="var var--new"><i>request</i><span>«Не показывает экран…»</span></span></div></li>
+                <li data-lines="24"><b>Заявка найдена</b>
+                  <p><code>request</code> — не <code>undefined</code>, блок с сообщением пропущен. Дальше выполняется основной <code>return</code> с карточкой заявки.</p></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p class="bridge">У каждой страницы теперь свой файл. Все данные для них по-прежнему хранятся в <code>App</code>.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Как данные доходят до страниц</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Props от App к страницам</p>
+
+        <p>В главе 2.4 из опыта с шапкой получилось правило: хук вызывают один раз в общем родителе, а данные передают через props. По этому правилу <code>useRequests</code> вызывается в <code>App</code>, и каждая страница получает свою часть данных в <code>element</code> своего маршрута.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Что App передаёт шапке и страницам</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 300" role="img" aria-label="App с useRequests и notice передаёт: Header — newCount; BoardPage — requests, loading, error, onRetry, onAdd, onNext, onRemove; StatsPage — requests, loading; RequestPage — requests, loading, onNext, onRemove; NotFoundPage — ничего">
+              <rect x="250" y="20" width="260" height="60" fill="#161A2E"/><text class="mono on-dark" x="266" y="46">App</text><text class="soft on-dark-soft" x="266" y="66">useRequests(), notice</text>
+              <path d="M380 80 V 110"/><path d="M40 110 H 720"/>
+              <path d="M90 110 V 130"/><path d="M84 122 L 90 130 L 96 122"/>
+              <path d="M240 110 V 130"/><path d="M234 122 L 240 130 L 246 122"/>
+              <path d="M410 110 V 130"/><path d="M404 122 L 410 130 L 416 122"/>
+              <path d="M560 110 V 130"/><path d="M554 122 L 560 130 L 566 122"/>
+              <path d="M690 110 V 130"/><path d="M684 122 L 690 130 L 696 122"/>
+              <rect x="20" y="138" width="130" height="80" fill="#D6F0F9"/><text class="mono" x="32" y="160">Header</text><text class="soft" x="32" y="184">newCount</text>
+              <rect x="160" y="138" width="160" height="150" fill="#D4EEDF"/><text class="mono" x="172" y="160">BoardPage</text><text class="soft" x="172" y="184">requests</text><text class="soft" x="172" y="200">loading</text><text class="soft" x="172" y="216">error</text><text class="soft" x="172" y="232">onRetry</text><text class="soft" x="172" y="248">onAdd</text><text class="soft" x="172" y="264">onNext</text><text class="soft" x="172" y="280">onRemove</text>
+              <rect x="330" y="138" width="150" height="80" fill="#D4EEDF"/><text class="mono" x="342" y="160">StatsPage</text><text class="soft" x="342" y="184">requests</text><text class="soft" x="342" y="200">loading</text>
+              <rect x="490" y="138" width="150" height="120" fill="#D4EEDF"/><text class="mono" x="502" y="160">RequestPage</text><text class="soft" x="502" y="184">requests</text><text class="soft" x="502" y="200">loading</text><text class="soft" x="502" y="216">onNext</text><text class="soft" x="502" y="232">onRemove</text>
+              <rect x="650" y="138" width="90" height="80" fill="#ffffff"/><text class="mono" x="660" y="160">NotFound</text><text class="soft" x="660" y="184">—</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Через <code>App</code> проходит 14 props. Одни и те же <code>requests</code> и <code>loading</code> передаются трём страницам, <code>onNext</code> и <code>onRemove</code> — двум.</p>
+        </figure>
+
+        <p>Такая передача работает и проверяется TypeScript: если забыть prop, сборка покажет ошибку, как с <code>id</code> карточки в §4. Но каждая новая страница, которой нужен список, добавляет в <code>App</code> ещё один тег со списком props. Если страница вложена глубже — например, таблица статистики станет отдельным компонентом, — props придётся передавать через промежуточный компонент, которому они не нужны.</p>
+
+        <!-- скрыто: архив конца главы
+        <div class="starter starter--finish">
+          <p class="starter__head">Проект после главы</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в состоянии конца главы.</p>
+            <a class="starter__btn" href="zayavki-konec-3-1.zip" download>zayavki-konec-3-1.zip</a>
+          </div>
+        </div>
+        -->
+
+        <p class="bridge">Глава 3.2 даёт страницам доступ к общим данным без передачи через <code>App</code> — через контекст React.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Частые ошибки</h2>
+
+        <p>Сообщения получены в проекте <code>zayavki</code>: ошибки типов — командой <code>npx tsc -b</code>, сборки — командой <code>npm run build</code>, остальные — в консоли браузера.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td><code>error TS2307: Cannot find module 'react-router' or its corresponding type declarations.</code> или <code>Rolldown failed to resolve import "react-router" from "src/main.tsx"</code></td><td>Библиотека не установлена в этом проекте</td><td>В папке <code>zayavki</code> выполнить <code>npm install react-router@8.5.1</code></td></tr>
+              <tr><td>Пустая страница, в консоли <code>useLocation() may be used only in the context of a &lt;Router&gt; component.</code></td><td>В <code>main.tsx</code> нет <code>&lt;BrowserRouter&gt;</code>, а <code>NavLink</code> или <code>Routes</code> его ищут</td><td>Обернуть <code>&lt;App /&gt;</code> в <code>&lt;BrowserRouter&gt;</code></td></tr>
+              <tr><td>Под шапкой пусто, в консоли <code>No routes matched location "/abc"</code></td><td>Ни один маршрут не подошёл к пути</td><td>Проверить написание пути в <code>Route</code> и в ссылке; добавить маршрут <code>path="*"</code></td></tr>
+              <tr><td><code>error TS2741: Property 'id' is missing in type '{ key: string; title: string; … }' but required in type 'RequestCardProps'.</code></td><td>Карточке нужен prop <code>id</code>, а <code>BoardPage</code> его не передаёт</td><td>Добавить <code>id={r.id}</code> в <code>&lt;RequestCard&gt;</code></td></tr>
+              <tr><td>При переходе по меню мигает «Загрузка заявок…», в Network десятки запросов</td><td>В меню обычные <code>&lt;a href&gt;</code>: страница загружается заново</td><td>Заменить на <code>NavLink</code> или <code>Link</code> с атрибутом <code>to</code></td></tr>
+              <tr><td>Фильтр или поле формы сбрасывается после перехода на другую страницу</td><td>Состояние хранится в странице, которую <code>Routes</code> убирает с экрана</td><td>Если состояние нужно сохранить — перенести его в <code>App</code>, выше <code>Routes</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s7"><span class="sec">§7</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Почему до главы адрес <code>/stats</code> открывал доску?</summary>
+          <p>Vite на любой путь отдаёт <code>index.html</code>, а <code>App</code> путь не читал и всегда рисовал доску.</p>
+        </details>
+        <details>
+          <summary>За что отвечают <code>BrowserRouter</code>, <code>Routes</code> и <code>Route</code>?</summary>
+          <p><code>BrowserRouter</code> читает путь из адресной строки и следит за его изменением. <code>Routes</code> выбирает подходящий маршрут и отрисовывает его компонент на своём месте. <code>Route</code> описывает один маршрут: путь и элемент.</p>
+        </details>
+        <details>
+          <summary>Почему шапка видна на всех страницах?</summary>
+          <p><code>&lt;Header&gt;</code> стоит в <code>App</code> вне <code>&lt;Routes&gt;</code>. Внутри <code>Routes</code> меняется только страница.</p>
+        </details>
+        <details>
+          <summary>Почему после перехода по <code>NavLink</code> заявки не загружаются заново, а после <code>&lt;a href&gt;</code> загружаются?</summary>
+          <p><code>NavLink</code> меняет адрес через <code>pushState</code>, приложение остаётся в памяти вместе со списком. <code>&lt;a href&gt;</code> перезагружает страницу, приложение запускается с нуля, и <code>useRequests</code> загружает список снова.</p>
+        </details>
+        <details>
+          <summary>Почему фильтр сбрасывается после возврата на доску?</summary>
+          <p>Фильтр — состояние <code>BoardPage</code>. При уходе со страницы компонент удаляется вместе с состоянием, при возврате создаётся новый со значением <code>'Все'</code>.</p>
+        </details>
+        <details>
+          <summary>Что вернёт <code>useParams()</code> на странице <code>/requests/k2m9</code> для маршрута <code>/requests/:id</code>?</summary>
+          <p>Объект <code>{ id: 'k2m9' }</code>.</p>
+        </details>
+        <details>
+          <summary>Нужно добавить страницу «О доске» по адресу <code>/about</code> с пунктом меню. Что изменится в коде?</summary>
+          <p>Новый файл <code>src/pages/AboutPage.tsx</code>; в <code>App.tsx</code> импорт и маршрут <code>&lt;Route path="/about" element={&lt;AboutPage /&gt;} /&gt;</code> перед маршрутом <code>*</code>; в <code>Header.tsx</code> строка <code>&lt;NavLink to="/about"&gt;О доске&lt;/NavLink&gt;</code>.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Установить</b><code>npm install react-router@8.5.1</code></div>
+          <div><b>Подключить</b><code>&lt;BrowserRouter&gt;&lt;App /&gt;&lt;/BrowserRouter&gt;</code> в <code>main.tsx</code></div>
+          <div><b>Маршрут</b><code>&lt;Route path="/stats" element={&lt;StatsPage /&gt;} /&gt;</code> внутри <code>&lt;Routes&gt;</code></div>
+          <div><b>Все остальные пути</b><code>path="*"</code></div>
+          <div><b>Ссылка</b><code>&lt;Link to="/"&gt;</code>, в меню — <code>&lt;NavLink&gt;</code> с классом <code>active</code></div>
+          <div><b>Параметр</b><code>path="/requests/:id"</code> → <code>const { id } = useParams()</code></div>
+          <div><b>Переход из кода</b><code>const navigate = useNavigate()</code> → <code>navigate('/')</code></div>
+          <div><b>Текущий путь</b><code>const { pathname } = useLocation()</code></div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>Маршрутизация — выбор компонента по пути из адресной строки. Сервер Vite на любой путь отдаёт один <code>index.html</code>, а путь читает react-router в браузере: <code>BrowserRouter</code> в <code>main.tsx</code> следит за адресом, <code>Routes</code> выбирает из списка <code>Route</code> подходящий маршрут, маршрут <code>*</code> ловит все остальные пути. Доска разделена на страницы в папке <code>src/pages</code>: <code>BoardPage</code>, <code>StatsPage</code>, <code>RequestPage</code> и <code>NotFoundPage</code>; шапка с меню стоит вне <code>Routes</code> и видна везде. Ссылки <code>Link</code> и <code>NavLink</code> меняют адрес без перезагрузки, поэтому список заявок в <code>App</code> не загружается заново, а состояние самой страницы при уходе с неё удаляется. Маршрут <code>/requests/:id</code> с параметром обслуживает все заявки: номер достаёт <code>useParams</code>, переход из кода выполняет <code>navigate</code>. Данные страницы получают от <code>App</code> через props, и через <code>App</code> проходит 14 props.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://reactrouter.com/start/declarative/installation" target="_blank" rel="noreferrer">React Router — Declarative Mode: Installation</a></li>
+          <li><a href="https://reactrouter.com/start/declarative/routing" target="_blank" rel="noreferrer">React Router — Declarative Mode: Routing</a></li>
+          <li><a href="https://reactrouter.com/start/declarative/navigating" target="_blank" rel="noreferrer">React Router — Declarative Mode: Navigating</a></li>
+          <li><a href="https://reactrouter.com/start/declarative/url-values" target="_blank" rel="noreferrer">React Router — Declarative Mode: URL Values</a></li>
+          <li><a href="https://developer.mozilla.org/ru/docs/Web/API/History/pushState" target="_blank" rel="noreferrer">MDN — History: метод pushState()</a></li>
+          <li><a href="https://vite.dev/config/shared-options#apptype" target="_blank" rel="noreferrer">Vite — Shared Options: appType</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../29-proekt-doska-s-bazoy/index.html">← Проект модуля 2: доска заявок с базой</a>
+          <a href="../../index.html">К оглавлению →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

@@ -89,7 +89,7 @@ class Editor:
         self.n = 0
 
     async def __aenter__(self):
-        self.ws = await websockets.connect(page_ws(), max_size=64 * 2**20)
+        self.ws = await websockets.connect(page_ws(), max_size=64 * 2**20, ping_interval=None)
         return self
 
     async def __aexit__(self, *exc):

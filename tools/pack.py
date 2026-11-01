@@ -24,6 +24,18 @@ BASE = s11.PROJECT
 SKIP = {"node_modules", "dist", "src"}
 
 # Состояние проекта: файл в src/ → источник (путь от tools/ или готовый текст).
+# main.tsx из шаблона Vite: в проекте съёмки он меняется в главе 3.1, поэтому записан здесь.
+MAIN_VITE = """import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+"""
 AFTER_11 = {"App.tsx": s11.KARKAS_APP, "index.css": s11.KARKAS_CSS}
 AFTER_12 = {
     "App.tsx": "code12/App.tsx", "index.css": "code12/index.css",
@@ -69,6 +81,15 @@ AFTER_25 = {
     "/package.json": "code25/package.json", "/package-lock.json": "code25/package-lock.json",
 }
 
+# В главе 3.1 ставится react-router, доска делится на страницы в src/pages.
+AFTER_31 = {
+    **AFTER_25, "main.tsx": "code31/main.tsx", "App.tsx": "code31/App.tsx", "index.css": "code31/index.css",
+    "components/Header.tsx": "code31/Header.tsx", "components/RequestCard.tsx": "code31/RequestCard.tsx",
+    "pages/BoardPage.tsx": "code31/BoardPage.tsx", "pages/StatsPage.tsx": "code31/StatsPage.tsx",
+    "pages/RequestPage.tsx": "code31/RequestPage.tsx", "pages/NotFoundPage.tsx": "code31/NotFoundPage.tsx",
+    "/package.json": "code31/package.json", "/package-lock.json": "code31/package-lock.json",
+}
+
 ARCHIVES = [
     ("11-node-npm-vite", "zayavki-konec-1-1.zip", AFTER_11),
     ("12-jsx-i-komponenty", "zayavki-nachalo-1-2.zip", AFTER_11),
@@ -91,6 +112,8 @@ ARCHIVES = [
     ("24-sobstvennyy-huk", "zayavki-konec-2-4.zip", AFTER_24),
     ("25-obnovlenie-po-sobytiyam", "zayavki-nachalo-2-5.zip", AFTER_24),
     ("25-obnovlenie-po-sobytiyam", "zayavki-konec-2-5.zip", AFTER_25),
+    ("31-marshrutizaciya", "zayavki-nachalo-3-1.zip", AFTER_25),
+    ("31-marshrutizaciya", "zayavki-konec-3-1.zip", AFTER_31),
 ]
 
 
@@ -102,7 +125,7 @@ def assemble(state: dict[str, str], dest: Path) -> None:
         (shutil.copytree if item.is_dir() else shutil.copy)(item, dest / item.name)
     src = dest / "src"
     src.mkdir()
-    shutil.copy(BASE / "src/main.tsx", src / "main.tsx")
+    (src / "main.tsx").write_text(MAIN_VITE)
     for rel, source in state.items():
         if rel.startswith("/"):
             # Файл в корне проекта, например package.json с новой библиотекой.
