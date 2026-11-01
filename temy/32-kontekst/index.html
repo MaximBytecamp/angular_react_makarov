@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>3.2 Контекст: общие данные · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch .on-dark-soft { fill: #c8d0e0; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; stroke-dasharray: 6 4; }
+    .sch .ng-text { fill: #C2185B; }
+    .sch .dash { stroke-dasharray: 6 4; }
+    .sch .ctx { stroke: #0A7EA4; stroke-width: 2.5; stroke-dasharray: 5 4; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 3 · Несколько экранов, публикация, расписание</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 3 · несколько экранов, публикация, расписание</p>
+          <p class="running__folio">3.2</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">3.2</span>
+          <h1>Контекст: общие данные</h1>
+          <p class="lead">В этой главе данные доски перестают проходить через <code>App</code> в props. Список заявок, сообщение и обработчики переезжают в компонент-провайдер, а шапка и страницы получают их хуком <code>useBoard</code> из контекста React. Опыт с компонентом вне провайдера показывает, где контекст доступен. Второй опыт повторяет ситуацию из главы 2.4 — шапка сама получает данные, — но теперь счётчик в шапке совпадает со списком. <code>App.tsx</code> сокращается с 91 строки до 26.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>React, контекст</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>zayavki</code> после главы 3.1 и запущенный PocketBase с коллекцией <code>requests</code></dd></div>
+          <div><dt>Результат</dt><dd>Файлы <code>board.ts</code> и <code>BoardProvider.tsx</code>; страницы и шапка без props, <code>App</code> содержит только маршруты</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Данные через промежуточные компоненты</a></li>
+            <li><a href="#s2">Контекст и провайдер</a></li>
+            <li><a href="#s3">Страницы читают контекст</a></li>
+            <li><a href="#s4">Один список на всё приложение</a></li>
+            <li><a href="#s5">Что хранить в контексте</a></li>
+            <li><a href="#s6">Частые ошибки</a></li>
+            <li><a href="#s7">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Данные через промежуточные компоненты</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Сколько props проходит через App</p>
+
+        <p>После главы 3.1 хук <code>useRequests</code>, сообщение <code>notice</code> и три обработчика находятся в <code>App</code>. Сам <code>App</code> из них использует только <code>notice</code>. Остальное он передаёт дальше: 14 props шапке и трём страницам. <code>BoardPage</code> часть полученного тоже передаёт дальше — в <code>RequestForm</code> и <code>RequestCard</code>.</p>
+
+        <p>Передачу значения через компоненты, которым оно само не нужно, называют <span class="term">пробросом props</span> (prop drilling). Пока уровней два, проброс заметен только по длине <code>App.tsx</code>. С каждым новым уровнем растёт число мест, где нужно дописать prop и его тип, когда у данных появляется новое поле или новый обработчик.</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Объявление жильцам дома можно передать по цепочке: первая квартира передаёт листок второй, вторая — третьей. Можно повесить его на доску у входа в подъезд, и каждый, кому оно нужно, прочитает его сам. Квартиры, которым объявление не нужно, в передаче не участвуют.</p>
+          <p class="miss">Доска объявлений висит одна для всего подъезда. Контекст доступен только компонентам внутри своего провайдера: компонент вне его не получит ничего.</p>
+        </div></div>
+
+        <p><span class="term">Контекст</span> (context) — механизм React, который передаёт значение всем компонентам внутри определённой части дерева без props. Значение задаёт компонент-<span class="term">провайдер</span> (provider), а любой компонент ниже него читает значение хуком <code>useContext</code>, на любой глубине.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Дерево компонентов доски с контекстом</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 330" role="img" aria-label="Дерево: BrowserRouter, внутри BoardProvider со списком и обработчиками, внутри App, внутри Header и Routes со страницами BoardPage, StatsPage, RequestPage. Пунктирные стрелки от BoardProvider к Header, App, BoardPage, StatsPage и RequestPage — чтение useBoard">
+              <rect x="20" y="20" width="720" height="290" fill="#ffffff"/><text class="mono" x="34" y="42">BrowserRouter</text>
+              <rect x="40" y="56" width="680" height="240" fill="#D6F0F9"/><text class="mono" x="54" y="78">BoardProvider</text><text class="soft" x="190" y="78">useRequests(), notice, handleAdd…</text>
+              <rect x="60" y="94" width="640" height="186" fill="#ffffff"/><text class="mono" x="74" y="116">App</text><text class="soft" x="112" y="116">notice</text>
+              <rect x="80" y="132" width="140" height="54" fill="#D4EEDF"/><text class="mono" x="94" y="156">Header</text><text class="soft" x="94" y="174">newCount</text>
+              <rect x="240" y="132" width="440" height="134" fill="#ffffff"/><text class="mono" x="254" y="154">Routes</text>
+              <rect x="256" y="168" width="130" height="84" fill="#D4EEDF"/><text class="mono" x="268" y="190">BoardPage</text><text class="soft" x="268" y="210">requests</text><text class="soft" x="268" y="228">handleAdd…</text>
+              <rect x="400" y="168" width="130" height="84" fill="#D4EEDF"/><text class="mono" x="412" y="190">StatsPage</text><text class="soft" x="412" y="210">requests</text><text class="soft" x="412" y="228">loading</text>
+              <rect x="544" y="168" width="124" height="84" fill="#D4EEDF"/><text class="mono" x="556" y="190">RequestPage</text><text class="soft" x="556" y="210">requests</text><text class="soft" x="556" y="228">handleNext…</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Голубое — провайдер, который хранит данные. Зелёные компоненты читают их хуком <code>useBoard</code>. <code>App</code> и <code>Routes</code> между ними ничего не передают.</p>
+        </figure>
+
+        <p class="bridge">Контекст собирается из трёх частей: сам контекст, провайдер и хук для чтения. Первая часть — файл с контекстом.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Контекст и провайдер</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Создаём контекст и переносим в провайдер данные из App</p>
+
+        <ol class="steps">
+          <li><b>Создайте файл контекста</b><p>В папке <code>src</code> создайте файл <code>board.ts</code>.</p>
+            <!--CODE tools/code32/board.ts | zayavki/src/board.ts--><figure class="code"><figcaption><span>zayavki/src/board.ts</span></figcaption><pre><span class="k">import</span> { createContext, useContext } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> <span class="k">type</span> { NewRequest, RequestItem, Status } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">export</span> <span class="k">type</span> Board = {
+  requests: RequestItem[]
+  loading: boolean
+  error: string
+  newCount: number
+  notice: string
+  retry: () =<span class="t">&gt;</span> void
+  handleAdd: (data: NewRequest) =<span class="t">&gt;</span> Promise<span class="t">&lt;void</span><span class="t">&gt;</span>
+  handleNext: (id: string, status: Status) =<span class="t">&gt;</span> Promise<span class="t">&lt;void</span><span class="t">&gt;</span>
+  handleRemove: (id: string) =<span class="t">&gt;</span> Promise<span class="t">&lt;void</span><span class="t">&gt;</span>
+}
+
+<span class="k">export</span> <span class="k">const</span> BoardContext = createContext<span class="t">&lt;Board</span> | <span class="k">null</span><span class="t">&gt;</span>(<span class="k">null</span>)
+
+<span class="k">export</span> <span class="k">function</span> <span class="f">useBoard</span>(): Board {
+  <span class="k">const</span> board = <span class="f">useContext</span>(BoardContext)
+  <span class="k">if</span> (board === <span class="k">null</span>) {
+    throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">'useBoard вызван вне BoardProvider'</span>)
+  }
+  <span class="k">return</span> board
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-board-ts.png" width="1240" height="780" alt="VS Code: board.ts, тип Board с девятью полями, BoardContext = createContext, функция useBoard с проверкой на null" loading="lazy"><figcaption>board.ts: тип, контекст и хук</figcaption></figure></li>
+          <li><b>Создайте провайдер</b><p>В папке <code>src</code> создайте файл <code>BoardProvider.tsx</code>. Строки 12–58 — код из <code>App.tsx</code> без изменений: хук <code>useRequests</code>, сообщение, два эффекта и три обработчика.</p>
+            <!--CODE tools/code32/BoardProvider.tsx | zayavki/src/BoardProvider.tsx | mark=7-11,60-62--><figure class="code"><figcaption><span>zayavki/src/BoardProvider.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState, <span class="k">type</span> ReactNode } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> { BoardContext } <span class="k">from</span> <span class="s">'./board'</span>
+<span class="k">import</span> <span class="k">type</span> { NewRequest, Status } <span class="k">from</span> <span class="s">'./requests'</span>
+<span class="k">import</span> { useRequests } <span class="k">from</span> <span class="s">'./useRequests'</span>
+<span class="k">import</span> { sendRequest } <span class="k">from</span> <span class="s">'./notify'</span>
+
+<span class="hl"><span class="k">type</span> BoardProviderProps = {</span>
+<span class="hl">  children: ReactNode</span>
+<span class="hl">}</span>
+<span class="hl"></span>
+<span class="hl"><span class="k">function</span> <span class="f">BoardProvider</span>({ children }: BoardProviderProps) {</span>
+  <span class="k">const</span> { requests, loading, error, retry, add, next, remove } = <span class="f">useRequests</span>()
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    document.title = <span class="s">`Новых: ${newCount} · Доска заявок`</span>
+  }, [newCount])
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">if</span> (notice === <span class="s">''</span>) {
+      <span class="k">return</span>
+    }
+    <span class="k">const</span> timer = <span class="f">setTimeout</span>(() =<span class="t">&gt;</span> <span class="f">setNotice</span>(<span class="s">''</span>), <span class="n">5000</span>)
+    <span class="k">return</span> () =<span class="t">&gt;</span> <span class="f">clearTimeout</span>(timer)
+  }, [notice])
+
+  async <span class="k">function</span> <span class="f">handleNext</span>(id: string, status: Status) {
+    try {
+      await <span class="f">next</span>(id, status)
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  async <span class="k">function</span> <span class="f">handleAdd</span>(data: NewRequest) {
+    try {
+      <span class="k">const</span> created = await <span class="f">add</span>(data)
+      <span class="f">setNotice</span>(<span class="s">'Заявка добавлена. Отправляем уведомление…'</span>)
+      <span class="k">const</span> sent = await <span class="f">sendRequest</span>(created)
+      <span class="k">if</span> (sent) {
+        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, уведомление отправлено.'</span>)
+      } <span class="k">else</span> {
+        <span class="f">setNotice</span>(<span class="s">'Заявка добавлена, но уведомление не отправлено: сервер автоматизации недоступен.'</span>)
+      }
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+  async <span class="k">function</span> <span class="f">handleRemove</span>(id: string) {
+    try {
+      await <span class="f">remove</span>(id)
+    } catch (e) {
+      <span class="f">setNotice</span>((e as Error).message)
+    }
+  }
+
+<span class="hl">  <span class="k">const</span> board = { requests, loading, error, newCount, notice, retry, handleAdd, handleNext, handleRemove }</span>
+<span class="hl"></span>
+<span class="hl">  <span class="k">return</span> <span class="t">&lt;BoardContext</span> <span class="a">value</span>={board}<span class="t">&gt;</span>{children}<span class="t">&lt;/BoardContext</span><span class="t">&gt;</span></span>
+}
+
+<span class="k">export</span> <span class="k">default</span> BoardProvider</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-provider.png" width="1240" height="780" alt="VS Code: BoardProvider.tsx, строка 60 const board = { requests, loading, … }, строка 62 return BoardContext value={board} children" loading="lazy"><figcaption>Провайдер возвращает контекст со значением board</figcaption></figure></li>
+          <li><b>Замените App.tsx</b><p>Замените содержимое <code>src/App.tsx</code>. Данные <code>App</code> теперь берёт из контекста одной строкой 10 и пока передаёт страницам через props, как раньше.</p>
+            <!--CODE tools/code32/App-context.tsx | zayavki/src/App.tsx | mark=7,10--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { Route, Routes } <span class="k">from</span> <span class="s">'react-router'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> BoardPage <span class="k">from</span> <span class="s">'./pages/BoardPage'</span>
+<span class="k">import</span> StatsPage <span class="k">from</span> <span class="s">'./pages/StatsPage'</span>
+<span class="k">import</span> RequestPage <span class="k">from</span> <span class="s">'./pages/RequestPage'</span>
+<span class="k">import</span> NotFoundPage <span class="k">from</span> <span class="s">'./pages/NotFoundPage'</span>
+<span class="hl"><span class="k">import</span> { useBoard } <span class="k">from</span> <span class="s">'./board'</span></span>
+
+<span class="k">function</span> <span class="f">App</span>() {
+<span class="hl">  <span class="k">const</span> { requests, loading, error, retry, newCount, notice, handleAdd, handleNext, handleRemove } = <span class="f">useBoard</span>()</span>
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;Header</span> <span class="a">newCount</span>={newCount} <span class="t">/&gt;</span>
+      {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice notice--page"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+      <span class="t">&lt;Routes</span><span class="t">&gt;</span>
+        <span class="t">&lt;Route</span>
+          <span class="a">path</span>=<span class="s">"/"</span>
+          <span class="a">element</span>={
+            <span class="t">&lt;BoardPage</span>
+              <span class="a">requests</span>={requests}
+              <span class="a">loading</span>={loading}
+              <span class="a">error</span>={error}
+              <span class="a">onRetry</span>={retry}
+              <span class="a">onAdd</span>={handleAdd}
+              <span class="a">onNext</span>={handleNext}
+              <span class="a">onRemove</span>={handleRemove}
+            <span class="t">/&gt;</span>
+          }
+        <span class="t">/&gt;</span>
+        <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"/stats"</span> <span class="a">element</span>={<span class="t">&lt;StatsPage</span> <span class="a">requests</span>={requests} <span class="a">loading</span>={loading} <span class="t">/&gt;</span>} <span class="t">/&gt;</span>
+        <span class="t">&lt;Route</span>
+          <span class="a">path</span>=<span class="s">"/requests/:id"</span>
+          <span class="a">element</span>={<span class="t">&lt;RequestPage</span> <span class="a">requests</span>={requests} <span class="a">loading</span>={loading} <span class="a">onNext</span>={handleNext} <span class="a">onRemove</span>={handleRemove} <span class="t">/&gt;</span>}
+        <span class="t">/&gt;</span>
+        <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"*"</span> <span class="a">element</span>={<span class="t">&lt;NotFoundPage</span> <span class="t">/&gt;</span>} <span class="t">/&gt;</span>
+      <span class="t">&lt;/Routes</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-app-context.png" width="1240" height="780" alt="VS Code: App.tsx, импорт useBoard из ./board и строка 10 const { requests, loading, … } = useBoard()" loading="lazy"><figcaption>App берёт данные из useBoard</figcaption></figure></li>
+          <li><b>Откройте доску</b><p>Откройте DevTools (<kbd>F12</kbd>) на вкладке <strong>Console</strong> и обновите страницу <code>localhost:5173</code> (<kbd>F5</kbd>). Страница пустая, в консоли ошибка <code>Uncaught Error: useBoard вызван вне BoardProvider</code>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/04-bez-providera.png" width="1100" height="970" alt="Браузер, localhost:5173: пустая страница; в консоли Uncaught Error: useBoard вызван вне BoardProvider at useBoard board.ts:21 at App App.tsx:10 и предупреждение An error occurred in the App component" loading="lazy"><figcaption>Провайдера в дереве нет: ошибка из useBoard</figcaption></figure></li>
+          <li><b>Подключите провайдер</b><p>Замените содержимое <code>src/main.tsx</code>. <code>&lt;BoardProvider&gt;</code> оборачивает <code>&lt;App /&gt;</code> внутри <code>&lt;BrowserRouter&gt;</code>.</p>
+            <!--CODE tools/code32/main.tsx | zayavki/src/main.tsx | mark=6,11,13--><figure class="code"><figcaption><span>zayavki/src/main.tsx</span></figcaption><pre><span class="k">import</span> { StrictMode } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> { createRoot } <span class="k">from</span> <span class="s">'react-dom/client'</span>
+<span class="k">import</span> { BrowserRouter } <span class="k">from</span> <span class="s">'react-router'</span>
+<span class="k">import</span> <span class="s">'./index.css'</span>
+<span class="k">import</span> App <span class="k">from</span> <span class="s">'./App.tsx'</span>
+<span class="hl"><span class="k">import</span> BoardProvider <span class="k">from</span> <span class="s">'./BoardProvider.tsx'</span></span>
+
+<span class="f">createRoot</span>(document.<span class="f">getElementById</span>(<span class="s">'root'</span>)!).<span class="f">render</span>(
+  <span class="t">&lt;StrictMode</span><span class="t">&gt;</span>
+    <span class="t">&lt;BrowserRouter</span><span class="t">&gt;</span>
+<span class="hl">      <span class="t">&lt;BoardProvider</span><span class="t">&gt;</span></span>
+        <span class="t">&lt;App</span> <span class="t">/&gt;</span>
+<span class="hl">      <span class="t">&lt;/BoardProvider</span><span class="t">&gt;</span></span>
+    <span class="t">&lt;/BrowserRouter</span><span class="t">&gt;</span>
+  <span class="t">&lt;/StrictMode</span><span class="t">&gt;</span>,
+)</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-main.png" width="1240" height="780" alt="VS Code: main.tsx, StrictMode, BrowserRouter, BoardProvider, App" loading="lazy"><figcaption>main.tsx: App внутри BoardProvider</figcaption></figure></li>
+          <li><b>Проверьте доску</b><p>Очистите консоль кнопкой <strong>⊘</strong> и обновите страницу. Доска работает, ошибок нет.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/06-doska.png" width="1100" height="970" alt="Доска заявок с меню и списком; в консоли только сообщение Download the React DevTools" loading="lazy"><figcaption>С провайдером доска работает</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Три части контекста</p>
+
+        <!--CODE tools/code32/board.ts | board.ts · по строкам | pins=4:1,16:2,18:3,19:4,20:5--><figure class="code" data-read><figcaption><span>board.ts · по строкам</span></figcaption><pre><span class="k">import</span> { createContext, useContext } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> <span class="k">type</span> { NewRequest, RequestItem, Status } <span class="k">from</span> <span class="s">'./requests'</span>
+
+<span class="k">export</span> <span class="k">type</span> Board = {  <span class="pin">1</span>
+  requests: RequestItem[]
+  loading: boolean
+  error: string
+  newCount: number
+  notice: string
+  retry: () =<span class="t">&gt;</span> void
+  handleAdd: (data: NewRequest) =<span class="t">&gt;</span> Promise<span class="t">&lt;void</span><span class="t">&gt;</span>
+  handleNext: (id: string, status: Status) =<span class="t">&gt;</span> Promise<span class="t">&lt;void</span><span class="t">&gt;</span>
+  handleRemove: (id: string) =<span class="t">&gt;</span> Promise<span class="t">&lt;void</span><span class="t">&gt;</span>
+}
+
+<span class="k">export</span> <span class="k">const</span> BoardContext = createContext<span class="t">&lt;Board</span> | <span class="k">null</span><span class="t">&gt;</span>(<span class="k">null</span>)  <span class="pin">2</span>
+
+<span class="k">export</span> <span class="k">function</span> <span class="f">useBoard</span>(): Board {  <span class="pin">3</span>
+  <span class="k">const</span> board = <span class="f">useContext</span>(BoardContext)  <span class="pin">4</span>
+  <span class="k">if</span> (board === <span class="k">null</span>) {  <span class="pin">5</span>
+    throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">'useBoard вызван вне BoardProvider'</span>)
+  }
+  <span class="k">return</span> board
+}</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Тип <code>Board</code> описывает, что лежит в контексте: список, состояние загрузки и ошибки, число новых заявок, сообщение и четыре функции. <code>Promise&lt;void&gt;</code> — асинхронная функция, которая ничего не возвращает: обработчики из <code>App</code> объявлены как <code>async</code>.</p></div></li>
+          <li><span class="pin">2</span><div><p><code>createContext</code> создаёт контекст. В угловых скобках — тип значения: <code>Board</code> или <code>null</code>. В круглых — значение по умолчанию, <code>null</code>. Его получит компонент, над которым нет провайдера.</p></div></li>
+          <li><span class="pin">3</span><div><p>Собственный хук для чтения контекста, по правилам главы 2.4: имя на <code>use</code>, внутри — встроенный хук.</p></div></li>
+          <li><span class="pin">4</span><div><p><code>useContext(BoardContext)</code> ищет ближайший провайдер этого контекста выше по дереву и возвращает его значение.</p></div></li>
+          <li><span class="pin">5</span><div><p>Если провайдера нет, пришло значение по умолчанию <code>null</code>. Хук останавливает отрисовку ошибкой с понятным текстом — её и показала консоль в шаге 4. После этой проверки тип <code>board</code> сужается до <code>Board</code>, и страницам не нужно проверять <code>null</code> самим.</p></div></li>
+        </ol>
+
+        <p>Провайдер — обычный компонент, который хранит данные и отдаёт их контексту:</p>
+
+        <!--CODE tools/code32/BoardProvider.tsx | BoardProvider.tsx · строки 7–15 и 60–62 | lines=7-15 pins=8:1,11:2,12:3--><figure class="code" data-read><figcaption><span>BoardProvider.tsx · строки 7–15 и 60–62</span></figcaption><pre><span class="k">type</span> BoardProviderProps = {
+  children: ReactNode  <span class="pin">1</span>
+}
+
+<span class="k">function</span> <span class="f">BoardProvider</span>({ children }: BoardProviderProps) {  <span class="pin">2</span>
+  <span class="k">const</span> { requests, loading, error, retry, add, next, remove } = <span class="f">useRequests</span>()  <span class="pin">3</span>
+  <span class="k">const</span> [notice, setNotice] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="k">const</span> newCount = requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === <span class="s">'Новая'</span>).length</pre></figure><!--/CODE-->
+        <!--CODE tools/code32/BoardProvider.tsx | | lines=60-62 pins=60:4,62:5--><figure class="code" data-read><figcaption><span></span></figcaption><pre>  <span class="k">const</span> board = { requests, loading, error, newCount, notice, retry, handleAdd, handleNext, handleRemove }  <span class="pin">4</span>
+
+  <span class="k">return</span> <span class="t">&lt;BoardContext</span> <span class="a">value</span>={board}<span class="t">&gt;</span>{children}<span class="t">&lt;/BoardContext</span><span class="t">&gt;</span>  <span class="pin">5</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p><code>children</code> — особый prop: то, что записано между открывающим и закрывающим тегом компонента. В <code>main.tsx</code> между <code>&lt;BoardProvider&gt;</code> и <code>&lt;/BoardProvider&gt;</code> стоит <code>&lt;App /&gt;</code>, значит <code>children</code> равен <code>&lt;App /&gt;</code>. Тип <code>ReactNode</code> охватывает всё, что React может отрисовать: элементы, строки, числа, <code>null</code>.</p></div></li>
+          <li><span class="pin">2</span><div><p>Провайдер получает <code>children</code> и отрисовывает их как есть, содержимое для него не важно. Так же устроены <code>StrictMode</code> и <code>BrowserRouter</code>: каждый оборачивает то, что ему передали.</p></div></li>
+          <li><span class="pin">3</span><div><p>Хук <code>useRequests</code> вызывается один раз — в провайдере. Список заявок существует в одном экземпляре на всё приложение.</p></div></li>
+          <li><span class="pin">4</span><div><p>Объект со всеми значениями контекста. Поля совпадают с типом <code>Board</code>: если пропустить одно, TypeScript покажет ошибку в строке 62.</p></div></li>
+          <li><span class="pin">5</span><div><p>Тег <code>&lt;BoardContext value={board}&gt;</code> делает объект значением контекста для всего, что внутри, то есть для <code>children</code>. В React 19 сам контекст служит тегом провайдера. В коде для React 18 и в старых примерах встречается запись <code>&lt;BoardContext.Provider value={board}&gt;</code> — она работает так же.</p></div></li>
+        </ol>
+
+        <p>Контекст и провайдер лежат в разных файлах по правилу линтера <code>only-export-components</code> из <code>.oxlintrc.json</code>: файл с компонентом должен экспортировать только компоненты. Тогда Vite после сохранения обновляет компонент на странице без перезагрузки. <code>board.ts</code> экспортирует тип, контекст и хук, <code>BoardProvider.tsx</code> — один компонент.</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Как useBoard находит данные</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code32/board.ts | | bare lines=18-24--><pre class="trace__code" data-start="18"><span class="k">export</span> <span class="k">function</span> <span class="f">useBoard</span>(): Board {
+  <span class="k">const</span> board = <span class="f">useContext</span>(BoardContext)
+  <span class="k">if</span> (board === <span class="k">null</span>) {
+    throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">'useBoard вызван вне BoardProvider'</span>)
+  }
+  <span class="k">return</span> board
+}</pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="18"><b>App вызывает useBoard</b>
+                  <p>Строка 10 в <code>App.tsx</code>. Дерево такое: <code>StrictMode</code> → <code>BrowserRouter</code> → <code>BoardProvider</code> → <code>App</code>.</p></li>
+                <li data-lines="19"><b>Поиск провайдера</b>
+                  <p>React идёт вверх от <code>App</code>. Первый же родитель — <code>BoardProvider</code>, внутри которого стоит <code>&lt;BoardContext value={board}&gt;</code>.</p>
+                  <div class="vars"><span class="var var--new"><i>board</i><span>{ requests, loading, … }</span></span></div></li>
+                <li data-lines="20"><b>Проверка на null</b>
+                  <p>Значение найдено, условие не выполнено.</p></li>
+                <li data-lines="23"><b>Значение возвращается</b>
+                  <p><code>App</code> раскладывает объект на переменные, как результат <code>useRequests</code> в главе 2.4.</p></li>
+                <li data-lines="19-21"><b>Шаг 4 без провайдера</b>
+                  <p>В <code>main.tsx</code> не было <code>BoardProvider</code>. Поиск дошёл до корня и не нашёл провайдера, <code>useContext</code> вернул значение по умолчанию <code>null</code>, и хук выбросил ошибку.</p>
+                  <div class="vars"><span class="var"><i>board</i><span>null</span></span></div></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p class="bridge">Данные пришли в контекст, но <code>App</code> по-прежнему передаёт их страницам через props. Следующий шаг — страницы читают контекст сами.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Страницы читают контекст</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Убираем props страниц и шапки</p>
+
+        <ol class="steps">
+          <li><b>Статистика</b><p>Замените содержимое <code>src/pages/StatsPage.tsx</code>. Тип <code>StatsPageProps</code> удалён, данные дают строка 8.</p>
+            <!--CODE tools/code32/StatsPage.tsx | zayavki/src/pages/StatsPage.tsx | mark=1-2,7-8--><figure class="code"><figcaption><span>zayavki/src/pages/StatsPage.tsx</span></figcaption><pre><span class="hl"><span class="k">import</span> { useBoard } <span class="k">from</span> <span class="s">'../board'</span></span>
+<span class="hl"><span class="k">import</span> <span class="k">type</span> { Category, Status } <span class="k">from</span> <span class="s">'../requests'</span></span>
+
+<span class="k">const</span> STATUSES: Status[] = [<span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+<span class="k">const</span> CATEGORIES: Category[] = [<span class="s">'Компьютер'</span>, <span class="s">'Проектор'</span>, <span class="s">'Принтер'</span>, <span class="s">'Интернет'</span>]
+
+<span class="hl"><span class="k">function</span> <span class="f">StatsPage</span>() {</span>
+<span class="hl">  <span class="k">const</span> { requests, loading } = <span class="f">useBoard</span>()</span>
+
+  <span class="k">if</span> (loading) {
+    <span class="k">return</span> (
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявок…<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    )
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>Статистика<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>Всего заявок: {requests.length}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"stats"</span><span class="t">&gt;</span>
+        <span class="t">&lt;table</span><span class="t">&gt;</span>
+          <span class="t">&lt;thead</span><span class="t">&gt;</span>
+            <span class="t">&lt;tr</span><span class="t">&gt;</span><span class="t">&lt;th</span><span class="t">&gt;</span>Статус<span class="t">&lt;/th</span><span class="t">&gt;</span><span class="t">&lt;th</span><span class="t">&gt;</span>Заявок<span class="t">&lt;/th</span><span class="t">&gt;</span><span class="t">&lt;/tr</span><span class="t">&gt;</span>
+          <span class="t">&lt;/thead</span><span class="t">&gt;</span>
+          <span class="t">&lt;tbody</span><span class="t">&gt;</span>
+            {STATUSES.<span class="f">map</span>((s) =<span class="t">&gt;</span> (
+              <span class="t">&lt;tr</span> <span class="a">key</span>={s}<span class="t">&gt;</span>
+                <span class="t">&lt;td</span><span class="t">&gt;</span>{s}<span class="t">&lt;/td</span><span class="t">&gt;</span>
+                <span class="t">&lt;td</span><span class="t">&gt;</span>{requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === s).length}<span class="t">&lt;/td</span><span class="t">&gt;</span>
+              <span class="t">&lt;/tr</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/tbody</span><span class="t">&gt;</span>
+        <span class="t">&lt;/table</span><span class="t">&gt;</span>
+        <span class="t">&lt;table</span><span class="t">&gt;</span>
+          <span class="t">&lt;thead</span><span class="t">&gt;</span>
+            <span class="t">&lt;tr</span><span class="t">&gt;</span><span class="t">&lt;th</span><span class="t">&gt;</span>Категория<span class="t">&lt;/th</span><span class="t">&gt;</span><span class="t">&lt;th</span><span class="t">&gt;</span>Заявок<span class="t">&lt;/th</span><span class="t">&gt;</span><span class="t">&lt;/tr</span><span class="t">&gt;</span>
+          <span class="t">&lt;/thead</span><span class="t">&gt;</span>
+          <span class="t">&lt;tbody</span><span class="t">&gt;</span>
+            {CATEGORIES.<span class="f">map</span>((c) =<span class="t">&gt;</span> (
+              <span class="t">&lt;tr</span> <span class="a">key</span>={c}<span class="t">&gt;</span>
+                <span class="t">&lt;td</span><span class="t">&gt;</span>{c}<span class="t">&lt;/td</span><span class="t">&gt;</span>
+                <span class="t">&lt;td</span><span class="t">&gt;</span>{requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.category === c).length}<span class="t">&lt;/td</span><span class="t">&gt;</span>
+              <span class="t">&lt;/tr</span><span class="t">&gt;</span>
+            ))}
+          <span class="t">&lt;/tbody</span><span class="t">&gt;</span>
+        <span class="t">&lt;/table</span><span class="t">&gt;</span>
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+    <span class="t">&lt;/main</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> StatsPage</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/07-statspage.png" width="1240" height="780" alt="VS Code: StatsPage.tsx, function StatsPage() без параметров, строка 8 const { requests, loading } = useBoard(); у App.tsx в проводнике метка 1" loading="lazy"><figcaption>StatsPage берёт данные из контекста</figcaption></figure>
+            <p>У <code>App.tsx</code> в проводнике появилась красная метка: <code>App</code> передаёт статистике props, которых у неё больше нет. Метка исчезнет в шаге 5.</p></li>
+          <li><b>Страница заявки</b><p>Замените содержимое <code>src/pages/RequestPage.tsx</code>. Функция перехода переименована в <code>removeAndReturn</code>: имя <code>handleRemove</code> теперь у обработчика из контекста.</p>
+            <!--CODE tools/code32/RequestPage.tsx | zayavki/src/pages/RequestPage.tsx | mark=2,4-5,27-28,45,47--><figure class="code"><figcaption><span>zayavki/src/pages/RequestPage.tsx</span></figcaption><pre><span class="k">import</span> { Link, useNavigate, useParams } <span class="k">from</span> <span class="s">'react-router'</span>
+<span class="hl"><span class="k">import</span> { useBoard } <span class="k">from</span> <span class="s">'../board'</span></span>
+
+<span class="hl"><span class="k">function</span> <span class="f">RequestPage</span>() {</span>
+<span class="hl">  <span class="k">const</span> { requests, loading, handleNext, handleRemove } = <span class="f">useBoard</span>()</span>
+  <span class="k">const</span> { id } = <span class="f">useParams</span>()
+  <span class="k">const</span> navigate = <span class="f">useNavigate</span>()
+
+  <span class="k">if</span> (loading) {
+    <span class="k">return</span> (
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявки…<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    )
+  }
+
+  <span class="k">const</span> request = requests.<span class="f">find</span>((r) =<span class="t">&gt;</span> r.id === id)
+  <span class="k">if</span> (request === <span class="k">undefined</span>) {
+    <span class="k">return</span> (
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+        <span class="t">&lt;Link</span> <span class="a">to</span>=<span class="s">"/"</span> <span class="a">className</span>=<span class="s">"back"</span><span class="t">&gt;</span>← Все заявки<span class="t">&lt;/Link</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявки с номером {id} нет: её удалили или в адресе ошибка.<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    )
+  }
+
+<span class="hl">  <span class="k">function</span> <span class="f">removeAndReturn</span>(requestId: string) {</span>
+<span class="hl">    <span class="f">handleRemove</span>(requestId)</span>
+    <span class="f">navigate</span>(<span class="s">'/'</span>)
+  }
+
+  <span class="k">return</span> (
+    <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"page"</span><span class="t">&gt;</span>
+      <span class="t">&lt;Link</span> <span class="a">to</span>=<span class="s">"/"</span> <span class="a">className</span>=<span class="s">"back"</span><span class="t">&gt;</span>← Все заявки<span class="t">&lt;/Link</span><span class="t">&gt;</span>
+      <span class="t">&lt;article</span> <span class="a">className</span>=<span class="s">"card request"</span><span class="t">&gt;</span>
+        <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__top"</span><span class="t">&gt;</span>
+          <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__room"</span><span class="t">&gt;</span>каб. {request.room} · {request.category}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+          <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"card__status"</span><span class="t">&gt;</span>{request.status}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+        <span class="t">&lt;/div</span><span class="t">&gt;</span>
+        <span class="t">&lt;h2</span><span class="t">&gt;</span>{request.title}<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span><span class="t">&gt;</span>{request.details === <span class="s">''</span> ? <span class="s">'Подробностей нет.'</span> : request.details}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"request__id"</span><span class="t">&gt;</span>Номер заявки: {request.id}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+        <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"card__actions"</span><span class="t">&gt;</span>
+          {request.status === <span class="s">'Готово'</span> ? (
+<span class="hl">            <span class="t">&lt;button</span> <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">removeAndReturn</span>(request.id)}<span class="t">&gt;</span>Убрать с доски<span class="t">&lt;/button</span><span class="t">&gt;</span></span>
+          ) : (
+<span class="hl">            <span class="t">&lt;button</span> <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(request.id, request.status)}<span class="t">&gt;</span></span>
+              {request.status === <span class="s">'Новая'</span> ? <span class="s">'Взять в работу'</span> : <span class="s">'Завершить'</span>}
+            <span class="t">&lt;/button</span><span class="t">&gt;</span>
+          )}
+        <span class="t">&lt;/div</span><span class="t">&gt;</span>
+      <span class="t">&lt;/article</span><span class="t">&gt;</span>
+    <span class="t">&lt;/main</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> RequestPage</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/08-requestpage.png" width="1240" height="780" alt="VS Code: RequestPage.tsx, строка 5 const { requests, loading, handleNext, handleRemove } = useBoard(), функция removeAndReturn" loading="lazy"><figcaption>RequestPage: useBoard рядом с useParams</figcaption></figure></li>
+          <li><b>Доска</b><p>Замените содержимое <code>src/pages/BoardPage.tsx</code>. Форма и карточки по-прежнему получают обработчики через props — от страницы.</p>
+            <!--CODE tools/code32/BoardPage.tsx | zayavki/src/pages/BoardPage.tsx | mark=4-5,11-12,29,43,56-57--><figure class="code"><figcaption><span>zayavki/src/pages/BoardPage.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> RequestForm <span class="k">from</span> <span class="s">'../components/RequestForm'</span>
+<span class="k">import</span> RequestCard <span class="k">from</span> <span class="s">'../components/RequestCard'</span>
+<span class="hl"><span class="k">import</span> { useBoard } <span class="k">from</span> <span class="s">'../board'</span></span>
+<span class="hl"><span class="k">import</span> <span class="k">type</span> { Status } <span class="k">from</span> <span class="s">'../requests'</span></span>
+
+<span class="k">type</span> Filter = <span class="s">'Все'</span> | Status
+
+<span class="k">const</span> FILTERS: Filter[] = [<span class="s">'Все'</span>, <span class="s">'Новая'</span>, <span class="s">'В работе'</span>, <span class="s">'Готово'</span>]
+
+<span class="hl"><span class="k">function</span> <span class="f">BoardPage</span>() {</span>
+<span class="hl">  <span class="k">const</span> { requests, loading, error, retry, handleAdd, handleNext, handleRemove } = <span class="f">useBoard</span>()</span>
+  <span class="k">const</span> [filter, setFilter] = useState&lt;Filter&gt;(<span class="s">'Все'</span>)
+
+  <span class="k">const</span> visible = filter === <span class="s">'Все'</span> ? requests : requests.<span class="f">filter</span>((r) =<span class="t">&gt;</span> r.status === filter)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">function</span> <span class="f">handleKey</span>(event: KeyboardEvent) {
+      <span class="k">if</span> (event.key === <span class="s">'Escape'</span>) {
+        <span class="f">setFilter</span>(<span class="s">'Все'</span>)
+      }
+    }
+    window.<span class="f">addEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+    <span class="k">return</span> () =<span class="t">&gt;</span> window.<span class="f">removeEventListener</span>(<span class="s">'keydown'</span>, handleKey)
+  }, [])
+
+  <span class="k">return</span> (
+    <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"board"</span><span class="t">&gt;</span>
+<span class="hl">      <span class="t">&lt;RequestForm</span> <span class="a">onAdd</span>={handleAdd} <span class="t">/&gt;</span></span>
+      <span class="t">&lt;section</span> <span class="a">className</span>=<span class="s">"list"</span><span class="t">&gt;</span>
+        <span class="t">&lt;h2</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+        <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+          {FILTERS.<span class="f">map</span>((f) =<span class="t">&gt;</span> (
+            <span class="t">&lt;button</span> <span class="a">key</span>={f} <span class="a">className</span>={f === filter ? <span class="s">'active'</span> : <span class="s">''</span>} <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">setFilter</span>(f)}<span class="t">&gt;</span>
+              {f}
+            <span class="t">&lt;/button</span><span class="t">&gt;</span>
+          ))}
+        <span class="t">&lt;/div</span><span class="t">&gt;</span>
+        {loading &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка заявок…<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+        {error !== <span class="s">''</span> &amp;&amp; (
+          <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"load-error"</span><span class="t">&gt;</span>
+            <span class="t">&lt;p</span><span class="t">&gt;</span>{error}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+<span class="hl">            <span class="t">&lt;button</span> <span class="a">onClick</span>={retry}<span class="t">&gt;</span>Повторить<span class="t">&lt;/button</span><span class="t">&gt;</span></span>
+          <span class="t">&lt;/div</span><span class="t">&gt;</span>
+        )}
+        {!loading &amp;&amp; error === <span class="s">''</span> &amp;&amp; visible.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Заявок с таким статусом нет<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+        {visible.<span class="f">map</span>((r) =<span class="t">&gt;</span> (
+          <span class="t">&lt;RequestCard</span>
+            <span class="a">key</span>={r.id}
+            <span class="a">id</span>={r.id}
+            <span class="a">title</span>={r.title}
+            <span class="a">room</span>={r.room}
+            <span class="a">category</span>={r.category}
+            <span class="a">details</span>={r.details}
+            <span class="a">status</span>={r.status}
+<span class="hl">            <span class="a">onNext</span>={() =<span class="t">&gt;</span> <span class="f">handleNext</span>(r.id, r.status)}</span>
+<span class="hl">            <span class="a">onRemove</span>={() =<span class="t">&gt;</span> <span class="f">handleRemove</span>(r.id)}</span>
+          <span class="t">/&gt;</span>
+        ))}
+      <span class="t">&lt;/section</span><span class="t">&gt;</span>
+    <span class="t">&lt;/main</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> BoardPage</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/09-boardpage.png" width="1240" height="780" alt="VS Code: BoardPage.tsx, строка 12 const { requests, loading, error, retry, handleAdd, handleNext, handleRemove } = useBoard()" loading="lazy"><figcaption>BoardPage без props</figcaption></figure></li>
+          <li><b>Шапка</b><p>Замените содержимое <code>src/components/Header.tsx</code>.</p>
+            <!--CODE tools/code32/Header.tsx | zayavki/src/components/Header.tsx | mark=2,4-5--><figure class="code"><figcaption><span>zayavki/src/components/Header.tsx</span></figcaption><pre><span class="k">import</span> { NavLink } <span class="k">from</span> <span class="s">'react-router'</span>
+<span class="hl"><span class="k">import</span> { useBoard } <span class="k">from</span> <span class="s">'../board'</span></span>
+
+<span class="hl"><span class="k">function</span> <span class="f">Header</span>() {</span>
+<span class="hl">  <span class="k">const</span> { newCount } = <span class="f">useBoard</span>()</span>
+
+  <span class="k">return</span> (
+    <span class="t">&lt;header</span> <span class="a">className</span>=<span class="s">"header"</span><span class="t">&gt;</span>
+      <span class="t">&lt;h1</span><span class="t">&gt;</span>Доска заявок<span class="t">&lt;/h1</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>ИТ-отдел колледжа · заявки студентов и преподавателей<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"header__count"</span><span class="t">&gt;</span>Новых заявок: {newCount}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;nav</span> <span class="a">className</span>=<span class="s">"nav"</span><span class="t">&gt;</span>
+        <span class="t">&lt;NavLink</span> <span class="a">to</span>=<span class="s">"/"</span><span class="t">&gt;</span>Заявки<span class="t">&lt;/NavLink</span><span class="t">&gt;</span>
+        <span class="t">&lt;NavLink</span> <span class="a">to</span>=<span class="s">"/stats"</span><span class="t">&gt;</span>Статистика<span class="t">&lt;/NavLink</span><span class="t">&gt;</span>
+      <span class="t">&lt;/nav</span><span class="t">&gt;</span>
+    <span class="t">&lt;/header</span><span class="t">&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> Header</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/10-header.png" width="1240" height="780" alt="VS Code: Header.tsx, function Header() без параметров, const { newCount } = useBoard(); у App.tsx метка 4" loading="lazy"><figcaption>Шапка читает newCount из контекста</figcaption></figure></li>
+          <li><b>Замените App.tsx</b><p>Замените содержимое <code>src/App.tsx</code>. В нём остались сообщение и список маршрутов.</p>
+            <!--CODE tools/code32/App.tsx | zayavki/src/App.tsx | mark=10,14,17-20--><figure class="code"><figcaption><span>zayavki/src/App.tsx</span></figcaption><pre><span class="k">import</span> { Route, Routes } <span class="k">from</span> <span class="s">'react-router'</span>
+<span class="k">import</span> Header <span class="k">from</span> <span class="s">'./components/Header'</span>
+<span class="k">import</span> BoardPage <span class="k">from</span> <span class="s">'./pages/BoardPage'</span>
+<span class="k">import</span> StatsPage <span class="k">from</span> <span class="s">'./pages/StatsPage'</span>
+<span class="k">import</span> RequestPage <span class="k">from</span> <span class="s">'./pages/RequestPage'</span>
+<span class="k">import</span> NotFoundPage <span class="k">from</span> <span class="s">'./pages/NotFoundPage'</span>
+<span class="k">import</span> { useBoard } <span class="k">from</span> <span class="s">'./board'</span>
+
+<span class="k">function</span> <span class="f">App</span>() {
+<span class="hl">  <span class="k">const</span> { notice } = <span class="f">useBoard</span>()</span>
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+<span class="hl">      <span class="t">&lt;Header</span> <span class="t">/&gt;</span></span>
+      {notice !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"notice notice--page"</span><span class="t">&gt;</span>{notice}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+      <span class="t">&lt;Routes</span><span class="t">&gt;</span>
+<span class="hl">        <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"/"</span> <span class="a">element</span>={<span class="t">&lt;BoardPage</span> <span class="t">/&gt;</span>} <span class="t">/&gt;</span></span>
+<span class="hl">        <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"/stats"</span> <span class="a">element</span>={<span class="t">&lt;StatsPage</span> <span class="t">/&gt;</span>} <span class="t">/&gt;</span></span>
+<span class="hl">        <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"/requests/:id"</span> <span class="a">element</span>={<span class="t">&lt;RequestPage</span> <span class="t">/&gt;</span>} <span class="t">/&gt;</span></span>
+<span class="hl">        <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"*"</span> <span class="a">element</span>={<span class="t">&lt;NotFoundPage</span> <span class="t">/&gt;</span>} <span class="t">/&gt;</span></span>
+      <span class="t">&lt;/Routes</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/11-app.png" width="1240" height="780" alt="VS Code: App.tsx на 26 строк: const { notice } = useBoard(), Header без props, четыре Route без props; ошибок нет" loading="lazy"><figcaption>App: только сообщение и маршруты</figcaption></figure></li>
+          <li><b>Проверьте запросы</b><p>В DevTools откройте вкладку <strong>Network</strong>, фильтр <strong>Fetch/XHR</strong>, и обновите страницу. Запросов списка <code>records?sort=-created</code> два: в режиме разработки StrictMode запускает эффект загрузки дважды, как в главе 2.3.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/12-network.png" width="1100" height="1120" alt="Доска и вкладка Network: два запроса records?sort=-created, запросы realtime" loading="lazy"><figcaption>Два запроса списка: эффект загрузки в StrictMode</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Где теперь какие данные</p>
+
+        <p>Каждая страница сама называет, что ей нужно: <code>const { requests, loading } = useBoard()</code>. В <code>App</code> эти поля не упоминаются, и для новой страницы в нём меняется только строка маршрута. Список props в <code>element</code> больше не пишется.</p>
+
+        <p><code>RequestForm</code> и <code>RequestCard</code> остались на props. Это компоненты для показа: карточка рисует заявку, которую ей дали, форма вызывает функцию, которую ей дали. Такой компонент можно поставить в другое место или в другой проект без провайдера. Контекст читают страницы и шапка — компоненты, которые работают с данными приложения.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Компонент</th><th>До главы</th><th>После главы</th></tr></thead>
+            <tbody>
+              <tr><td><code>App</code></td><td>91 строка: хук, сообщение, эффекты, обработчики, маршруты с props</td><td>26 строк: <code>notice</code> из контекста и маршруты</td></tr>
+              <tr><td><code>BoardProvider</code></td><td>—</td><td>хук, сообщение, эффекты, обработчики</td></tr>
+              <tr><td><code>Header</code>, страницы</td><td>получают props от <code>App</code></td><td>читают <code>useBoard()</code></td></tr>
+              <tr><td><code>RequestForm</code>, <code>RequestCard</code></td><td>props от <code>BoardPage</code></td><td>без изменений</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="bridge">В главе 2.4 шапка сама вызывала <code>useRequests</code>, и её счётчик разошёлся со списком. Шапка снова получает данные сама — опыт показывает, что изменилось.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Один список на всё приложение</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: меняем заявку на её странице</p>
+
+        <ol class="steps">
+          <li><b>Откройте новую заявку</b><p>Закройте DevTools. На доске нажмите на заголовок «Не работает интерактивная доска». Статус — «Новая», в шапке «Новых заявок: 6».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/13-zayavka.png" width="1100" height="508" alt="Страница заявки Не работает интерактивная доска, статус Новая, кнопка Взять в работу; в шапке Новых заявок: 6" loading="lazy"><figcaption>До нажатия: новых 6</figcaption></figure></li>
+          <li><b>Возьмите её в работу</b><p>Нажмите <strong>Взять в работу</strong>. Статус сменился на «В работе», в шапке «Новых заявок: 5».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/14-vzyata.png" width="1100" height="508" alt="Страница заявки со статусом В работе и кнопкой Завершить; в шапке Новых заявок: 5" loading="lazy"><figcaption>После нажатия счётчик в шапке изменился</figcaption></figure></li>
+          <li><b>Откройте статистику</b><p>Нажмите <strong>Статистика</strong>. Новых 5, в работе 4.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/15-stats.png" width="1100" height="543" alt="Статистика: всего заявок 10, Новая 5, В работе 4, Готово 1" loading="lazy"><figcaption>Статистика совпадает со счётчиком</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему счётчик совпал</p>
+
+        <p>В опыте главы 2.4 <code>App</code> и <code>Header</code> вызывали <code>useRequests</code> каждый у себя. Получилось два хука и два списка, и кнопка меняла только один из них. Теперь хук вызван один раз — в провайдере, а шапка, страница заявки и статистика читают один и тот же объект <code>board</code>.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Нажатие «Взять в работу» на странице заявки</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 250" role="img" aria-label="RequestPage вызывает handleNext из контекста; в BoardProvider меняется список, newCount становится 5, создаётся новый объект board; React перерисовывает всех, кто читает контекст: Header — 5, RequestPage — В работе, StatsPage при открытии — 5 и 4">
+              <rect x="20" y="20" width="200" height="70" fill="#D4EEDF"/><text class="mono" x="34" y="46">RequestPage</text><text class="soft" x="34" y="68">handleNext(id, 'Новая')</text>
+              <path d="M220 55 H 262"/><path d="M254 49 L 262 55 L 254 61"/>
+              <rect x="270" y="20" width="220" height="110" fill="#D6F0F9"/><text class="mono" x="284" y="46">BoardProvider</text><text class="soft" x="284" y="70">next → PATCH на сервер</text><text class="soft" x="284" y="90">список: заявка В работе</text><text class="soft" x="284" y="110">newCount = 5, новый board</text>
+              <path class="ctx" d="M380 130 V 160 H 110 V 180"/><path d="M104 172 L 110 180 L 116 172"/>
+              <path class="ctx" d="M380 160 H 380 V 180"/><path d="M374 172 L 380 180 L 386 172"/>
+              <path class="ctx" d="M380 160 H 640 V 180"/><path d="M634 172 L 640 180 L 646 172"/>
+              <rect x="20" y="188" width="180" height="50" fill="#ffffff"/><text class="mono" x="34" y="210">Header</text><text class="soft" x="34" y="228">Новых заявок: 5</text>
+              <rect x="290" y="188" width="180" height="50" fill="#ffffff"/><text class="mono" x="304" y="210">RequestPage</text><text class="soft" x="304" y="228">В работе</text>
+              <rect x="550" y="188" width="190" height="50" fill="#ffffff"/><text class="mono" x="564" y="210">StatsPage</text><text class="soft" x="564" y="228">Новая 5, В работе 4</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Синий пунктир — чтение контекста. Когда провайдер отрисовывается с новым значением, React заново отрисовывает каждый компонент, который вызывает <code>useBoard</code>. Статистика не на экране и получает данные, когда её открывают.</p>
+        </figure>
+
+        <p>Из схемы следует обратная сторона контекста: при любом изменении значения перерисовываются все компоненты, которые его читают, даже если им нужна только часть объекта. Шапка перерисуется и после смены сообщения <code>notice</code>, хотя показывает только число новых заявок. Для доски из десятка заявок разницы на экране нет. В больших приложениях данные делят на несколько контекстов по смыслу, чтобы изменение одного не задевало читателей другого.</p>
+
+        <p class="bridge">Контекст подходит не для всего состояния. Последний раздел — что куда класть.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Что хранить в контексте</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Контекст, состояние страницы и props</p>
+
+        <p>В контекст кладут данные, которые нужны нескольким частям приложения и должны быть одинаковыми везде: список заявок, сообщение, действия над заявками. Состояние, которое нужно одному компоненту, остаётся в нём. Фильтр в <code>BoardPage</code> нужен только доске; если положить его в контекст, при каждом нажатии на фильтр перерисуются шапка и открытая страница, а фильтр перестанет сбрасываться при уходе со страницы.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Данные</th><th>Где лежат</th><th>Почему</th></tr></thead>
+            <tbody>
+              <tr><td>Список заявок, загрузка, ошибка, число новых</td><td>контекст <code>BoardContext</code></td><td>читают шапка и три страницы</td></tr>
+              <tr><td>Добавление, смена статуса, удаление, сообщение</td><td>контекст</td><td>вызываются с доски и со страницы заявки, сообщение видно на всех страницах</td></tr>
+              <tr><td>Фильтр, клавиша Esc</td><td>состояние <code>BoardPage</code></td><td>нужны только доске</td></tr>
+              <tr><td>Поля формы, раскрытие «Подробнее»</td><td>состояние <code>RequestForm</code>, <code>RequestCard</code></td><td>нужны одному компоненту</td></tr>
+              <tr><td>Заявка для карточки, обработчик для формы</td><td>props от <code>BoardPage</code></td><td>компоненты показа не зависят от провайдера</td></tr>
+              <tr><td>Номер заявки из адреса</td><td><code>useParams</code></td><td>значение хранится в адресной строке</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- скрыто: архив конца главы
+        <div class="starter starter--finish">
+          <p class="starter__head">Проект после главы</p>
+          <div class="starter__body">
+            <p>Архив содержит проект <code>zayavki</code> в состоянии конца главы.</p>
+            <a class="starter__btn" href="zayavki-konec-3-2.zip" download>zayavki-konec-3-2.zip</a>
+          </div>
+        </div>
+        -->
+
+        <p class="bridge">Доска заявок работает только на компьютере, где запущен PocketBase. Глава 3.3 собирает приложение в готовые файлы и публикует его на GitHub Pages; для этого используется приложение без своего сервера — «Мониторинг сайтов группы».</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Частые ошибки</h2>
+
+        <p>Сообщения получены в проекте <code>zayavki</code>: ошибки типов — командой <code>npx tsc -b</code>, ошибка React — в консоли браузера.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>Пустая страница, в консоли <code>Uncaught Error: useBoard вызван вне BoardProvider</code></td><td>Компонент с <code>useBoard</code> стоит вне <code>&lt;BoardProvider&gt;</code> или провайдер не подключён</td><td>В <code>main.tsx</code> обернуть <code>&lt;App /&gt;</code> в <code>&lt;BoardProvider&gt;</code></td></tr>
+              <tr><td><code>error TS2322: Type '{ requests: RequestItem[]; loading: boolean; }' is not assignable to type 'IntrinsicAttributes'.</code></td><td>Компонент больше не принимает props, а <code>App</code> их ещё передаёт</td><td>Убрать props из тега в <code>App.tsx</code></td></tr>
+              <tr><td><code>error TS2339: Property 'remove' does not exist on type 'Board'.</code></td><td>Из контекста берётся поле, которого нет в типе <code>Board</code></td><td>Взять поле с именем из типа: <code>handleRemove</code>; новое поле добавить в тип и в объект <code>board</code></td></tr>
+              <tr><td>Страница пустая, ошибок в консоли нет</td><td>В провайдере пропущен <code>{children}</code>: <code>&lt;BoardContext value={board} /&gt;</code></td><td>Вернуть <code>{children}</code> между тегами контекста</td></tr>
+              <tr><td>Счётчик в шапке не совпадает со списком</td><td>Компонент вызывает <code>useRequests</code> сам вместо <code>useBoard</code></td><td>Вызывать <code>useRequests</code> только в провайдере</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s7"><span class="sec">§7</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Что такое проброс props и почему он мешает?</summary>
+          <p>Передача значения через компоненты, которым оно не нужно. Каждый промежуточный компонент должен объявить prop и передать его дальше, и при изменении данных правок становится больше.</p>
+        </details>
+        <details>
+          <summary>Назовите три части контекста и файлы, где они лежат.</summary>
+          <p>Контекст <code>BoardContext</code> (<code>createContext</code>) и хук <code>useBoard</code> — в <code>board.ts</code>; провайдер <code>BoardProvider</code> — в <code>BoardProvider.tsx</code>.</p>
+        </details>
+        <details>
+          <summary>Что получит <code>useContext(BoardContext)</code> в компоненте, над которым нет провайдера?</summary>
+          <p>Значение по умолчанию из <code>createContext</code> — <code>null</code>. <code>useBoard</code> в этом случае выбрасывает ошибку.</p>
+        </details>
+        <details>
+          <summary>Что такое <code>children</code> в <code>BoardProvider</code>?</summary>
+          <p>То, что записано между <code>&lt;BoardProvider&gt;</code> и <code>&lt;/BoardProvider&gt;</code> в <code>main.tsx</code>, — элемент <code>&lt;App /&gt;</code>.</p>
+        </details>
+        <details>
+          <summary>Почему в опыте §4 счётчик в шапке изменился, а в опыте главы 2.4 — нет?</summary>
+          <p>Сейчас <code>useRequests</code> вызван один раз в провайдере, и все читают один список. В главе 2.4 у шапки был свой вызов хука и свой список.</p>
+        </details>
+        <details>
+          <summary>Почему фильтр не кладут в контекст?</summary>
+          <p>Он нужен только доске. В контексте он вызывал бы перерисовку шапки и страницы при каждом нажатии и сохранялся бы при уходе со страницы.</p>
+        </details>
+        <details>
+          <summary>Нужна страница «Мои заявки» с заявками кабинета 214. Что она возьмёт из контекста и что из него не понадобится менять?</summary>
+          <p>Страница вызовет <code>const { requests, loading } = useBoard()</code> и отфильтрует список по <code>room === '214'</code>. В <code>board.ts</code>, провайдере и <code>App</code> меняется только строка маршрута в <code>App</code>.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Создать контекст</b><code>export const BoardContext = createContext&lt;Board | null&gt;(null)</code></div>
+          <div><b>Хук чтения</b><code>useContext(BoardContext)</code> + проверка на <code>null</code></div>
+          <div><b>Провайдер</b><code>&lt;BoardContext value={board}&gt;{children}&lt;/BoardContext&gt;</code></div>
+          <div><b>Подключить</b><code>&lt;BoardProvider&gt;&lt;App /&gt;&lt;/BoardProvider&gt;</code> в <code>main.tsx</code></div>
+          <div><b>Читать</b><code>const { requests } = useBoard()</code></div>
+          <div><b>children</b>то, что стоит между тегами компонента, тип <code>ReactNode</code></div>
+          <div><b>В контекст</b>данные нескольких страниц; состояние одного компонента — в нём самом</div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>Контекст передаёт значение всем компонентам внутри провайдера без props и избавляет от проброса props через компоненты, которым они не нужны. Контекст собирается из трёх частей: <code>createContext</code> со значением по умолчанию <code>null</code> и хук <code>useBoard</code> с проверкой на <code>null</code> в <code>board.ts</code>, провайдер <code>BoardProvider</code> с хуком <code>useRequests</code>, сообщением и обработчиками, который оборачивает <code>&lt;App /&gt;</code> в <code>main.tsx</code> и отдаёт объект <code>board</code> тегом <code>&lt;BoardContext value&gt;</code>. Шапка и страницы читают данные сами, <code>App</code> сократился до маршрутов, компоненты показа остались на props. Список заявок существует в одном экземпляре, поэтому изменение на странице заявки сразу видно в шапке и статистике; при любом изменении значения перерисовываются все читатели контекста. В контекст кладут данные нескольких страниц, а состояние одного компонента остаётся в нём.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://react.dev/learn/passing-data-deeply-with-context" target="_blank" rel="noreferrer">react.dev — Passing Data Deeply with Context</a></li>
+          <li><a href="https://react.dev/reference/react/createContext" target="_blank" rel="noreferrer">react.dev — createContext</a></li>
+          <li><a href="https://react.dev/reference/react/useContext" target="_blank" rel="noreferrer">react.dev — useContext</a></li>
+          <li><a href="https://react.dev/learn/passing-props-to-a-component#passing-jsx-as-children" target="_blank" rel="noreferrer">react.dev — Passing JSX as children</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../31-marshrutizaciya/index.html">← 3.1 Маршрутизация</a>
+          <a href="../../index.html">К оглавлению →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

@@ -132,3 +132,8 @@ upload-pages-artifact@v5, deploy-pages@v5.
   §5 — 14 props через App как подводка к 3.2. Код `tools/code31` (стили — `index-add.css` в конец index.css), проверка всех
   промежуточных состояний `tools/verify_31.sh`, съёмка `shots_31.py` (база — `code31/db-start.json`, адресная строка над кадрами
   браузера дорисовывается `addrbar.py` из `page.url`), обрезка `crop_31.py`.
+- 3.2 `temy/32-kontekst` — проброс props (14 через App), `board.ts` (тип Board, `createContext<Board | null>(null)`, `useBoard`
+  с ошибкой «useBoard вызван вне BoardProvider»), `BoardProvider.tsx` (код App без изменений, `children: ReactNode`,
+  `<BoardContext value={board}>` — запись React 19), опыт без провайдера в main.tsx, страницы и шапка читают `useBoard`,
+  App — 26 строк; опыт «взять в работу на странице заявки → счётчик шапки 6→5, статистика совпадает» против опыта 2.4;
+  что класть в контекст. Код `tools/code32`, проверка `verify_32.sh`, съёмка `shots_32.py` (база `code32/db-start.json`), `crop_32.py`.

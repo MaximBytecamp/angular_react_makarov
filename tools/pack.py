@@ -90,6 +90,14 @@ AFTER_31 = {
     "/package.json": "code31/package.json", "/package-lock.json": "code31/package-lock.json",
 }
 
+# В главе 3.2 данные доски переезжают в контекст: board.ts и BoardProvider.tsx.
+AFTER_32 = {
+    **AFTER_31, "main.tsx": "code32/main.tsx", "App.tsx": "code32/App.tsx", "board.ts": "code32/board.ts",
+    "BoardProvider.tsx": "code32/BoardProvider.tsx", "components/Header.tsx": "code32/Header.tsx",
+    "pages/BoardPage.tsx": "code32/BoardPage.tsx", "pages/StatsPage.tsx": "code32/StatsPage.tsx",
+    "pages/RequestPage.tsx": "code32/RequestPage.tsx",
+}
+
 ARCHIVES = [
     ("11-node-npm-vite", "zayavki-konec-1-1.zip", AFTER_11),
     ("12-jsx-i-komponenty", "zayavki-nachalo-1-2.zip", AFTER_11),
@@ -114,6 +122,8 @@ ARCHIVES = [
     ("25-obnovlenie-po-sobytiyam", "zayavki-konec-2-5.zip", AFTER_25),
     ("31-marshrutizaciya", "zayavki-nachalo-3-1.zip", AFTER_25),
     ("31-marshrutizaciya", "zayavki-konec-3-1.zip", AFTER_31),
+    ("32-kontekst", "zayavki-nachalo-3-2.zip", AFTER_31),
+    ("32-kontekst", "zayavki-konec-3-2.zip", AFTER_32),
 ]
 
 
