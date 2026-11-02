@@ -137,3 +137,12 @@ upload-pages-artifact@v5, deploy-pages@v5.
   `<BoardContext value={board}>` — запись React 19), опыт без провайдера в main.tsx, страницы и шапка читают `useBoard`,
   App — 26 строк; опыт «взять в работу на странице заявки → счётчик шапки 6→5, статистика совпадает» против опыта 2.4;
   что класть в контекст. Код `tools/code32`, проверка `verify_32.sh`, съёмка `shots_32.py` (база `code32/db-start.json`), `crop_32.py`.
+- 3.3 `temy/33-github-pages` — решение автора 02.11.2026: приложение мониторинга у студента — отдельный публичный репозиторий
+  `monitoring` рядом с react-kurs; в 3.3 только список сайтов из `public/data/sites.json` (fetch + ignore). Сборка в dist, file://
+  не работает (CORS), `npm run preview`; репозиторий через github.com/new и команды из терминала; Settings → Pages → Source:
+  GitHub Actions; `.github/workflows/deploy.yml` (одно задание: checkout@v7, setup-node@v7 24 + cache npm, npm ci, build,
+  upload-pages-artifact@v5, deploy-pages@v5). Опыт из трёх публикаций: без base — пустая страница (404 /assets), base
+  '/monitoring/' — 404 на /data/sites.json, `import.meta.env.BASE_URL` — работает. §6 — 404.html и basename для маршрутов
+  (Pages на /monitoring/nope отдаёт 404 «File not found»). Код `tools/code33`, съёмка `shots_33.py` (стадии local/push/deploy/
+  base/url), кадры GitHub — `gh33.mjs` (Chrome ~/repo-shots-chrome, порт 9381, headless), `crop_33.py`; hl.py понимает YAML.
+  Демо-репозиторий github.com/MaximBytecamp/monitoring после съёмки закрыт (private), для 3.4 открыть снова.

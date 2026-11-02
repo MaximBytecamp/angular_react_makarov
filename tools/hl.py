@@ -41,9 +41,17 @@ CSS = re.compile(r"""
   | (?P<n>\#[0-9a-fA-F]{3,8}\b|\b\d+(?:\.\d+)?(?:px|%|em|rem|fr)?\b)
 """, re.X | re.S)
 
+# YAML файлов GitHub Actions: комментарии, ключи, строки в кавычках, выражения ${{ … }}, числа.
+YAML = re.compile(r"""
+    (?P<c>\#[^\n]*)
+  | (?P<s>'[^'\n]*'|"[^"\n]*"|\$\{\{[^}]*\}\})
+  | (?P<a>(?<=^)[ \t]*-?[ \t]*[\w-]+(?=:)|(?<=\n)[ \t]*-?[ \t]*[\w-]+(?=:))
+  | (?P<n>(?<=:\s)\d+\b)
+""", re.X | re.S)
+
 
 def highlight(src: str, lang: str) -> str:
-    rx = CSS if lang == "css" else TSX
+    rx = {"css": CSS, "yml": YAML}.get(lang, TSX)
     out, pos = [], 0
     for m in rx.finditer(src):
         out.append(html.escape(src[pos:m.start()], quote=False))
@@ -72,7 +80,7 @@ def figure(spec: str) -> str:
             text = "\n".join(text.split("\n")[a - 1:b])
             start = a
     text = text.rstrip("\n")
-    lang = "css" if path.endswith(".css") else "tsx"
+    lang = "css" if path.endswith(".css") else ("yml" if path.endswith((".yml", ".yaml")) else "tsx")
     code = highlight(text, lang)
     pins = dict(p.split(":") for o in opts if o.startswith("pins=") for p in o[5:].split(","))
     if pins:

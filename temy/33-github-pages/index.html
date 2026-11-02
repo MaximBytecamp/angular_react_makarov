@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>3.3 Сборка и публикация на GitHub Pages · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch .on-dark-soft { fill: #c8d0e0; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; stroke-dasharray: 6 4; }
+    .sch .ng-text { fill: #C2185B; }
+    .sch .ok-text { fill: #1f7a46; }
+    .sch .dash { stroke-dasharray: 6 4; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 3 · Несколько экранов, публикация, расписание</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 3 · несколько экранов, публикация, расписание</p>
+          <p class="running__folio">3.3</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">3.3</span>
+          <h1>Сборка и публикация на GitHub Pages</h1>
+          <p class="lead">В этой главе начинается второе приложение модуля — «Мониторинг сайтов группы». Пока это одна страница со списком сайтов из файла <code>sites.json</code>. Приложение собирается командой <code>npm run build</code> в папку готовых файлов <code>dist</code>, отправляется в отдельный репозиторий на GitHub и публикуется на GitHub Pages: при каждой отправке кода конвейер GitHub Actions собирает и выкладывает сайт. Первая публикация даёт пустую страницу, вторая — ошибку загрузки списка. Обе ошибки связаны с тем, что сайт на Pages лежит в подпапке, и исправляются настройкой <code>base</code> и константой <code>BASE_URL</code>.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>Сборка, публикация, GitHub Actions</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Node.js и VS Code из главы 1.1, аккаунт GitHub и Git, настроенный для отправки в репозиторий курса</dd></div>
+          <div><dt>Результат</dt><dd>Репозиторий <code>monitoring</code> на GitHub и сайт по адресу <code>https://&lt;логин&gt;.github.io/monitoring/</code>, который обновляется после каждой отправки кода</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Приложение «Мониторинг сайтов группы»</a></li>
+            <li><a href="#s2">Сборка: папка dist</a></li>
+            <li><a href="#s3">Репозиторий на GitHub</a></li>
+            <li><a href="#s4">Публикация через GitHub Actions</a></li>
+            <li><a href="#s5">Сайт в подпапке: base и BASE_URL</a></li>
+            <li><a href="#s6">Прямые ссылки на страницы приложения</a></li>
+            <li><a href="#s7">Частые ошибки</a></li>
+            <li><a href="#s8">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Приложение «Мониторинг сайтов группы»</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Зачем второе приложение</p>
+
+        <p>Доска заявок работает с PocketBase, а PocketBase запущен в Docker на вашем компьютере. Если опубликовать доску в интернете, браузер посетителя будет искать сервер заявок по адресу <code>localhost:8090</code> — на своём компьютере, где его нет. Поэтому для публикации нужно приложение, которому не нужен свой сервер.</p>
+
+        <p>«Мониторинг сайтов группы» — такое приложение. Проекты студентов группы опубликованы на GitHub Pages, и монитор показывает список этих сайтов. Список хранится в файле <code>sites.json</code> рядом с приложением. В следующей главе GitHub Actions будет каждую ночь открывать сайты из списка и записывать результаты в такой же файл, а приложение — показывать, какие сайты работают. В этой главе приложение только читает список и показывает его.</p>
+
+        <p>Приложение живёт отдельно от папки <code>react-kurs</code>: у него будет свой репозиторий <code>monitoring</code> на GitHub. Папка проекта создаётся рядом с <code>react-kurs</code>, на том же уровне.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Создаём проект и список сайтов</p>
+
+        <ol class="steps">
+          <li><b>Создайте проект</b><p>В терминале VS Code, открытом в папке <code>react-kurs</code>, перейдите на уровень выше и создайте проект командой из главы 1.1. Флаг <code>--no-interactive</code> отвечает на вопросы мастера значениями по умолчанию, <code>--no-immediate</code> не запускает установку сразу.</p>
+            <figure class="code"><figcaption><span>Терминал · папка react-kurs</span></figcaption><pre>cd ..
+npx create-vite@9.2.1 monitoring --template react-ts --no-interactive --no-immediate</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-create-vite.png" width="1240" height="297" alt="Терминал: cd .., npx create-vite@9.2.1 monitoring, Scaffolding project in /private/tmp/student/monitoring, Done. Now run: cd monitoring, npm install, npm run dev" loading="lazy"><figcaption>Проект monitoring создан рядом с react-kurs</figcaption></figure></li>
+          <li><b>Откройте папку проекта</b><p>В VS Code выберите <strong>File → Open Folder…</strong> и откройте папку <code>monitoring</code>. Откройте терминал (<strong>Terminal → New Terminal</strong>) и установите зависимости.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm install</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-npm-install.png" width="1240" height="280" alt="VS Code с папкой MONITORING: npm install, added 27 packages, found 0 vulnerabilities" loading="lazy"><figcaption>Зависимости установлены</figcaption></figure></li>
+          <li><b>Уберите заготовку</b><p>Шаблон Vite содержит страницу-пример со счётчиком. Удалите файл <code>src/App.css</code> и папку <code>src/assets</code>: правой кнопкой мыши по ним в проводнике → <strong>Delete</strong>.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/02a-novyy-proekt.png" width="1240" height="780" alt="VS Code: App.tsx из шаблона Vite с импортами heroImg, reactLogo, viteLogo, App.css; в проводнике src/assets и App.css" loading="lazy"><figcaption>App.tsx из шаблона: картинки из assets и App.css</figcaption></figure></li>
+          <li><b>Замените index.html</b><p>Замените содержимое файла <code>index.html</code> в корне проекта: язык страницы — русский, заголовок вкладки — название приложения.</p>
+            <!--CODE tools/code33/index.html | monitoring/index.html | mark=2,7--><figure class="code"><figcaption><span>monitoring/index.html</span></figcaption><pre>&lt;!doctype html<span class="t">&gt;</span>
+<span class="hl"><span class="t">&lt;html</span> <span class="a">lang</span>=<span class="s">"ru"</span><span class="t">&gt;</span></span>
+  <span class="t">&lt;head</span><span class="t">&gt;</span>
+    <span class="t">&lt;meta</span> <span class="a">charset</span>=<span class="s">"UTF-8"</span> <span class="t">/&gt;</span>
+    <span class="t">&lt;link</span> <span class="a">rel</span>=<span class="s">"icon"</span> <span class="a">type</span>=<span class="s">"image/svg+xml"</span> <span class="a">href</span>=<span class="s">"/favicon.svg"</span> <span class="t">/&gt;</span>
+    <span class="t">&lt;meta</span> <span class="a">name</span>=<span class="s">"viewport"</span> <span class="a">content</span>=<span class="s">"width=device-width, initial-scale=1.0"</span> <span class="t">/&gt;</span>
+<span class="hl">    <span class="t">&lt;title</span><span class="t">&gt;</span>Мониторинг сайтов группы<span class="t">&lt;/title</span><span class="t">&gt;</span></span>
+  <span class="t">&lt;/head</span><span class="t">&gt;</span>
+  <span class="t">&lt;body</span><span class="t">&gt;</span>
+    <span class="t">&lt;div</span> <span class="a">id</span>=<span class="s">"root"</span><span class="t">&gt;</span><span class="t">&lt;/div</span><span class="t">&gt;</span>
+    <span class="t">&lt;script</span> <span class="a">type</span>=<span class="s">"module"</span> <span class="a">src</span>=<span class="s">"/src/main.tsx"</span><span class="t">&gt;</span><span class="t">&lt;/script</span><span class="t">&gt;</span>
+  <span class="t">&lt;/body</span><span class="t">&gt;</span>
+<span class="t">&lt;/html</span><span class="t">&gt;</span></pre></figure><!--/CODE--></li>
+          <li><b>Замените стили</b><p>Замените содержимое <code>src/index.css</code>.</p>
+            <!--CODE tools/code33/index.css | monitoring/src/index.css--><figure class="code"><figcaption><span>monitoring/src/index.css</span></figcaption><pre>* {
+  <span class="a">box-sizing</span>: border-box;
+}
+
+body {
+  <span class="a">margin</span>: <span class="n">0</span>;
+  <span class="a">font-family</span>: system-ui, <span class="s">'Segoe UI'</span>, Roboto, sans-serif;
+  <span class="a">background</span>: <span class="n">#f5f6f9</span>;
+  <span class="a">color</span>: <span class="n">#1f2430</span>;
+}
+
+.header {
+  <span class="a">padding</span>: <span class="n">24px</span> <span class="n">32px</span>;
+  <span class="a">background</span>: <span class="n">#1f2430</span>;
+  <span class="a">color</span>: <span class="n">#ffffff</span>;
+}
+
+.header h1 {
+  <span class="a">margin</span>: <span class="n">0</span>;
+  <span class="a">font-size</span>: <span class="n">28px</span>;
+}
+
+.header p {
+  <span class="a">margin</span>: <span class="n">6px</span> <span class="n">0</span> <span class="n">0</span>;
+  <span class="a">color</span>: <span class="n">#c4cad8</span>;
+}
+
+.main {
+  <span class="a">max-width</span>: <span class="n">1000px</span>;
+  <span class="a">margin</span>: <span class="n">0</span> auto;
+  <span class="a">padding</span>: <span class="n">24px</span> <span class="n">32px</span>;
+}
+
+.sites {
+  <span class="a">display</span>: grid;
+  <span class="a">grid-template-columns</span>: repeat(auto-fill, minmax(<span class="n">280px</span>, <span class="n">1fr</span>));
+  <span class="a">gap</span>: <span class="n">12px</span>;
+  <span class="a">margin</span>: <span class="n">0</span>;
+  <span class="a">padding</span>: <span class="n">0</span>;
+  <span class="a">list-style</span>: none;
+}
+
+.site {
+  <span class="a">padding</span>: <span class="n">16px</span>;
+  <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#dfe3eb</span>;
+  <span class="a">border-radius</span>: <span class="n">8px</span>;
+  <span class="a">background</span>: <span class="n">#ffffff</span>;
+}
+
+.site h2 {
+  <span class="a">margin</span>: <span class="n">0</span> <span class="n">0</span> <span class="n">6px</span>;
+  <span class="a">font-size</span>: <span class="n">18px</span>;
+}
+
+.site a {
+  <span class="a">color</span>: <span class="n">#2f6fde</span>;
+  <span class="a">font-size</span>: <span class="n">14px</span>;
+  <span class="a">overflow-wrap</span>: anywhere;
+}
+
+.load-error {
+  <span class="a">padding</span>: <span class="n">16px</span>;
+  <span class="a">border-radius</span>: <span class="n">8px</span>;
+  <span class="a">background</span>: <span class="n">#fde8e8</span>;
+  <span class="a">color</span>: <span class="n">#b42318</span>;
+}</pre></figure><!--/CODE--></li>
+          <li><b>Опишите тип сайта</b><p>В папке <code>src</code> создайте файл <code>types.ts</code>.</p>
+            <!--CODE tools/code33/types.ts | monitoring/src/types.ts--><figure class="code"><figcaption><span>monitoring/src/types.ts</span></figcaption><pre><span class="k">export</span> <span class="k">type</span> Site = {
+  id: string
+  name: string
+  url: string
+}</pre></figure><!--/CODE--></li>
+          <li><b>Создайте список сайтов</b><p>В папке <code>public</code> создайте папку <code>data</code>, в ней — файл <code>sites.json</code>. В примере — сайты справочников автора. Для своей группы впишите адреса проектов однокурсников на GitHub Pages: у каждого сайта короткий <code>id</code> латиницей, название и адрес.</p>
+            <!--CODE tools/code33/sites.json | monitoring/public/data/sites.json--><figure class="code"><figcaption><span>monitoring/public/data/sites.json</span></figcaption><pre>[
+  { <span class="s">"id"</span>: <span class="s">"git"</span>, <span class="s">"name"</span>: <span class="s">"Справочник по Git и GitHub"</span>, <span class="s">"url"</span>: <span class="s">"https://maximbytecamp.github.io/git_github_makarov/"</span> },
+  { <span class="s">"id"</span>: <span class="s">"mongodb"</span>, <span class="s">"name"</span>: <span class="s">"Справочник по MongoDB"</span>, <span class="s">"url"</span>: <span class="s">"https://maximbytecamp.github.io/mongodb_theory_makarov/"</span> },
+  { <span class="s">"id"</span>: <span class="s">"english"</span>, <span class="s">"name"</span>: <span class="s">"Разговорный английский"</span>, <span class="s">"url"</span>: <span class="s">"https://maximbytecamp.github.io/english_makarov/"</span> },
+  { <span class="s">"id"</span>: <span class="s">"sysprog"</span>, <span class="s">"name"</span>: <span class="s">"Системное программирование"</span>, <span class="s">"url"</span>: <span class="s">"https://maximbytecamp.github.io/sysprog_makarov/"</span> },
+  { <span class="s">"id"</span>: <span class="s">"sphinx"</span>, <span class="s">"name"</span>: <span class="s">"Отчёт кафе на Sphinx"</span>, <span class="s">"url"</span>: <span class="s">"https://maximbytecamp.github.io/otchet-kafe-sphinx/"</span> },
+  { <span class="s">"id"</span>: <span class="s">"staryy"</span>, <span class="s">"name"</span>: <span class="s">"Старый проект"</span>, <span class="s">"url"</span>: <span class="s">"https://maximbytecamp.github.io/staryy-proekt/"</span> }
+]</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-sites-json.png" width="1240" height="780" alt="VS Code: public/data/sites.json, шесть объектов с полями id, name, url" loading="lazy"><figcaption>public/data/sites.json</figcaption></figure></li>
+          <li><b>Замените App.tsx</b><p>Замените содержимое <code>src/App.tsx</code>. Загрузка устроена как в главе 2.3: эффект с флажком <code>ignore</code>, ошибка в состоянии.</p>
+            <!--CODE tools/code33/App-1.tsx | monitoring/src/App.tsx--><figure class="code"><figcaption><span>monitoring/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="k">import</span> <span class="k">type</span> { Site } <span class="k">from</span> <span class="s">'./types'</span>
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [sites, setSites] = useState<span class="t">&lt;Site</span>[]<span class="t">&gt;</span>([])
+  <span class="k">const</span> [error, setError] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">let</span> ignore = <span class="k">false</span>
+    async <span class="k">function</span> <span class="f">load</span>() {
+      try {
+        <span class="k">const</span> response = await <span class="f">fetch</span>(<span class="s">'/data/sites.json'</span>)
+        <span class="k">if</span> (!response.ok) {
+          throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">`Список сайтов не загрузился: код ${response.status}.`</span>)
+        }
+        <span class="k">const</span> list: Site[] = await response.<span class="f">json</span>()
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setSites</span>(list)
+        }
+      } catch (e) {
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setError</span>((e as Error).message)
+        }
+      }
+    }
+    <span class="f">load</span>()
+    <span class="k">return</span> () =<span class="t">&gt;</span> {
+      ignore = <span class="k">true</span>
+    }
+  }, [])
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;header</span> <span class="a">className</span>=<span class="s">"header"</span><span class="t">&gt;</span>
+        <span class="t">&lt;h1</span><span class="t">&gt;</span>Мониторинг сайтов группы<span class="t">&lt;/h1</span><span class="t">&gt;</span>
+        <span class="t">&lt;p</span><span class="t">&gt;</span>Сайты, которые студенты группы опубликовали на GitHub Pages<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;/header</span><span class="t">&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"main"</span><span class="t">&gt;</span>
+        {error !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"load-error"</span><span class="t">&gt;</span>{error}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+        <span class="t">&lt;ul</span> <span class="a">className</span>=<span class="s">"sites"</span><span class="t">&gt;</span>
+          {sites.<span class="f">map</span>((site) =<span class="t">&gt;</span> (
+            <span class="t">&lt;li</span> <span class="a">key</span>={site.id} <span class="a">className</span>=<span class="s">"site"</span><span class="t">&gt;</span>
+              <span class="t">&lt;h2</span><span class="t">&gt;</span>{site.name}<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+              <span class="t">&lt;a</span> <span class="a">href</span>={site.url} <span class="a">target</span>=<span class="s">"_blank"</span> <span class="a">rel</span>=<span class="s">"noreferrer"</span><span class="t">&gt;</span>
+                {site.url}
+              <span class="t">&lt;/a</span><span class="t">&gt;</span>
+            <span class="t">&lt;/li</span><span class="t">&gt;</span>
+          ))}
+        <span class="t">&lt;/ul</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/04-app.png" width="1240" height="780" alt="VS Code: App.tsx, строка 12 const response = await fetch('/data/sites.json')" loading="lazy"><figcaption>App.tsx загружает /data/sites.json</figcaption></figure></li>
+          <li><b>Запустите приложение</b><p>Выполните в терминале команду и откройте адрес <code>localhost:5173</code>.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm run dev</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-dev.png" width="1240" height="280" alt="Терминал: VITE v8.3.5 ready, Local: http://localhost:5173/" loading="lazy"><figcaption>Сервер разработки запущен</figcaption></figure>
+            <figure class="shot" style="max-width: 1106px"><img src="img/06-dev-sayt.png" width="1100" height="415" alt="Браузер, localhost:5173: шапка Мониторинг сайтов группы и шесть карточек сайтов с названиями и адресами" loading="lazy"><figcaption>Список сайтов в режиме разработки</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Папка public</p>
+
+        <p>Файлы из папки <code>public</code> Vite отдаёт как есть, по пути от корня сайта: <code>public/data/sites.json</code> доступен по адресу <code>/data/sites.json</code>. В отличие от файлов <code>src</code>, они не проходят через сборку и не попадают внутрь кода приложения. Поэтому их можно заменить, не пересобирая приложение, — так в главе 3.4 будут обновляться результаты проверок.</p>
+
+        <p>Запрос <code>fetch('/data/sites.json')</code> работает как запрос к PocketBase в главе 2.3, только в ответе приходит содержимое готового файла. Запись <code>const list: Site[] = await response.json()</code> сообщает TypeScript тип прочитанных данных: в файле JSON типов нет.</p>
+
+        <p class="bridge">В режиме разработки страницу отдаёт сервер Vite. Чтобы опубликовать её, нужны готовые файлы, которые может отдать любой веб-сервер.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Сборка: папка dist</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Собираем приложение и смотрим результат</p>
+
+        <ol class="steps">
+          <li><b>Остановите сервер и соберите</b><p>Остановите <code>npm run dev</code> сочетанием <kbd>Ctrl</kbd>+<kbd>C</kbd> в терминале и выполните сборку.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm run build</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/07-build.png" width="1240" height="329" alt="Терминал: npm run build, tsc -b && vite build, 16 modules transformed, dist/index.html 0.49 kB, dist/assets/index-GyizwX6g.css 0.68 kB, dist/assets/index-Cn4yT-77.js 220.50 kB, built in 301ms" loading="lazy"><figcaption>Сборка: три файла в папке dist</figcaption></figure></li>
+          <li><b>Откройте dist/index.html</b><p>В проводнике появилась папка <code>dist</code>. Раскройте её и откройте <code>dist/index.html</code>.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/08-dist.png" width="1240" height="780" alt="VS Code: dist/index.html, script src=/assets/index-Cn4yT-77.js и link href=/assets/index-GyizwX6g.css; в проводнике dist с папками assets и data, favicon.svg, icons.svg, index.html" loading="lazy"><figcaption>Собранный index.html ссылается на файлы из /assets/</figcaption></figure></li>
+          <li><b>Откройте файл в браузере</b><p>Найдите папку <code>dist</code> в Проводнике Windows или в Finder и откройте <code>index.html</code> двойным щелчком. Откройте DevTools (<kbd>F12</kbd>) на вкладке <strong>Console</strong> и обновите страницу. Страница пустая, в консоли ошибки загрузки <code>file:///assets/…</code>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/09-file.png" width="1100" height="822" alt="Браузер, адрес file:///private/tmp/student/monitoring/dist/index.html: пустая страница; в консоли Access to script at file:///assets/index-Cn4yT-77.js blocked by CORS policy и GET file:///assets/… net::ERR_FAILED" loading="lazy"><figcaption>Файл, открытый напрямую, не работает</figcaption></figure></li>
+          <li><b>Запустите preview</b><p>В терминале VS Code выполните команду и откройте адрес <code>localhost:4173</code>.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm run preview</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/10-preview.png" width="1240" height="280" alt="Терминал: npm run preview, vite preview, Local: http://localhost:4173/" loading="lazy"><figcaption>preview отдаёт папку dist по адресу localhost:4173</figcaption></figure>
+            <figure class="shot" style="max-width: 1106px"><img src="img/11-preview-sayt.png" width="1100" height="415" alt="Браузер, localhost:4173: тот же список из шести сайтов" loading="lazy"><figcaption>Собранное приложение работает</figcaption></figure>
+            <p>Остановите <code>preview</code> сочетанием <kbd>Ctrl</kbd>+<kbd>C</kbd>.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что делает сборка</p>
+
+        <p>Браузер выполняет только JavaScript; TypeScript и JSX он не читает. В режиме разработки сервер Vite переводит каждый файл в JavaScript в момент запроса — поэтому изменения видны сразу после сохранения. <span class="term">Сборка</span> (build) делает этот перевод заранее и один раз: команда <code>npm run build</code> сначала проверяет типы (<code>tsc -b</code>), затем <code>vite build</code> собирает все модули приложения и библиотеку React в один файл JavaScript, все стили — в один файл CSS и записывает их в папку <code>dist</code> вместе с <code>index.html</code> и содержимым <code>public</code>.</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Пока книга пишется, автор правит рукопись и сразу перечитывает изменённую главу. В типографию уходит свёрстанный макет: все главы собраны в один файл, ничего не нужно переводить или доделывать. Режим разработки — рукопись, папка <code>dist</code> — макет.</p>
+        </div></div>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Файл в dist</th><th>Откуда взялся</th></tr></thead>
+            <tbody>
+              <tr><td><code>index.html</code></td><td>из <code>index.html</code> проекта; ссылка на <code>/src/main.tsx</code> заменена ссылками на собранные файлы</td></tr>
+              <tr><td><code>assets/index-Cn4yT-77.js</code></td><td>весь код из <code>src</code> и библиотеки React, 220 КБ</td></tr>
+              <tr><td><code>assets/index-GyizwX6g.css</code></td><td>стили из <code>src/index.css</code></td></tr>
+              <tr><td><code>data/sites.json</code>, <code>favicon.svg</code>, <code>icons.svg</code></td><td>скопированы из <code>public</code> без изменений</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Набор букв в имени файла — <span class="term">хеш</span> содержимого: при каждом изменении кода он другой. Браузер хранит загруженные файлы в кэше, а файл с новым именем браузер скачивает заново, поэтому посетитель получает новую версию.</p>
+
+        <p>Файл, открытый двойным щелчком, браузер загружает по адресу <code>file://</code>. Ссылка <code>/assets/index-Cn4yT-77.js</code> начинается с косой черты и означает «от корня сайта», а у адреса <code>file://</code> корень — корень диска. Файла <code>/assets/…</code> там нет, к тому же браузер запрещает модулям JavaScript загружаться с <code>file://</code> (ошибка CORS policy в консоли). Поэтому собранное приложение проверяют через веб-сервер: <code>npm run preview</code> запускает простой сервер, который отдаёт папку <code>dist</code>. GitHub Pages — такой же сервер, только в интернете.</p>
+
+        <p class="bridge">Папка <code>dist</code> в Git не попадает: она указана в <code>.gitignore</code> шаблона Vite. На GitHub отправляется исходный код, а собирать его будет GitHub Actions.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Репозиторий на GitHub</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Создаём репозиторий monitoring и отправляем код</p>
+
+        <ol class="steps">
+          <li><b>Создайте репозиторий</b><p>На github.com нажмите <strong>+</strong> в правом верхнем углу → <strong>New repository</strong>. Впишите имя <code>monitoring</code> (1), оставьте видимость <strong>Public</strong> (2), README, .gitignore и лицензию не добавляйте. Нажмите <strong>Create repository</strong> (3).</p>
+            <figure class="shot" style="max-width: 806px"><img src="img/12-gh-new.png" width="800" height="830" alt="GitHub, Create a new repository: Repository name monitoring (1), Choose visibility Public (2), кнопка Create repository (3)" loading="lazy"><figcaption>Новый публичный репозиторий monitoring</figcaption></figure></li>
+          <li><b>Посмотрите команды</b><p>Репозиторий пустой, и GitHub показывает команды для отправки кода. Нужен второй блок — «…or push an existing repository from the command line»: проект уже есть на компьютере. Перед этими командами нужно создать локальный репозиторий и первый коммит.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/13-gh-quick.png" width="1280" height="560" alt="GitHub, Quick setup: адрес https://github.com/MaximBytecamp/monitoring.git; блок …or push an existing repository: git remote add origin, git branch -M main, git push -u origin main" loading="lazy"><figcaption>Команды для существующего проекта</figcaption></figure></li>
+          <li><b>Отправьте код</b><p>В терминале VS Code в папке <code>monitoring</code> выполните команды. В адресе замените <code>MaximBytecamp</code> своим логином — его можно скопировать со страницы GitHub.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>git init
+git add .
+git commit -m "Список сайтов группы"
+git branch -M main
+git remote add origin https://github.com/MaximBytecamp/monitoring.git
+git push -u origin main</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/14-push.png" width="1240" height="697" alt="Терминал: git init, git add ., git commit, 17 files changed, список create mode без папки dist и node_modules, git branch -M main, git remote add origin, git push -u origin main, * [new branch] main -> main" loading="lazy"><figcaption>17 файлов отправлены в ветку main</figcaption></figure></li>
+          <li><b>Проверьте репозиторий</b><p>Обновите страницу репозитория на GitHub. Видны папки <code>public</code> и <code>src</code> и файлы проекта.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/15-gh-repo.png" width="1280" height="800" alt="GitHub, репозиторий monitoring Public: коммит Список сайтов группы, папки public и src, .gitignore, index.html, package.json и другие файлы" loading="lazy"><figcaption>Код на GitHub</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему репозиторий отдельный и публичный</p>
+
+        <p>Список <code>create mode</code> на кадре — 17 файлов, и папок <code>dist</code> и <code>node_modules</code> среди них нет: обе указаны в <code>.gitignore</code>. В репозитории хранится только то, из чего приложение можно собрать заново.</p>
+
+        <p>GitHub Pages на бесплатном тарифе публикует сайты только из публичных репозиториев. Отдельный репозиторий нужен ещё и потому, что в главе 3.4 GitHub Actions будет каждую ночь добавлять в него коммит с результатами проверок; в репозитории курса <code>react-kurs</code> эти коммиты смешались бы с вашими работами.</p>
+
+        <p class="bridge">Код на GitHub. Осталось включить Pages и описать, как собирать и публиковать сайт.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Публикация через GitHub Actions</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Включаем Pages и добавляем конвейер публикации</p>
+
+        <ol class="steps">
+          <li><b>Откройте настройки Pages</b><p>В репозитории откройте <strong>Settings</strong> (1) → <strong>Pages</strong> (2). В разделе <strong>Build and deployment</strong> нажмите на список <strong>Source</strong> (3).</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/16-gh-pages.png" width="1280" height="700" alt="GitHub, Settings (1), Pages (2), Build and deployment, Source: Deploy from a branch (3)" loading="lazy"><figcaption>Настройки Pages</figcaption></figure></li>
+          <li><b>Выберите GitHub Actions</b><p>В списке выберите <strong>GitHub Actions</strong> (4).</p>
+            <figure class="shot" style="max-width: 986px"><img src="img/17-gh-pages-actions.png" width="980" height="420" alt="Список Source: GitHub Actions (4) — Best for using frameworks and customizing your build process; Deploy from a branch" loading="lazy"><figcaption>Источник публикации — GitHub Actions</figcaption></figure>
+            <p>GitHub предлагает готовые шаблоны конвейеров. Они не нужны: файл конвейера будет создан в проекте.</p>
+            <figure class="shot" style="max-width: 986px"><img src="img/18-gh-pages-vybrano.png" width="980" height="456" alt="Source: GitHub Actions; ниже Use a suggested workflow и карточки GitHub Pages Jekyll и Static HTML" loading="lazy"><figcaption>Источник выбран, сохранять ничего не нужно</figcaption></figure></li>
+          <li><b>Создайте файл конвейера</b><p>В VS Code в корне проекта создайте папку <code>.github</code>, в ней — папку <code>workflows</code>, в ней — файл <code>deploy.yml</code>. Точка в начале имени <code>.github</code> обязательна.</p>
+            <!--CODE tools/code33/deploy.yml | monitoring/.github/workflows/deploy.yml--><figure class="code"><figcaption><span>monitoring/.github/workflows/deploy.yml</span></figcaption><pre><span class="a">name</span>: Публикация на GitHub Pages
+
+<span class="a">on</span>:
+<span class="a">  push</span>:
+<span class="a">    branches</span>: [main]
+<span class="a">  workflow_dispatch</span>:
+
+<span class="a">permissions</span>:
+<span class="a">  contents</span>: read
+<span class="a">  pages</span>: write
+<span class="a">  id-token</span>: write
+
+<span class="a">concurrency</span>:
+<span class="a">  group</span>: pages
+<span class="a">  cancel-in-progress</span>: false
+
+<span class="a">jobs</span>:
+<span class="a">  deploy</span>:
+<span class="a">    runs-on</span>: ubuntu-latest
+<span class="a">    environment</span>:
+<span class="a">      name</span>: github-pages
+<span class="a">      url</span>: <span class="s">${{ steps.deployment.outputs.page_url }}</span>
+<span class="a">    steps</span>:
+<span class="a">      - name</span>: Получить код
+<span class="a">        uses</span>: actions/checkout@v7
+<span class="a">      - name</span>: Установить Node.js
+<span class="a">        uses</span>: actions/setup-node@v7
+<span class="a">        with</span>:
+<span class="a">          node-version</span>: <span class="n">24</span>
+<span class="a">          cache</span>: npm
+<span class="a">      - name</span>: Установить зависимости
+<span class="a">        run</span>: npm ci
+<span class="a">      - name</span>: Собрать сайт
+<span class="a">        run</span>: npm run build
+<span class="a">      - name</span>: Упаковать папку dist
+<span class="a">        uses</span>: actions/upload-pages-artifact@v5
+<span class="a">        with</span>:
+<span class="a">          path</span>: dist
+<span class="a">      - name</span>: Опубликовать
+<span class="a">        id</span>: deployment
+<span class="a">        uses</span>: actions/deploy-pages@v5</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/19-deploy-yml.png" width="1240" height="780" alt="VS Code: .github/workflows/deploy.yml, name, on push branches main, permissions, concurrency, jobs" loading="lazy"><figcaption>Файл конвейера .github/workflows/deploy.yml</figcaption></figure></li>
+          <li><b>Отправьте файл</b><p>Выполните команды в терминале.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>git add .
+git commit -m "Публикация на GitHub Pages"
+git push</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/20-push-deploy.png" width="1240" height="361" alt="Терминал: git add ., git commit -m Публикация на GitHub Pages, 1 file changed, git push, main -> main" loading="lazy"><figcaption>Конвейер отправлен</figcaption></figure></li>
+          <li><b>Дождитесь публикации</b><p>Откройте вкладку <strong>Actions</strong> репозитория. Запуск «Публикация на GitHub Pages» начался после отправки без нажатия кнопок. Через минуту у него зелёная галочка.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/21-gh-actions.png" width="1280" height="560" alt="GitHub Actions: All workflows, 1 workflow run, Публикация на GitHub Pages #1 с зелёной галочкой, ветка main, 1m 2s" loading="lazy"><figcaption>Запуск завершён за 1 мин 2 с</figcaption></figure>
+            <p>Нажмите на запуск. В карточке задания <code>deploy</code> — адрес опубликованного сайта.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/21a-gh-run.png" width="1280" height="700" alt="Страница запуска Публикация на GitHub Pages #1: Status Success, Total duration 1m 2s, Artifacts 1; задание deploy 57s со ссылкой https://maximbytecamp.github.io/monit…" loading="lazy"><figcaption>Задание deploy и адрес сайта</figcaption></figure></li>
+          <li><b>Откройте сайт</b><p>Откройте адрес из карточки — <code>https://&lt;логин&gt;.github.io/monitoring/</code> — с открытой консолью DevTools. Страница пустая, в консоли две ошибки <code>404 (Not Found)</code> для файлов <code>/assets/…</code>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/23-pages-pusto.png" width="1100" height="822" alt="Браузер, адрес https://maximbytecamp.github.io/monitoring/: пустая страница; в консоли GET https://maximbytecamp.github.io/assets/index-GyizwX6g.css 404 и GET https://maximbytecamp.github.io/assets/index-Cn4yT-77.js 404" loading="lazy"><figcaption>Первая публикация: пустая страница</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что записано в конвейере</p>
+
+        <p><span class="term">GitHub Actions</span> — служба GitHub, которая выполняет команды на своих компьютерах по событиям в репозитории. Порядок действий описывается в файле <span class="term">конвейера</span> (workflow) на языке YAML в папке <code>.github/workflows</code>. YAML — формат «ключ: значение», где вложенность задаётся отступами из пробелов.</p>
+
+        <!--CODE tools/code33/deploy.yml | deploy.yml · по строкам | pins=3:1,8:2,13:3,19:4,20:5,25:6,27:7,32:8,36:9,41:10--><figure class="code" data-read><figcaption><span>deploy.yml · по строкам</span></figcaption><pre><span class="a">name</span>: Публикация на GitHub Pages
+
+<span class="a">on</span>:  <span class="pin">1</span>
+<span class="a">  push</span>:
+<span class="a">    branches</span>: [main]
+<span class="a">  workflow_dispatch</span>:
+
+<span class="a">permissions</span>:  <span class="pin">2</span>
+<span class="a">  contents</span>: read
+<span class="a">  pages</span>: write
+<span class="a">  id-token</span>: write
+
+<span class="a">concurrency</span>:  <span class="pin">3</span>
+<span class="a">  group</span>: pages
+<span class="a">  cancel-in-progress</span>: false
+
+<span class="a">jobs</span>:
+<span class="a">  deploy</span>:
+<span class="a">    runs-on</span>: ubuntu-latest  <span class="pin">4</span>
+<span class="a">    environment</span>:  <span class="pin">5</span>
+<span class="a">      name</span>: github-pages
+<span class="a">      url</span>: <span class="s">${{ steps.deployment.outputs.page_url }}</span>
+<span class="a">    steps</span>:
+<span class="a">      - name</span>: Получить код
+<span class="a">        uses</span>: actions/checkout@v7  <span class="pin">6</span>
+<span class="a">      - name</span>: Установить Node.js
+<span class="a">        uses</span>: actions/setup-node@v7  <span class="pin">7</span>
+<span class="a">        with</span>:
+<span class="a">          node-version</span>: <span class="n">24</span>
+<span class="a">          cache</span>: npm
+<span class="a">      - name</span>: Установить зависимости
+<span class="a">        run</span>: npm ci  <span class="pin">8</span>
+<span class="a">      - name</span>: Собрать сайт
+<span class="a">        run</span>: npm run build
+<span class="a">      - name</span>: Упаковать папку dist
+<span class="a">        uses</span>: actions/upload-pages-artifact@v5  <span class="pin">9</span>
+<span class="a">        with</span>:
+<span class="a">          path</span>: dist
+<span class="a">      - name</span>: Опубликовать
+<span class="a">        id</span>: deployment
+<span class="a">        uses</span>: actions/deploy-pages@v5  <span class="pin">10</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p><code>on</code> — когда запускать: при отправке (<code>push</code>) в ветку <code>main</code> и вручную кнопкой <strong>Run workflow</strong> на вкладке Actions (<code>workflow_dispatch</code>).</p></div></li>
+          <li><span class="pin">2</span><div><p>Права конвейера: читать код, записывать в Pages и получать токен (<code>id-token</code>), которым Pages проверяет, что публикацию запустил этот репозиторий.</p></div></li>
+          <li><span class="pin">3</span><div><p>Одновременно выполняется только одна публикация. Следующая ждёт, пока закончится текущая.</p></div></li>
+          <li><span class="pin">4</span><div><p>Задание <code>deploy</code> выполняется на чистой виртуальной машине Ubuntu, которую GitHub выделяет на время запуска. После запуска машина удаляется.</p></div></li>
+          <li><span class="pin">5</span><div><p>Окружение <code>github-pages</code>: адрес из шага публикации появляется в карточке задания — его видно на кадре.</p></div></li>
+          <li><span class="pin">6</span><div><p>Шаг <code>uses</code> выполняет готовое действие из каталога GitHub. <code>actions/checkout@v7</code> скачивает код репозитория на машину; <code>@v7</code> — версия действия.</p></div></li>
+          <li><span class="pin">7</span><div><p>Устанавливает Node.js 24 — ту же версию, что на вашем компьютере. <code>cache: npm</code> сохраняет скачанные пакеты между запусками, и <code>npm ci</code> берёт их из кэша вместо загрузки из интернета.</p></div></li>
+          <li><span class="pin">8</span><div><p>Шаг <code>run</code> выполняет команду терминала. <code>npm ci</code> ставит пакеты строго по <code>package-lock.json</code>, затем <code>npm run build</code> собирает <code>dist</code> — те же команды, что вы выполняли сами.</p></div></li>
+          <li><span class="pin">9</span><div><p>Упаковывает папку <code>dist</code> в архив-<span class="term">артефакт</span> — на странице запуска он виден как «Artifacts 1».</p></div></li>
+          <li><span class="pin">10</span><div><p>Передаёт артефакт в GitHub Pages. С этого момента файлы из <code>dist</code> доступны по адресу сайта.</p></div></li>
+        </ol>
+
+        <figure class="scheme">
+          <p class="scheme__head">От git push до сайта</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 200" role="img" aria-label="git push с компьютера в репозиторий monitoring; событие push запускает конвейер deploy.yml на машине Ubuntu: checkout, setup-node, npm ci, npm run build, upload-pages-artifact с папкой dist, deploy-pages; GitHub Pages отдаёт файлы по адресу логин.github.io/monitoring/">
+              <rect x="20" y="70" width="130" height="60" fill="#ffffff"/><text class="mono" x="32" y="96">git push</text><text class="soft" x="32" y="116">компьютер</text>
+              <path d="M150 100 H 182"/><path d="M174 94 L 182 100 L 174 106"/>
+              <rect x="190" y="70" width="120" height="60" fill="#D6F0F9"/><text class="mono" x="202" y="96">monitoring</text><text class="soft" x="202" y="116">ветка main</text>
+              <path d="M310 100 H 342"/><path d="M334 94 L 342 100 L 334 106"/>
+              <rect x="350" y="20" width="220" height="160" fill="#161A2E"/><text class="mono on-dark" x="364" y="44">deploy.yml · Ubuntu</text>
+              <text class="soft on-dark-soft" x="364" y="70">checkout</text><text class="soft on-dark-soft" x="364" y="90">setup-node 24</text><text class="soft on-dark-soft" x="364" y="110">npm ci</text><text class="soft on-dark-soft" x="364" y="130">npm run build → dist</text><text class="soft on-dark-soft" x="364" y="150">upload-pages-artifact</text><text class="soft on-dark-soft" x="364" y="170">deploy-pages</text>
+              <path d="M570 100 H 602"/><path d="M594 94 L 602 100 L 594 106"/>
+              <rect x="610" y="60" width="130" height="80" fill="#D4EEDF"/><text class="mono" x="622" y="86">GitHub Pages</text><text class="soft" x="622" y="106">логин.github.io</text><text class="soft" x="622" y="124">/monitoring/</text>
+            </svg>
+          </div>
+          <p class="scheme__note">После настройки сайт обновляется сам: каждая отправка в <code>main</code> запускает сборку и публикацию.</p>
+        </figure>
+
+        <p class="bridge">Конвейер отработал без ошибок, а страница пустая. Ответ — в адресах из консоли.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Сайт в подпапке: base и BASE_URL</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему страница пустая</p>
+
+        <p>Сайт репозитория <code>monitoring</code> опубликован по адресу <code>maximbytecamp.github.io/monitoring/</code> — в подпапке с именем репозитория. Корень <code>maximbytecamp.github.io/</code> относится ко всему аккаунту. Собранный <code>index.html</code> ссылается на <code>/assets/index-Cn4yT-77.js</code>, и косая черта в начале ведёт в корень: браузер запросил <code>maximbytecamp.github.io/assets/…</code>, а файл лежит в <code>maximbytecamp.github.io/monitoring/assets/…</code>. Отсюда две ошибки 404 и пустая страница.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Куда ведёт путь /assets/… на GitHub Pages</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 210" role="img" aria-label="Адрес maximbytecamp.github.io: в корне нет папки assets; в папке monitoring лежат index.html, assets, data. Ссылка /assets/index.js из index.html ведёт в корень — 404; с base /monitoring/ ссылка /monitoring/assets/index.js ведёт в папку monitoring — найден">
+              <rect x="20" y="20" width="300" height="170" fill="#ffffff"/><text class="mono" x="34" y="44">maximbytecamp.github.io/</text>
+              <text class="soft ng-text" x="34" y="70">assets/ — нет</text>
+              <rect x="40" y="86" width="260" height="90" fill="#D4EEDF"/><text class="mono" x="52" y="108">monitoring/</text><text class="soft" x="52" y="128">index.html</text><text class="soft" x="52" y="146">assets/index-Cn4yT-77.js</text><text class="soft" x="52" y="164">data/sites.json</text>
+              <rect x="380" y="30" width="360" height="62" fill="#F9DDE8"/><text class="mono" x="394" y="54">без base: /assets/index-…js</text><text class="soft ng-text" x="394" y="76">→ github.io/assets/ → 404</text>
+              <rect x="380" y="112" width="360" height="62" fill="#D4EEDF"/><text class="mono" x="394" y="136">base: /monitoring/assets/index-…js</text><text class="soft ok-text" x="394" y="158">→ github.io/monitoring/assets/ → 200</text>
+              <path class="ng" d="M380 66 H 160"/><path d="M168 60 L 160 66 L 168 72" style="stroke:#C2185B"/>
+              <path d="M380 150 H 310"/><path d="M318 144 L 310 150 L 318 156"/>
+            </svg>
+          </div>
+          <p class="scheme__note">Локально сайт открывается с корня — <code>localhost:5173/</code> и <code>localhost:4173/</code>, — поэтому там ошибки не было.</p>
+        </figure>
+
+        <p>Настройка <code>base</code> в <code>vite.config.ts</code> сообщает Vite, в какой папке будет лежать сайт. При сборке Vite допишет её ко всем ссылкам в <code>index.html</code>.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Указываем base и публикуем снова</p>
+
+        <ol class="steps">
+          <li><b>Добавьте base</b><p>Замените содержимое <code>vite.config.ts</code>. Имя папки совпадает с именем репозитория, косые черты с обеих сторон обязательны.</p>
+            <!--CODE tools/code33/vite.config.ts | monitoring/vite.config.ts | mark=7--><figure class="code"><figcaption><span>monitoring/vite.config.ts</span></figcaption><pre><span class="k">import</span> react <span class="k">from</span> <span class="s">'@vitejs/plugin-react'</span>
+<span class="k">import</span> { defineConfig } <span class="k">from</span> <span class="s">'vite'</span>
+
+<span class="c">// https://vite.dev/config/</span>
+<span class="k">export</span> <span class="k">default</span> <span class="f">defineConfig</span>({
+  plugins: [<span class="f">react</span>()],
+<span class="hl">  base: <span class="s">'/monitoring/'</span>,</span>
+})</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/24-vite-base.png" width="1240" height="780" alt="VS Code: vite.config.ts, строка 7 base: '/monitoring/'" loading="lazy"><figcaption>base: '/monitoring/'</figcaption></figure></li>
+          <li><b>Отправьте изменение</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>git add .
+git commit -m "Адрес сайта в подпапке monitoring"
+git push</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/25-push-base.png" width="1240" height="345" alt="Терминал: git commit -m Адрес сайта в подпапке monitoring, 1 file changed, 1 insertion, git push" loading="lazy"><figcaption>Изменение отправлено</figcaption></figure></li>
+          <li><b>Откройте сайт</b><p>Дождитесь зелёной галочки на вкладке Actions (около 25 секунд) и обновите страницу сайта. Шапка появилась, но вместо списка — «Список сайтов не загрузился: код 404.», в консоли ошибка для <code>/data/sites.json</code>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/26-pages-oshibka-dannyh.png" width="1100" height="822" alt="Сайт https://maximbytecamp.github.io/monitoring/: шапка и сообщение Список сайтов не загрузился: код 404.; в консоли GET https://maximbytecamp.github.io/data/sites.json 404 (Not Found)" loading="lazy"><figcaption>Приложение загрузилось, список — нет</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Путь внутри кода</p>
+
+        <p><code>base</code> исправил ссылки в <code>index.html</code>: их Vite обрабатывает при сборке. Строку <code>'/data/sites.json'</code> в <code>fetch</code> Vite не меняет — это обычный текст внутри кода. Запрос снова ушёл в корень <code>maximbytecamp.github.io/data/sites.json</code>.</p>
+
+        <p>Для таких путей Vite даёт константу <code>import.meta.env.BASE_URL</code>. При сборке на её место подставляется значение <code>base</code>: <code>'/monitoring/'</code>. Без <code>base</code> её значение <code>'/'</code>. Путь, собранный из неё, верен и на компьютере, и на Pages.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Путь к данным от BASE_URL</p>
+
+        <ol class="steps">
+          <li><b>Исправьте путь</b><p>В <code>src/App.tsx</code> замените строку 12 на строку ниже. Кавычки — обратные, как в шаблонных строках главы 3.1.</p>
+            <!--CODE tools/code33/App.tsx | App.tsx · строка 12 | lines=12-12--><figure class="code"><figcaption><span>App.tsx · строка 12</span></figcaption><pre>        <span class="k">const</span> response = await <span class="f">fetch</span>(<span class="s">`${import.meta.env.BASE_URL}data/sites.json`</span>)</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/27-app-base-url.png" width="1240" height="780" alt="VS Code: App.tsx, строка 12 const response = await fetch(`${import.meta.env.BASE_URL}data/sites.json`)" loading="lazy"><figcaption>fetch с import.meta.env.BASE_URL</figcaption></figure></li>
+          <li><b>Отправьте изменение</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>git add .
+git commit -m "Путь к sites.json от BASE_URL"
+git push</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/28-push-url.png" width="1240" height="345" alt="Терминал: git commit -m Путь к sites.json от BASE_URL, git push" loading="lazy"><figcaption>Исправление отправлено</figcaption></figure></li>
+          <li><b>Проверьте запуски</b><p>На вкладке Actions — три запуска, по одному на каждую отправку. Повторные заняли около 25 секунд.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/29-gh-actions.png" width="1280" height="560" alt="GitHub Actions: 3 workflow runs: Путь к sites.json от BASE_URL #3 24s, Адрес сайта в подпапке monitoring #2 25s, Публикация на GitHub Pages #1 1m 2s, все с зелёными галочками" loading="lazy"><figcaption>Три публикации</figcaption></figure></li>
+          <li><b>Откройте сайт</b><p>Обновите страницу сайта. Список из шести сайтов на месте, ошибок в консоли нет.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/30-pages-rabotaet.png" width="1100" height="822" alt="Сайт https://maximbytecamp.github.io/monitoring/: шапка и шесть карточек сайтов; консоль пустая" loading="lazy"><figcaption>Сайт опубликован</figcaption></figure></li>
+        </ol>
+
+        <p>Проверить сборку с <code>base</code> можно и на компьютере: после <code>npm run build</code> команда <code>npm run preview</code> откроет сайт по адресу <code>localhost:4173/monitoring/</code> — с той же подпапкой, что на Pages.</p>
+
+        <p class="bridge">У приложения одна страница. Когда страниц несколько, у Pages есть ещё одна особенность — с прямыми ссылками.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Прямые ссылки на страницы приложения</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Чем Pages отличается от сервера Vite</p>
+
+        <p>В главе 3.1 сервер Vite на любой путь отдавал <code>index.html</code>, и страницу выбирал <code>BrowserRouter</code>. GitHub Pages так не делает: он отдаёт только существующие файлы. Адрес <code>maximbytecamp.github.io/monitoring/nope</code> возвращает код 404 и стандартную страницу GitHub «Page not found · GitHub Pages» с текстом «File not found». Для приложения с маршрутами это значит: переход по ссылкам внутри приложения работает, а прямая ссылка на страницу, отправленная в мессенджере, и <kbd>F5</kbd> на ней дают страницу ошибки GitHub.</p>
+
+        <p>Если в опубликованной папке есть файл <code>404.html</code>, Pages отдаёт его вместо стандартной страницы ошибки. Поэтому приложения с маршрутами публикуют с копией <code>index.html</code> под именем <code>404.html</code>: на любой несуществующий путь загружается приложение, и <code>BrowserRouter</code> показывает нужную страницу. Код ответа при этом остаётся 404, но на экране — приложение. Копию делает шаг конвейера после сборки:</p>
+
+        <figure class="code" data-read><figcaption><span>deploy.yml · шаг для приложения с маршрутами</span></figcaption><pre>      - name: Копия index.html для прямых ссылок
+        run: cp dist/index.html dist/404.html</pre></figure>
+
+        <p>Для <code>BrowserRouter</code> на Pages нужен ещё атрибут <code>basename</code> — та же подпапка, что в <code>base</code>: <code>&lt;BrowserRouter basename={import.meta.env.BASE_URL}&gt;</code>. Оба изменения понадобятся, когда у монитора появятся страницы отдельных сайтов.</p>
+
+        <!-- скрыто: архив конца главы
+        <div class="starter starter--finish">
+          <p class="starter__head">Проект после главы</p>
+          <div class="starter__body">
+            <a class="starter__btn" href="monitoring-konec-3-3.zip" download>monitoring-konec-3-3.zip</a>
+          </div>
+        </div>
+        -->
+
+        <p class="bridge">Сайт обновляется при каждой отправке кода. Глава 3.4 запускает конвейер по расписанию: ночью GitHub Actions проверяет сайты из списка и публикует результаты.</p>
+
+        <h2 id="s7"><span class="sec">§7</span>Частые ошибки</h2>
+
+        <p>Сообщения получены в проекте <code>monitoring</code>: в консоли браузера, в терминале и на GitHub.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>Пустая страница при открытии <code>dist/index.html</code> двойным щелчком, в консоли <code>blocked by CORS policy</code> и <code>file:///assets/… net::ERR_FAILED</code></td><td>Собранное приложение открыто без веб-сервера</td><td>Проверять командой <code>npm run preview</code></td></tr>
+              <tr><td>Пустая страница на Pages, в консоли <code>GET https://&lt;логин&gt;.github.io/assets/index-….js 404 (Not Found)</code></td><td>В <code>vite.config.ts</code> нет <code>base</code>, ссылки ведут в корень аккаунта</td><td>Добавить <code>base: '/monitoring/'</code> с именем своего репозитория</td></tr>
+              <tr><td>На Pages «Список сайтов не загрузился: код 404.», в консоли <code>…github.io/data/sites.json 404</code></td><td>Путь в <code>fetch</code> начинается с <code>/</code> и не учитывает подпапку</td><td>Собирать путь от <code>import.meta.env.BASE_URL</code></td></tr>
+              <tr><td>После отправки на вкладке Actions нет ни одного запуска</td><td>Файл лежит не в <code>.github/workflows</code> (например, <code>github/workflows</code> без точки) или ветка называется не <code>main</code></td><td>Проверить путь файла и выполнить <code>git branch -M main</code></td></tr>
+              <tr><td>Запуск с красным крестиком на шаге «Опубликовать»</td><td>В Settings → Pages источник не переключён на GitHub Actions</td><td>Выбрать Source: GitHub Actions и перезапустить кнопкой Re-run all jobs</td></tr>
+              <tr><td>Запуск с красным крестиком на шаге «Собрать сайт»</td><td>Ошибка TypeScript: <code>npm run build</code> сначала выполняет <code>tsc -b</code></td><td>Выполнить <code>npm run build</code> на компьютере, исправить ошибку, отправить снова</td></tr>
+              <tr><td>Прямая ссылка на страницу приложения даёт страницу GitHub «File not found»</td><td>Pages отдаёт только существующие файлы</td><td>Добавить в конвейер копию <code>index.html</code> в <code>404.html</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s8"><span class="sec">§8</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Почему доску заявок нельзя опубликовать на Pages в нынешнем виде?</summary>
+          <p>Она получает заявки с PocketBase по адресу <code>localhost:8090</code>. У посетителя сайта этот адрес ведёт на его собственный компьютер, где PocketBase нет.</p>
+        </details>
+        <details>
+          <summary>Чем папка <code>dist</code> отличается от папки <code>src</code>?</summary>
+          <p>В <code>src</code> — исходный код на TypeScript и JSX, его переводит в JavaScript сервер Vite при разработке. В <code>dist</code> — готовые файлы после сборки: один JavaScript, один CSS, <code>index.html</code> и копия <code>public</code>; их отдаёт любой веб-сервер.</p>
+        </details>
+        <details>
+          <summary>Почему <code>dist</code> не отправляют в Git?</summary>
+          <p>Её можно собрать из исходного кода, и при каждой сборке имена файлов меняются. Собирает её конвейер на GitHub Actions.</p>
+        </details>
+        <details>
+          <summary>Что происходит после <code>git push</code> в ветку <code>main</code>?</summary>
+          <p>GitHub запускает <code>deploy.yml</code> на машине Ubuntu: скачивает код, ставит Node.js и пакеты, собирает <code>dist</code>, упаковывает его в артефакт и передаёт в Pages.</p>
+        </details>
+        <details>
+          <summary>Зачем <code>base</code>, если есть <code>BASE_URL</code>, и наоборот?</summary>
+          <p><code>base</code> меняет пути, которые Vite обрабатывает при сборке: ссылки в <code>index.html</code>. <code>BASE_URL</code> — значение <code>base</code> для путей внутри кода, которые Vite не меняет, например в <code>fetch</code>.</p>
+        </details>
+        <details>
+          <summary>Репозиторий назвали <code>site-monitor</code>. Каким будет адрес сайта и значение <code>base</code>?</summary>
+          <p>Адрес <code>https://&lt;логин&gt;.github.io/site-monitor/</code>, <code>base: '/site-monitor/'</code>.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Собрать</b><code>npm run build</code> → папка <code>dist</code></div>
+          <div><b>Проверить сборку</b><code>npm run preview</code> → <code>localhost:4173</code></div>
+          <div><b>Файлы как есть</b>папка <code>public</code>, путь от корня сайта</div>
+          <div><b>Подпапка сайта</b><code>base: '/monitoring/'</code> в <code>vite.config.ts</code></div>
+          <div><b>Путь в коде</b><code>`${import.meta.env.BASE_URL}data/sites.json`</code></div>
+          <div><b>Включить Pages</b>Settings → Pages → Source: GitHub Actions</div>
+          <div><b>Конвейер</b><code>.github/workflows/deploy.yml</code>: checkout, setup-node, npm ci, build, upload-pages-artifact, deploy-pages</div>
+          <div><b>Прямые ссылки</b><code>cp dist/index.html dist/404.html</code></div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>Приложение «Мониторинг сайтов группы» читает список сайтов из <code>public/data/sites.json</code> и не зависит от своего сервера, поэтому его можно опубликовать на GitHub Pages. Сборка <code>npm run build</code> переводит TypeScript и JSX в готовые файлы папки <code>dist</code>: один JavaScript с хешем в имени, один CSS, <code>index.html</code> и копию <code>public</code>. Такие файлы работают только через веб-сервер — <code>npm run preview</code> на компьютере или Pages в интернете. Код хранится в отдельном публичном репозитории <code>monitoring</code> без <code>dist</code> и <code>node_modules</code>; конвейер <code>.github/workflows/deploy.yml</code> при каждой отправке в <code>main</code> собирает сайт на машине GitHub и передаёт <code>dist</code> в Pages, источник которого переключён на GitHub Actions. Сайт на Pages лежит в подпапке с именем репозитория: ссылки сборки исправляет настройка <code>base</code>, пути внутри кода собираются от <code>import.meta.env.BASE_URL</code>. Для приложений с маршрутами конвейер дополнительно копирует <code>index.html</code> в <code>404.html</code>.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://vite.dev/guide/static-deploy#github-pages" target="_blank" rel="noreferrer">Vite — Deploying a Static Site: GitHub Pages</a></li>
+          <li><a href="https://vite.dev/guide/build#public-base-path" target="_blank" rel="noreferrer">Vite — Building for Production: Public Base Path</a></li>
+          <li><a href="https://vite.dev/guide/assets#the-public-directory" target="_blank" rel="noreferrer">Vite — Static Asset Handling: The public Directory</a></li>
+          <li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site" target="_blank" rel="noreferrer">GitHub Docs — Configuring a publishing source for your GitHub Pages site</a></li>
+          <li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-custom-404-page-for-your-github-pages-site" target="_blank" rel="noreferrer">GitHub Docs — Creating a custom 404 page for your GitHub Pages site</a></li>
+          <li><a href="https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions" target="_blank" rel="noreferrer">GitHub Docs — Workflow syntax for GitHub Actions</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../32-kontekst/index.html">← 3.2 Контекст: общие данные</a>
+          <a href="../../index.html">К оглавлению →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>
