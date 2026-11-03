@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>Проект модуля 3 · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 3 · Несколько экранов, публикация, расписание</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 3 · проект</p>
+          <p class="running__folio">П3</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">П3</span>
+          <h1>Проект:<br>мониторинг сайтов группы</h1>
+          <p class="lead">На этой странице — задание проекта модуля 3. После автоматизации модуля 3 монитор — одна страница со списком сайтов, ночной проверкой и сообщениями в Telegram. В проекте он становится приложением из нескольких страниц: сводка по группе, страница каждого сайта с историей проверок и страница «О проверке». Данные страницы получают из контекста, прямые ссылки на страницы работают на GitHub Pages, а в списке — сайты вашей группы. Ниже — требования, порядок работы на примере, дополнительные задания, правила работы с ИИ и порядок защиты.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Режим ИИ</dt><dd>Р1 — код пишется вручную, ИИ используется для объяснений (глава 0.5)</dd></div>
+          <div><dt>Вариант</dt><dd>Один на всех; список сайтов — своей группы</dd></div>
+          <div><dt>Основа</dt><dd>Репозиторий <code>monitoring</code> после автоматизации модуля 3</dd></div>
+          <div><dt>Сдаётся</dt><dd>Ссылки на репозиторий и сайт, журнал работы с ИИ, снимок сообщения бота, защита у преподавателя</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>На этой странице</b>
+          <ol>
+            <li><a href="#s1">Что меняется после автоматизации</a></li>
+            <li><a href="#s2">Обязательные требования</a></li>
+            <li><a href="#s3">Порядок работы</a></li>
+            <li><a href="#s4">Дополнительные задания</a></li>
+            <li><a href="#s5">Работа с ИИ</a></li>
+            <li><a href="#s6">Сдача и защита</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Что меняется после автоматизации</h2>
+
+        <p>Скрипт проверки, конвейеры и оповещение остаются как есть. Меняется приложение: из одной страницы оно становится несколькими, и данные к ним приходят через контекст. В таблице — что было после автоматизации модуля 3 и что должно стать.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что</th><th>После автоматизации</th><th>Проект модуля 3</th><th>Глава</th></tr></thead>
+            <tbody>
+              <tr><td>Список сайтов</td><td>Сайты справочников из примера</td><td>Сайты вашей группы, не меньше пяти</td><td>3.3</td></tr>
+              <tr><td>Страницы</td><td>Одна</td><td>Сводка, страница сайта, «О проверке», «Не найдено»</td><td>3.1</td></tr>
+              <tr><td>Где загружаются данные</td><td>В <code>App.tsx</code></td><td>В провайдере контекста, страницы читают хук</td><td>3.2</td></tr>
+              <tr><td>История проверок</td><td>Хранится в <code>results.json</code>, на экране только последняя</td><td>Таблица на странице каждого сайта</td><td>3.4</td></tr>
+              <tr><td>Прямая ссылка на страницу</td><td>Страница одна, ссылок нет</td><td>Открывается на Pages и после <kbd>F5</kbd></td><td>3.3</td></tr>
+              <tr><td>Проверка и оповещение</td><td>Ночью, сообщение при изменениях</td><td>Без изменений</td><td>3.4, А3</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Так выглядит пример решения на GitHub Pages. Сводка над списком считает неработающие сайты, карточки ведут на страницы сайтов.</p>
+
+        <figure class="shot" style="max-width: 1106px"><img src="img/01-spisok.png" width="1100" height="572" alt="Мониторинг сайтов группы на https://maximbytecamp.github.io/monitoring/: меню Сайты и О проверке, сводка Не открываются: 1 из 6, шесть карточек, Старый проект с красной полосой" loading="lazy"><figcaption>Пример: сводка и список сайтов</figcaption></figure>
+
+        <h2 id="s2"><span class="sec">§2</span>Обязательные требования</h2>
+
+        <p>Работа принимается, если выполнены все пункты. Справа — глава, где разобран нужный механизм.</p>
+
+        <ul class="check">
+          <li><span>В <code>sites.json</code> не меньше пяти сайтов вашей группы — мониторы однокурсников и другие их сайты на GitHub Pages; у каждого свой <code>id</code> латиницей</span><small>3.3</small></li>
+          <li><span>Маршруты <code>/</code>, <code>/site/:id</code>, <code>/about</code> и <code>*</code>; в шапке меню на <code>NavLink</code> с выделенным пунктом текущей страницы</span><small>3.1</small></li>
+          <li><span>На главной сводка «Не открываются: N из M» или «Все M сайтов открываются» и карточки со статусом последней проверки; карточка ведёт на страницу сайта</span><small>3.1, 3.4</small></li>
+          <li><span>Страница сайта: название, адрес, сколько раз сайт открылся из последних проверок и таблица истории, где неудачные проверки выделены</span><small>3.4</small></li>
+          <li><span>Адрес сайта, которого нет в списке, показывает сообщение и ссылку на главную</span><small>3.1</small></li>
+          <li><span>Загрузка <code>sites.json</code> и <code>results.json</code> — в провайдере контекста; страницы и шапка получают данные хуком, без props</span><small>3.2</small></li>
+          <li><span>Пока данные загружаются — надпись о загрузке; если файл не загрузился — сообщение с кодом ответа</span><small>2.3</small></li>
+          <li><span>Сайт опубликован на GitHub Pages; прямая ссылка на страницу сайта открывается в новой вкладке и после <kbd>F5</kbd></span><small>3.3</small></li>
+          <li><span>Ночная проверка по расписанию сохраняет результаты коммитом бота и публикует сайт заново</span><small>3.4</small></li>
+          <li><span>Сообщение в Telegram приходит только при изменениях; токен и номер чата — в секретах репозитория, в коде и истории их нет</span><small>А3</small></li>
+          <li><span><code>npm run build</code> и <code>npm run lint</code> проходят без ошибок и предупреждений</span><small>1.1</small></li>
+        </ul>
+
+        <h2 id="s3"><span class="sec">§3</span>Порядок работы</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Превращаем монитор в многостраничное приложение</p>
+
+        <ol class="steps">
+          <li><b>Обновите репозиторий</b><p>Откройте папку <code>monitoring</code> в VS Code и выполните <code>git pull</code>: бот каждую ночь добавляет коммит с результатами.</p></li>
+          <li><b>Соберите свой список</b><p>Попросите у однокурсников адреса их мониторов (<code>https://&lt;логин&gt;.github.io/monitoring/</code>) и других сайтов на Pages и замените ими список в <code>public/data/sites.json</code>. Тестовый неработающий адрес можно оставить: на нём видно, как выглядит сбой.</p></li>
+          <li><b>Подключите маршрутизацию</b><p>Установите <code>react-router@8.5.1</code>, как в главе 3.1. В <code>main.tsx</code> у <code>BrowserRouter</code> нужен атрибут <code>basename</code> из главы 3.3 §6: сайт на Pages лежит в подпапке.</p>
+            <!--CODE tools/proekt3-monitoring/src/main.tsx | src/main.tsx · строки 10–14 в примере | lines=10-14--><figure class="code"><figcaption><span>src/main.tsx · строки 10–14 в примере</span></figcaption><pre>    <span class="t">&lt;BrowserRouter</span> <span class="a">basename</span>={<span class="k">import</span>.meta.env.BASE_URL}<span class="t">&gt;</span>
+      <span class="t">&lt;MonitoringProvider</span><span class="t">&gt;</span>
+        <span class="t">&lt;App</span> <span class="t">/&gt;</span>
+      <span class="t">&lt;/MonitoringProvider</span><span class="t">&gt;</span>
+    <span class="t">&lt;/BrowserRouter</span><span class="t">&gt;</span></pre></figure><!--/CODE--></li>
+          <li><b>Вынесите данные в контекст</b><p>По образцу <code>board.ts</code> и <code>BoardProvider.tsx</code> из главы 3.2 создайте <code>monitoring.ts</code> с контекстом и хуком <code>useMonitoring</code> и <code>MonitoringProvider.tsx</code>, в котором загружаются <code>sites.json</code> и <code>results.json</code>. Функция <code>statusText</code> нужна нескольким страницам — вынесите её в отдельный файл.</p></li>
+          <li><b>Сделайте страницы</b><p>В папке <code>src/pages</code> — страницы списка, сайта, «О проверке» и «Не найдено»; в <code>App.tsx</code> — шапка и маршруты.</p>
+            <!--CODE tools/proekt3-monitoring/src/App.tsx | src/App.tsx · строки 13–18 в примере | lines=13-18--><figure class="code"><figcaption><span>src/App.tsx · строки 13–18 в примере</span></figcaption><pre>        <span class="t">&lt;Routes</span><span class="t">&gt;</span>
+          <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"/"</span> <span class="a">element</span>={<span class="t">&lt;SitesPage</span> <span class="t">/&gt;</span>} <span class="t">/&gt;</span>
+          <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"/site/:id"</span> <span class="a">element</span>={<span class="t">&lt;SitePage</span> <span class="t">/&gt;</span>} <span class="t">/&gt;</span>
+          <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"/about"</span> <span class="a">element</span>={<span class="t">&lt;AboutPage</span> <span class="t">/&gt;</span>} <span class="t">/&gt;</span>
+          <span class="t">&lt;Route</span> <span class="a">path</span>=<span class="s">"*"</span> <span class="a">element</span>={<span class="t">&lt;NotFoundPage</span> <span class="t">/&gt;</span>} <span class="t">/&gt;</span>
+        <span class="t">&lt;/Routes</span><span class="t">&gt;</span></pre></figure><!--/CODE-->
+            <p>Номер сайта на его странице — из <code>useParams</code>, как номер заявки в главе 3.1. Историю сайта даёт <code>history.map</code>: из каждой проверки берётся результат этого сайта.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/02-sayt.png" width="1100" height="664" alt="Страница https://maximbytecamp.github.io/monitoring/site/staryy: Старый проект, ссылка на сайт, Открывался в 0 из 7 последних проверок, таблица из семи проверок с Не открывается · 404 на красном фоне" loading="lazy"><figcaption>Пример: страница сайта с историей проверок</figcaption></figure>
+            <figure class="shot" style="max-width: 1106px"><img src="img/03-o-proverke.png" width="1100" height="391" alt="Страница О проверке: каждую ночь в 00:00 по Москве GitHub Actions запрашивает 6 сайтов, правило работающего сайта, оповещение в Telegram, 30 проверок в истории" loading="lazy"><figcaption>Пример: страница «О проверке»</figcaption></figure></li>
+          <li><b>Добавьте копию для прямых ссылок</b><p>В <code>.github/workflows/deploy.yml</code> после шага «Собрать сайт» добавьте шаг из главы 3.3 §6.</p>
+            <!--CODE tools/proekt3-monitoring/.github/workflows/deploy.yml | deploy.yml · строки 38–39 | lines=38-39--><figure class="code"><figcaption><span>deploy.yml · строки 38–39</span></figcaption><pre><span class="a">      - name</span>: Копия index.html для прямых ссылок
+<span class="a">        run</span>: cp dist/index.html dist/404.html</pre></figure><!--/CODE--></li>
+          <li><b>Проверьте на компьютере</b><p>Выполните <code>npm run build</code> и <code>npm run lint</code>, затем <code>npm run preview</code>: сайт откроется по адресу <code>localhost:4173/monitoring/</code>. Пройдите все страницы.</p></li>
+          <li><b>Опубликуйте и проверьте прямую ссылку</b><p>Отправьте изменения (<code>git pull</code>, <code>git add .</code>, <code>git commit</code>, <code>git push</code>) и дождитесь публикации. Запустите ночную проверку кнопкой Run workflow. Скопируйте адрес страницы любого сайта, откройте его в новой вкладке и нажмите <kbd>F5</kbd> — страница должна открыться.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/04-pryamaya-ssylka.png" width="1100" height="664" alt="Новая вкладка с адресом https://maximbytecamp.github.io/monitoring/site/git: страница Справочник по Git и GitHub, Открывался в 7 из 7 последних проверок, таблица истории" loading="lazy"><figcaption>Прямая ссылка на страницу сайта: Pages отвечает кодом 404 и отдаёт приложение из 404.html</figcaption></figure></li>
+        </ol>
+
+        <div class="margin-note">
+          <b>Почему пример не выложен целиком</b>
+          <p>Код примера показан фрагментами: в проекте нужно самостоятельно собрать то, что разобрано в главах 3.1–3.4. Все механизмы — маршруты, параметр пути, контекст, загрузка двух файлов, <code>basename</code>, <code>404.html</code> — есть в главах с пошаговыми разборами.</p>
+        </div>
+
+        <h2 id="s4"><span class="sec">§4</span>Дополнительные задания</h2>
+
+        <p>Задания выполняются по выбору; сколько их нужно для какой оценки, сообщает преподаватель.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Задание</th><th>Что получится</th><th>Подсказка</th></tr></thead>
+            <tbody>
+              <tr><td>Доля работы</td><td>На карточке «открывался в 93% проверок»</td><td>Тот же подсчёт, что на странице сайта; <code>Math.round(ok / total * 100)</code></td></tr>
+              <tr><td>Время ответа полосами</td><td>На странице сайта полоса для каждой проверки, длина — время ответа</td><td><code>div</code> с шириной <code>{`${check.ms / max * 100}%`}</code>, где <code>max</code> — наибольшее время в истории</td></tr>
+              <tr><td>Только неработающие</td><td>Кнопка над списком оставляет сайты с ошибкой</td><td>Состояние фильтра в странице списка (глава 1.5), сброс при уходе со страницы — норма (глава 3.1)</td></tr>
+              <tr><td>Заголовок страницы</td><td>В проверке записывается текст <code>&lt;title&gt;</code> сайта, на странице сайта он показан</td><td>В <code>check.mjs</code> прочитать <code>await response.text()</code> и найти заголовок регулярным выражением <code>/&lt;title&gt;(.*?)&lt;\/title&gt;/</code>; добавить поле <code>title</code> в тип <code>Check</code></td></tr>
+              <tr><td>Сводка за неделю</td><td>По понедельникам сообщение в Telegram: сколько раз каждый сайт не открылся за 7 проверок</td><td>Второй <code>cron</code> с днём недели (глава 3.4) и второй скрипт, который читает <code>results.json</code> и вызывает <code>notify</code></td></tr>
+              <tr><td>Скорость страницы</td><td>Оценка скорости и доступности от 0 до 100 на странице сайта</td><td>Пакеты <code>playwright</code> и <code>lighthouse</code> в <code>devDependencies</code>; в конвейере — <code>npm ci</code> и <code>npx playwright install --with-deps --only-shell chromium</code>; запуск Lighthouse через порт отладки браузера</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s5"><span class="sec">§5</span>Работа с ИИ</h2>
+
+        <p>Проект выполняется в режиме Р1 из главы 0.5, как проекты модулей 1 и 2: код пишется вручную, у ИИ запрашиваются объяснения, автодополнение ИИ в редакторе отключено. Журнал <code>ai-log.md</code> ведётся так же. Токен бота и номер чата в чат ИИ не вставляются; если ИИ просит показать журнал запуска, секреты в нём уже заменены на <code>***</code>.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Сдача и защита</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Готовим работу к сдаче</p>
+
+        <ol class="steps">
+          <li><b>Проверьте сборку</b><p>В папке <code>monitoring</code> выполните обе команды. Ошибок и предупреждений быть не должно.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm run build
+npm run lint</pre></figure></li>
+          <li><b>Проверьте, что секретов нет в истории</b><p>В VS Code нажмите <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> и найдите начало своего токена. Совпадений быть не должно. Если токен когда-то попал в коммит, его нужно отозвать у @BotFather командой <code>/revoke</code> и заменить секрет: удалённая строка остаётся в истории Git.</p></li>
+          <li><b>Оформите папку в react-kurs</b><p>В репозитории курса <code>react-kurs</code> создайте папку <code>projects/p3-monitoring</code>. В ней — <code>README.md</code> со ссылками на репозиторий <code>monitoring</code> и на сайт и со списком выполненных требований и дополнительных заданий, и <code>ai-log.md</code>. Код проекта в <code>react-kurs</code> не копируется.</p></li>
+          <li><b>Приложите снимок</b><p>Снимок сообщения бота о сайте, который перестал открываться. Если все сайты группы работают, добавьте на время тестовый неработающий адрес, как в автоматизации модуля 3.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как проходит защита</p>
+
+        <p>На защите открывается свой сайт на Pages, проходится список из §2, прямая ссылка на страницу сайта открывается в новой вкладке, а ночная проверка запускается кнопкой Run workflow. Затем преподаватель указывает на строки кода и конвейеров и спрашивает, что они делают и почему так написаны. Ответ «так написал ИИ» оценивается как отсутствие ответа. Примеры вопросов:</p>
+        <ul>
+          <li>Почему прямая ссылка на страницу сайта открывается, хотя такого файла на Pages нет? Какой код ответа при этом получает браузер?</li>
+          <li>Что сломается, если убрать <code>basename</code> у <code>BrowserRouter</code>? А если убрать <code>base</code> в <code>vite.config.ts</code>?</li>
+          <li>Почему страницы получают данные хуком, без props? Что будет, если вызвать <code>useMonitoring</code> вне провайдера?</li>
+          <li>Откуда страница сайта берёт номер сайта, который нужно показать?</li>
+          <li>Почему коммит бота не запускает публикацию и как сайт всё же обновляется ночью?</li>
+          <li>Сайт не открывается три ночи подряд. Сколько сообщений придёт и почему?</li>
+          <li>Где хранится токен бота и почему его нельзя записать в <code>check.mjs</code>?</li>
+          <li>Расписание <code>0 21 * * *</code>. Во сколько по Москве запустится проверка и может ли она начаться позже?</li>
+        </ul>
+
+        <div class="pager">
+          <a href="../38-opoveshchenie/index.html">← Автоматизация: ночная проверка и оповещение</a>
+          <a href="../../index.html">К оглавлению →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

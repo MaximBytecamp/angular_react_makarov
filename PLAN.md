@@ -160,3 +160,8 @@ upload-pages-artifact@v5, deploy-pages@v5.
   повтор → «Изменений нет»; в журнале секреты `***`; ночной запуск №4 по расписанию начался в 05:46 МСК вместо 00:00.
   Код `tools/code38`, съёмка `shots_38.py` (all/remove), `gh38.mjs` (журнал шага по ссылке `#step:N:1`), `crop_38.py`.
   Кадр сообщения бота в Telegram (img/09-telegram.png) — снимок автора, второе из двух сообщений (09:05, запуск №7).
+- Проект П3 `temy/39-proekt-monitoring` — один вариант на всех, список — сайты своей группы (мониторы однокурсников); маршруты
+  /, /site/:id, /about, *; контекст MonitoringProvider/useMonitoring; история на странице сайта; basename и 404.html; ночная
+  проверка и оповещение без изменений. Пример — `tools/proekt3-monitoring` (только локально), кадры `shots_39.py` с Pages
+  (прямая ссылка /site/git — код 404 и приложение из 404.html), `crop_39.py`. Сдача: код в репозитории monitoring,
+  в react-kurs — `projects/p3-monitoring` с README (ссылки) и ai-log.md (строка в шаблоне react-kurs-template). Модуль 3 закончен.
