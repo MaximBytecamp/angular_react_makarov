@@ -154,3 +154,9 @@ upload-pages-artifact@v5, deploy-pages@v5.
   (0 21 * * * = 00:00 МСК), 60 дней без активности. Код `tools/code34`, съёмка `shots_34.py` (local/perm/publish, помощники
   из shots_33), кадры GitHub `gh34.mjs` (рамки в своём popover поверх окон Primer), `crop_34.py`.
   Telegram, Playwright/Lighthouse, страницы сайта и история — автоматизация А3 и проект модуля 3.
+- Автоматизация А3 `temy/38-opoveshchenie` — секреты TELEGRAM_TOKEN/TELEGRAM_CHAT_ID (Settings → Secrets and variables → Actions,
+  на кадре значение размыто, сами секреты заданы `gh secret set`), `env` у шага проверки, `notify()` в check.mjs (process.env,
+  sendMessage), сообщение только об изменениях (сравнение с `history[1]`). Два запуска: тестовый сайт monitoring-test → Telegram: 200,
+  повтор → «Изменений нет»; в журнале секреты `***`; ночной запуск №4 по расписанию начался в 05:46 МСК вместо 00:00.
+  Код `tools/code38`, съёмка `shots_38.py` (all/remove), `gh38.mjs` (журнал шага по ссылке `#step:N:1`), `crop_38.py`.
+  Кадр сообщения бота в Telegram (img/09-telegram.png) — ждёт снимка автора; место в странице помечено комментарием.

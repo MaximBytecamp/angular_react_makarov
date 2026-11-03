@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>Автоматизация модуля 3 · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch .on-dark-soft { fill: #c8d0e0; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .dash { stroke-dasharray: 6 4; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 3 · Несколько экранов, публикация, расписание</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 3 · автоматизация</p>
+          <p class="running__folio">А3</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">А3</span>
+          <h1>Ночная проверка сайтов<br>и оповещение</h1>
+          <p class="lead">На этой странице ночная проверка из главы 3.4 начинает присылать сообщения в Telegram. Бот тот же, что в автоматизации модуля 1; его токен и номер чата хранятся в секретах репозитория <code>monitoring</code> и попадают в скрипт через переменные окружения. Скрипт сравнивает новую проверку с прошлой и пишет только об изменениях: какой сайт перестал открываться и какой снова работает. Проверка на двух запусках: с новым неработающим сайтом сообщение приходит, без изменений — нет.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>Автоматизация, GitHub Actions, Telegram</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Репозиторий <code>monitoring</code> после главы 3.4, бот Telegram, его токен и номер чата со страницы «Автоматизация» модуля 1</dd></div>
+          <div><dt>Результат</dt><dd>Когда сайт из списка перестаёт открываться или снова работает, после ночной проверки приходит сообщение в Telegram</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>На этой странице</b>
+          <ol>
+            <li><a href="#s1">Как устроено оповещение</a></li>
+            <li><a href="#s2">Сообщение из скрипта</a></li>
+            <li><a href="#s3">Секреты репозитория</a></li>
+            <li><a href="#s4">Проверка: два запуска</a></li>
+            <li><a href="#s5">Частые ошибки</a></li>
+            <li><a href="#s6">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Как устроено оповещение</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Когда отправлять сообщение</p>
+
+        <p>После главы 3.4 о сломанном сайте можно узнать, только открыв монитор. Оповещение присылает новость само: ночная проверка вызывает метод <code>sendMessage</code> Telegram Bot API, как процесс n8n в модуле 1, только запрос отправляет скрипт <code>check.mjs</code> на машине GitHub.</p>
+
+        <p>Если писать о каждом неработающем сайте, «Старый проект» с кодом 404 будет приходить каждую ночь, и сообщения перестанут замечать. Поэтому скрипт сравнивает две последние проверки и пишет только об изменениях:</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Прошлая проверка</th><th>Новая проверка</th><th>Сообщение</th></tr></thead>
+            <tbody>
+              <tr><td>работает</td><td>работает</td><td>нет</td></tr>
+              <tr><td>работает или сайта ещё не было</td><td>не открывается</td><td>🔴 Не открывается</td></tr>
+              <tr><td>не открывается</td><td>не открывается</td><td>нет</td></tr>
+              <tr><td>не открывается</td><td>работает</td><td>🟢 Снова работает</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Пожарная сигнализация срабатывает один раз, когда появился дым, и молчит, пока идёт ремонт после пожара. О том, что ремонт закончен, сообщают отдельно.</p>
+        </div></div>
+
+        <p>Для отправки скрипту нужны токен бота и номер чата. В коде их не пишут: репозиторий публичный, и любой, кто увидит токен, сможет писать от имени бота. Их хранят в <span class="term">секретах</span> репозитория — зашифрованных значениях, которые GitHub передаёт конвейеру при запуске и не показывает больше нигде.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Путь от секрета до сообщения</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 200" role="img" aria-label="Секреты TELEGRAM_TOKEN и TELEGRAM_CHAT_ID в настройках репозитория; check.yml передаёт их шагу Проверить сайты через env; check.mjs читает process.env, сравнивает проверки и при изменениях отправляет POST sendMessage в api.telegram.org; бот присылает сообщение в чат">
+              <rect x="20" y="60" width="160" height="80" fill="#D6F0F9"/><text class="mono" x="32" y="86">Секреты</text><text class="soft" x="32" y="106">TELEGRAM_TOKEN</text><text class="soft" x="32" y="124">TELEGRAM_CHAT_ID</text>
+              <path d="M180 100 H 208"/><path d="M200 94 L 208 100 L 200 106"/>
+              <rect x="216" y="60" width="150" height="80" fill="#ffffff"/><text class="mono" x="228" y="86">check.yml</text><text class="soft" x="228" y="106">env: ${{ secrets… }}</text><text class="soft" x="228" y="124">в журнале — ***</text>
+              <path d="M366 100 H 394"/><path d="M386 94 L 394 100 L 386 106"/>
+              <rect x="402" y="40" width="190" height="120" fill="#161A2E"/><text class="mono on-dark" x="416" y="64">check.mjs</text><text class="soft on-dark-soft" x="416" y="88">process.env</text><text class="soft on-dark-soft" x="416" y="108">сравнить с прошлой</text><text class="soft on-dark-soft" x="416" y="128">есть изменения →</text><text class="soft on-dark-soft" x="416" y="146">POST sendMessage</text>
+              <path d="M592 100 H 620"/><path d="M612 94 L 620 100 L 612 106"/>
+              <rect x="628" y="60" width="112" height="80" fill="#D4EEDF"/><text class="mono" x="640" y="86">Telegram</text><text class="soft" x="640" y="106">сообщение</text><text class="soft" x="640" y="124">в чате</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Значения секретов есть только в настройках репозитория и в памяти запущенного шага. В коде, истории Git и журнале запуска их нет.</p>
+        </figure>
+
+        <p class="bridge">Сначала — код: функция отправки и сравнение проверок.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Сообщение из скрипта</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Дополняем скрипт и конвейер</p>
+
+        <ol class="steps">
+          <li><b>Замените check.mjs</b><p>Откройте папку <code>monitoring</code> в VS Code и выполните в терминале <code>git pull</code>: в репозитории есть коммиты бота. Замените содержимое <code>scripts/check.mjs</code>. Добавлены функция <code>notify</code> (строки 6–18) и сравнение с прошлой проверкой в конце файла (строки 47–64).</p>
+            <!--CODE tools/code38/check.mjs | monitoring/scripts/check.mjs | mark=6-18,47-64--><figure class="code"><figcaption><span>monitoring/scripts/check.mjs</span></figcaption><pre><span class="k">import</span> { readFile, writeFile } <span class="k">from</span> <span class="s">'node:fs/promises'</span>
+
+<span class="k">const</span> SITES = <span class="s">'public/data/sites.json'</span>
+<span class="k">const</span> RESULTS = <span class="s">'public/data/results.json'</span>
+
+<span class="hl">async <span class="k">function</span> <span class="f">notify</span>(text) {</span>
+<span class="hl">  <span class="k">const</span> { TELEGRAM_TOKEN, TELEGRAM_CHAT_ID } = process.env</span>
+<span class="hl">  <span class="k">if</span> (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {</span>
+<span class="hl">    console.<span class="f">log</span>(<span class="s">'Секреты Telegram не заданы, сообщение не отправлено'</span>)</span>
+<span class="hl">    <span class="k">return</span></span>
+<span class="hl">  }</span>
+<span class="hl">  <span class="k">const</span> response = await <span class="f">fetch</span>(<span class="s">`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`</span>, {</span>
+<span class="hl">    method: <span class="s">'POST'</span>,</span>
+<span class="hl">    headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },</span>
+<span class="hl">    body: JSON.<span class="f">stringify</span>({ chat_id: TELEGRAM_CHAT_ID, text }),</span>
+<span class="hl">  })</span>
+<span class="hl">  console.<span class="f">log</span>(<span class="s">'Telegram:'</span>, response.status)</span>
+<span class="hl">}</span>
+
+<span class="k">const</span> sites = JSON.<span class="f">parse</span>(await <span class="f">readFile</span>(SITES, <span class="s">'utf8'</span>))
+<span class="k">let</span> history = []
+try {
+  history = JSON.<span class="f">parse</span>(await <span class="f">readFile</span>(RESULTS, <span class="s">'utf8'</span>)).history
+} catch {
+  <span class="c">// Первый запуск: файла с результатами ещё нет.</span>
+}
+
+<span class="k">const</span> checks = []
+for (<span class="k">const</span> site of sites) {
+  <span class="k">const</span> check = { id: site.id, ok: <span class="k">false</span>, status: <span class="n">0</span>, ms: <span class="n">0</span>, error: <span class="s">''</span> }
+  <span class="k">const</span> start = Date.<span class="f">now</span>()
+  try {
+    <span class="k">const</span> response = await <span class="f">fetch</span>(site.url, { signal: AbortSignal.<span class="f">timeout</span>(<span class="n">15000</span>) })
+    check.status = response.status
+    check.ok = response.ok
+  } catch (e) {
+    check.error = e.message
+  }
+  check.ms = Date.<span class="f">now</span>() - start
+  console.<span class="f">log</span>(<span class="s">`${check.ok ? 'OK  ' : 'FAIL'} ${check.status} ${check.ms} мс ${site.url}`</span>)
+  checks.<span class="f">push</span>(check)
+}
+
+history = [{ time: <span class="k">new</span> <span class="f">Date</span>().<span class="f">toISOString</span>(), checks }, ...history].<span class="f">slice</span>(<span class="n">0</span>, <span class="n">30</span>)
+await <span class="f">writeFile</span>(RESULTS, JSON.<span class="f">stringify</span>({ history }, <span class="k">null</span>, <span class="n">2</span>) + <span class="s">'\n'</span>)
+
+<span class="hl"><span class="k">const</span> previous = history[<span class="n">1</span>]</span>
+<span class="hl"><span class="k">const</span> changes = []</span>
+<span class="hl">for (<span class="k">const</span> check of checks) {</span>
+<span class="hl">  <span class="k">const</span> site = sites.<span class="f">find</span>((s) =<span class="t">&gt;</span> s.id === check.id)</span>
+<span class="hl">  <span class="k">const</span> before = previous?.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === check.id)</span>
+<span class="hl">  <span class="k">if</span> (!check.ok &amp;&amp; (before === <span class="k">undefined</span> || before.ok)) {</span>
+<span class="hl">    changes.<span class="f">push</span>(<span class="s">`🔴 Не открывается: ${site.name} · ${check.status || check.error}\n${site.url}`</span>)</span>
+<span class="hl">  }</span>
+<span class="hl">  <span class="k">if</span> (check.ok &amp;&amp; before !== <span class="k">undefined</span> &amp;&amp; !before.ok) {</span>
+<span class="hl">    changes.<span class="f">push</span>(<span class="s">`🟢 Снова работает: ${site.name}\n${site.url}`</span>)</span>
+<span class="hl">  }</span>
+<span class="hl">}</span>
+<span class="hl"></span>
+<span class="hl"><span class="k">if</span> (changes.length === <span class="n">0</span>) {</span>
+<span class="hl">  console.<span class="f">log</span>(<span class="s">'Изменений нет, сообщение не отправлено'</span>)</span>
+<span class="hl">} <span class="k">else</span> {</span>
+<span class="hl">  await <span class="f">notify</span>(<span class="s">`Ночная проверка сайтов\n\n${changes.join('\n\n')}`</span>)</span>
+<span class="hl">}</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-notify.png" width="1240" height="780" alt="VS Code: check.mjs, функция notify с process.env и fetch на api.telegram.org sendMessage" loading="lazy"><figcaption>Функция notify</figcaption></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/01a-changes.png" width="1240" height="780" alt="VS Code: check.mjs, строки 47–58: previous = history[1], цикл по checks, changes.push с текстами Не открывается и Снова работает" loading="lazy"><figcaption>Сравнение с прошлой проверкой</figcaption></figure></li>
+          <li><b>Передайте секреты шагу</b><p>В <code>.github/workflows/check.yml</code> после строки 24 <code>run: node scripts/check.mjs</code> добавьте три строки. Отступ <code>env</code> — как у <code>run</code>.</p>
+            <!--CODE tools/code38/check.yml | check.yml · строки 23–27 | lines=23-27 mark=25-27--><figure class="code"><figcaption><span>check.yml · строки 23–27</span></figcaption><pre><span class="a">      - name</span>: Проверить сайты
+<span class="a">        run</span>: node scripts/check.mjs
+<span class="hl"><span class="a">        env</span>:</span>
+<span class="hl"><span class="a">          TELEGRAM_TOKEN</span>: <span class="s">${{ secrets.TELEGRAM_TOKEN }}</span></span>
+<span class="hl"><span class="a">          TELEGRAM_CHAT_ID</span>: <span class="s">${{ secrets.TELEGRAM_CHAT_ID }}</span></span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-check-env.png" width="1240" height="780" alt="VS Code: check.yml, шаг Проверить сайты с env TELEGRAM_TOKEN и TELEGRAM_CHAT_ID из secrets" loading="lazy"><figcaption>Секреты в переменных окружения шага</figcaption></figure></li>
+          <li><b>Добавьте сайт для проверки</b><p>Чтобы проверить оповещение, не дожидаясь, пока сломается настоящий сайт, добавьте в <code>public/data/sites.json</code> адрес, которого не существует. Не забудьте запятую в конце предыдущей строки.</p>
+            <!--CODE tools/code38/sites.json | sites.json · строка 8 | lines=8-8--><figure class="code"><figcaption><span>sites.json · строка 8</span></figcaption><pre>  { <span class="s">"id"</span>: <span class="s">"monitoring-test"</span>, <span class="s">"name"</span>: <span class="s">"Проверка оповещения"</span>, <span class="s">"url"</span>: <span class="s">"https://maximbytecamp.github.io/monitoring-test/"</span> }</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-sites-test.png" width="1240" height="780" alt="VS Code: sites.json, строка 8 monitoring-test, Проверка оповещения" loading="lazy"><figcaption>Тестовый сайт в списке</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Новые части скрипта</p>
+
+        <!--CODE tools/code38/check.mjs | check.mjs · строки 6–18 | lines=6-18 pins=7:1,8:2,12:3,15:4--><figure class="code" data-read><figcaption><span>check.mjs · строки 6–18</span></figcaption><pre>async <span class="k">function</span> <span class="f">notify</span>(text) {
+  <span class="k">const</span> { TELEGRAM_TOKEN, TELEGRAM_CHAT_ID } = process.env  <span class="pin">1</span>
+  <span class="k">if</span> (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {  <span class="pin">2</span>
+    console.<span class="f">log</span>(<span class="s">'Секреты Telegram не заданы, сообщение не отправлено'</span>)
+    <span class="k">return</span>
+  }
+  <span class="k">const</span> response = await <span class="f">fetch</span>(<span class="s">`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`</span>, {  <span class="pin">3</span>
+    method: <span class="s">'POST'</span>,
+    headers: { <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> },
+    body: JSON.<span class="f">stringify</span>({ chat_id: TELEGRAM_CHAT_ID, text }),  <span class="pin">4</span>
+  })
+  console.<span class="f">log</span>(<span class="s">'Telegram:'</span>, response.status)
+}</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p><code>process.env</code> — объект с переменными окружения процесса Node.js. Секреты попадают туда из раздела <code>env</code> шага. Распаковка достаёт два значения по именам.</p></div></li>
+          <li><span class="pin">2</span><div><p>На вашем компьютере переменных нет. Скрипт пишет об этом в консоль и не падает: проверку можно запускать и локально.</p></div></li>
+          <li><span class="pin">3</span><div><p>Адрес метода Bot API: токен стоит после <code>bot</code>, как в адресах <code>getUpdates</code> из автоматизации модуля 1.</p></div></li>
+          <li><span class="pin">4</span><div><p>Тело запроса — JSON с номером чата и текстом. Код ответа <code>200</code> в журнале значит, что Telegram принял сообщение.</p></div></li>
+        </ol>
+
+        <!--CODE tools/code38/check.mjs | check.mjs · строки 47–64 | lines=47-64 pins=47:1,51:2,52:3,55:4,60:5--><figure class="code" data-read><figcaption><span>check.mjs · строки 47–64</span></figcaption><pre><span class="k">const</span> previous = history[<span class="n">1</span>]  <span class="pin">1</span>
+<span class="k">const</span> changes = []
+for (<span class="k">const</span> check of checks) {
+  <span class="k">const</span> site = sites.<span class="f">find</span>((s) =<span class="t">&gt;</span> s.id === check.id)
+  <span class="k">const</span> before = previous?.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === check.id)  <span class="pin">2</span>
+  <span class="k">if</span> (!check.ok &amp;&amp; (before === <span class="k">undefined</span> || before.ok)) {  <span class="pin">3</span>
+    changes.<span class="f">push</span>(<span class="s">`🔴 Не открывается: ${site.name} · ${check.status || check.error}\n${site.url}`</span>)
+  }
+  <span class="k">if</span> (check.ok &amp;&amp; before !== <span class="k">undefined</span> &amp;&amp; !before.ok) {  <span class="pin">4</span>
+    changes.<span class="f">push</span>(<span class="s">`🟢 Снова работает: ${site.name}\n${site.url}`</span>)
+  }
+}
+
+<span class="k">if</span> (changes.length === <span class="n">0</span>) {  <span class="pin">5</span>
+  console.<span class="f">log</span>(<span class="s">'Изменений нет, сообщение не отправлено'</span>)
+} <span class="k">else</span> {
+  await <span class="f">notify</span>(<span class="s">`Ночная проверка сайтов\n\n${changes.join('\n\n')}`</span>)
+}</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Новая проверка уже записана в начало истории (строка 44), поэтому прошлая — второй элемент, <code>history[1]</code>. При самом первом запуске его нет, и <code>previous</code> равен <code>undefined</code>.</p></div></li>
+          <li><span class="pin">2</span><div><p>Результат того же сайта в прошлой проверке. <code>?.</code> защищает от отсутствия прошлой проверки, <code>find</code> возвращает <code>undefined</code>, если сайта в ней не было.</p></div></li>
+          <li><span class="pin">3</span><div><p>Сайт не открывается сейчас, а раньше работал или его не проверяли — новая неисправность. Так новый сайт с ошибкой в адресе сразу попадает в сообщение.</p></div></li>
+          <li><span class="pin">4</span><div><p>Сайт работает, а в прошлый раз не открывался — восстановился.</p></div></li>
+          <li><span class="pin">5</span><div><p>Изменений нет — сообщения нет, в журнал пишется строка. Иначе все изменения собираются в одно сообщение через пустую строку.</p></div></li>
+        </ol>
+
+        <p>Запись <code>${{ secrets.TELEGRAM_TOKEN }}</code> в <code>check.yml</code> — выражение GitHub Actions: перед запуском шага GitHub подставляет вместо него значение секрета. В журнале запуска это значение заменяется на <code>***</code>.</p>
+
+        <p class="bridge">Код ссылается на два секрета. Их нужно создать в репозитории до отправки.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Секреты репозитория</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Создаём TELEGRAM_TOKEN и TELEGRAM_CHAT_ID</p>
+
+        <ol class="steps">
+          <li><b>Откройте раздел секретов</b><p>В репозитории <code>monitoring</code> откройте <strong>Settings</strong> (1) → <strong>Secrets and variables</strong> → <strong>Actions</strong> (2) и нажмите <strong>New repository secret</strong> (3).</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/04-secrets.png" width="1280" height="860" alt="GitHub: Settings (1), Actions secrets and variables, слева Secrets and variables → Actions (2), Repository secrets: This repository has no secrets, кнопка New repository secret (3)" loading="lazy"><figcaption>Секретов пока нет</figcaption></figure></li>
+          <li><b>Создайте секрет с токеном</b><p>В поле <strong>Name</strong> (4) впишите <code>TELEGRAM_TOKEN</code>, в поле <strong>Secret</strong> (5) вставьте токен бота от @BotFather — тот же, что в файле <code>.env</code> папки <code>avtomatizaciya</code>. Нажмите <strong>Add secret</strong> (6).</p>
+            <figure class="shot" style="max-width: 986px"><img src="img/04a-new-secret.png" width="980" height="500" alt="New secret: Name TELEGRAM_TOKEN (4), Secret — значение размыто (5), кнопка Add secret (6)" loading="lazy"><figcaption>Новый секрет; значение на кадре размыто</figcaption></figure></li>
+          <li><b>Создайте секрет с номером чата</b><p>Снова нажмите <strong>New repository secret</strong>. Name — <code>TELEGRAM_CHAT_ID</code>, Secret — номер чата из ответа <code>getUpdates</code> в автоматизации модуля 1. В списке появились два секрета; их значения GitHub больше не показывает, их можно только заменить кнопкой с карандашом.</p>
+            <figure class="shot" style="max-width: 986px"><img src="img/05-secrets-list.png" width="980" height="260" alt="Repository secrets: TELEGRAM_CHAT_ID и TELEGRAM_TOKEN, Last updated now, кнопки изменения и удаления" loading="lazy"><figcaption>Два секрета репозитория</figcaption></figure></li>
+          <li><b>Отправьте изменения</b><p>В терминале VS Code в папке <code>monitoring</code>:</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>git pull
+git add .
+git commit -m "Оповещение в Telegram"
+git push</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/06-pull-push.png" width="1240" height="377" alt="Терминал: git pull Already up to date, git add ., git commit -m Оповещение в Telegram, 3 files changed, 38 insertions, git push main -> main" loading="lazy"><figcaption>Скрипт, конвейер и список отправлены</figcaption></figure></li>
+        </ol>
+
+        <p class="bridge">Секреты заданы, код на GitHub. Остаётся запустить проверку.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Проверка: два запуска</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Запускаем ночную проверку вручную</p>
+
+        <ol class="steps">
+          <li><b>Первый запуск</b><p>На вкладке <strong>Actions</strong> выберите «Ночная проверка сайтов» (1) и нажмите <strong>Run workflow</strong> (2), в окне — снова <strong>Run workflow</strong>. В списке видна и проверка по расписанию: ночной запуск №4 с пометкой Scheduled начался в 05:46 по Москве вместо 00:00.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/07-run-workflow.png" width="1280" height="560" alt="Actions, Ночная проверка сайтов (1), Run workflow (2); 4 workflow runs: Ночная проверка сайтов #4 Scheduled Today at 05:46, #3, #2, #1 Manually run" loading="lazy"><figcaption>Ручной запуск и ночной запуск №4 по расписанию</figcaption></figure></li>
+          <li><b>Откройте журнал</b><p>Когда появится зелёная галочка, откройте запуск, задание <code>check</code> и шаг «Проверить сайты». Нажмите на строку «Run node scripts/check.mjs», чтобы раскрыть её. Секреты в журнале заменены на <code>***</code>. «Проверка оповещения» — <code>FAIL 404</code>, последняя строка — <code>Telegram: 200</code>.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/08-log.png" width="1280" height="900" alt="Ночная проверка сайтов #7, шаг Проверить сайты: env TELEGRAM_TOKEN: ***, TELEGRAM_CHAT_ID: ***; OK 200 для пяти сайтов, FAIL 404 staryy-proekt, FAIL 404 monitoring-test, Telegram: 200" loading="lazy"><figcaption>Сообщение отправлено: Telegram ответил 200</figcaption></figure></li>
+          <li><b>Проверьте Telegram</b><p>В чате с ботом — сообщение «Ночная проверка сайтов» со строкой «🔴 Не открывается: Проверка оповещения · 404» и адресом сайта. «Старого проекта» в сообщении нет: он не открывался и в прошлой проверке.</p>
+            <!-- кадр сообщения бота: img/09-telegram.png — снимок из Telegram от автора, имя чата размыто -->
+          </li>
+          <li><b>Второй запуск</b><p>Запустите проверку ещё раз. В журнале шага те же два <code>FAIL 404</code>, но последняя строка — «Изменений нет, сообщение не отправлено». Новых сообщений в Telegram нет.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/10-log.png" width="1280" height="900" alt="Ночная проверка сайтов #8, шаг Проверить сайты: те же результаты, FAIL 404 для staryy-proekt и monitoring-test, строка Изменений нет, сообщение не отправлено" loading="lazy"><figcaption>Без изменений сообщения нет</figcaption></figure></li>
+          <li><b>Уберите тестовый сайт</b><p>Удалите строку «Проверка оповещения» из <code>public/data/sites.json</code> и запятую после предыдущей строки. Отправьте изменение; <code>git pull</code> заберёт результаты двух проверок от бота.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/11-sites-bez-testa.png" width="1240" height="780" alt="VS Code: sites.json с шестью сайтами, последняя строка staryy без запятой" loading="lazy"><figcaption>Список без тестового сайта</figcaption></figure>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>git pull
+git add .
+git commit -m "Тестовый сайт убран из списка"
+git push</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/12-pull-push.png" width="1240" height="537" alt="Терминал: git pull, Fast-forward public/data/results.json 108 insertions; git commit Тестовый сайт убран из списка; git push" loading="lazy"><figcaption>Список снова из шести сайтов</figcaption></figure>
+            <p>Сайта нет в новой проверке, поэтому строки «Снова работает» о нём не будет: сообщение пишется только о сайтах из списка.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что показали два запуска</p>
+
+        <p>В первом запуске у «Проверки оповещения» не было прошлого результата, и сайт попал в сообщение как новая неисправность. «Старый проект» не открывался и в ночной проверке №4, поэтому скрипт о нём не писал. Во втором запуске прошлая проверка — первый запуск, оба сайта не открывались и тогда, и сообщение не отправлено. Если сайт однокурсника пропадёт ночью, придёт одно сообщение, а когда сайт снова заработает — второе.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Частые ошибки</h2>
+
+        <p>Сообщения получены в журнале шага «Проверить сайты» на GitHub и при запуске скрипта на компьютере.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>«Секреты Telegram не заданы, сообщение не отправлено» в журнале GitHub</td><td>Секрета нет, имя секрета в настройках отличается от имени в <code>check.yml</code> или в шаге нет раздела <code>env</code></td><td>Сверить имена <code>TELEGRAM_TOKEN</code> и <code>TELEGRAM_CHAT_ID</code> в настройках и в <code>check.yml</code></td></tr>
+              <tr><td>То же сообщение при <code>node scripts/check.mjs</code> на компьютере</td><td>Переменных окружения на компьютере нет</td><td>Ничего: отправка проверяется запуском на GitHub</td></tr>
+              <tr><td><code>Telegram: 401</code></td><td>Неверный токен: в секрете лишний пробел или токен от другого бота</td><td>Заменить секрет, скопировав токен из сообщения @BotFather</td></tr>
+              <tr><td><code>Telegram: 400</code></td><td>Номер чата неверный: Telegram отвечает «Bad Request: chat not found»</td><td>Написать боту, получить номер чата через <code>getUpdates</code> и заменить секрет</td></tr>
+              <tr><td>«Изменений нет», хотя сайт не открывается</td><td>Сайт не открывался и в прошлой проверке: о нём уже сообщали</td><td>Так и задумано; текущее состояние показывает монитор</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s6"><span class="sec">§6</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Почему токен бота нельзя записать прямо в <code>check.mjs</code>?</summary>
+          <p>Репозиторий публичный: код и вся история коммитов видны всем, и любой сможет отправлять сообщения от имени бота. Секрет хранится в настройках зашифрованным и в коде не появляется.</p>
+        </details>
+        <details>
+          <summary>Как значение секрета попадает в <code>process.env</code>?</summary>
+          <p>Раздел <code>env</code> шага задаёт переменную окружения, а <code>${{ secrets.TELEGRAM_TOKEN }}</code> GitHub заменяет значением секрета перед запуском шага.</p>
+        </details>
+        <details>
+          <summary>Почему прошлая проверка — <code>history[1]</code>?</summary>
+          <p>К моменту сравнения новая проверка уже добавлена в начало истории и стоит на месте <code>[0]</code>.</p>
+        </details>
+        <details>
+          <summary>Сайт не открывался три ночи подряд. Сколько сообщений придёт?</summary>
+          <p>Одно — после первой ночи. Во вторую и третью ночь состояние не меняется.</p>
+        </details>
+        <details>
+          <summary>Как получать сообщение «всё работает» каждое утро, даже без изменений?</summary>
+          <p>Отправлять сообщение и в ветке без изменений: вместо <code>console.log('Изменений нет…')</code> вызвать <code>notify</code> с текстом о том, что все сайты в прежнем состоянии.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Секрет</b>Settings → Secrets and variables → Actions → New repository secret</div>
+          <div><b>Передать шагу</b><code>env: TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}</code></div>
+          <div><b>Прочитать в Node.js</b><code>const { TELEGRAM_TOKEN } = process.env</code></div>
+          <div><b>Отправить</b><code>POST https://api.telegram.org/bot&lt;токен&gt;/sendMessage</code>, тело <code>{ chat_id, text }</code></div>
+          <div><b>Прошлая проверка</b><code>history[1]</code></div>
+          <div><b>Писать только об изменениях</b>сравнить <code>ok</code> сейчас и в прошлый раз</div>
+        </div>
+
+        <h3>Итог</h3>
+        <p>Ночная проверка присылает сообщение в Telegram через Bot API. Токен бота и номер чата хранятся в секретах репозитория, конвейер передаёт их шагу через <code>env</code>, скрипт читает их из <code>process.env</code>, а в журнале запуска они видны как <code>***</code>. Скрипт сравнивает новую проверку с прошлой и пишет только о сайтах, которые перестали открываться или снова заработали; без изменений сообщения нет. На двух ручных запусках тестовый сайт с ошибкой в адресе дал одно сообщение, повторная проверка — ни одного.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions" target="_blank" rel="noreferrer">GitHub Docs — Using secrets in GitHub Actions</a></li>
+          <li><a href="https://core.telegram.org/bots/api#sendmessage" target="_blank" rel="noreferrer">Telegram Bot API — sendMessage</a></li>
+          <li><a href="https://nodejs.org/api/process.html#processenv" target="_blank" rel="noreferrer">Node.js — process.env</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../34-github-actions/index.html">← 3.4 GitHub Actions: конвейер и расписание</a>
+          <a href="../../index.html">К оглавлению →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>
