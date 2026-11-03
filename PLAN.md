@@ -146,3 +146,11 @@ upload-pages-artifact@v5, deploy-pages@v5.
   (Pages на /monitoring/nope отдаёт 404 «File not found»). Код `tools/code33`, съёмка `shots_33.py` (стадии local/push/deploy/
   base/url), кадры GitHub — `gh33.mjs` (Chrome ~/repo-shots-chrome, порт 9381, headless), `crop_33.py`; hl.py понимает YAML.
   Демо-репозиторий github.com/MaximBytecamp/monitoring после съёмки закрыт (private), для 3.4 открыть снова.
+- 3.4 `temy/34-github-actions` — `scripts/check.mjs` (fetch + AbortSignal.timeout(15000), история 30 проверок в
+  `public/data/results.json`), статусы в App (`loadJson`, `statusText`, `?.`), `check.yml` в три шага на настоящих запусках:
+  без permissions — 403 «denied to github-actions[bot]»; `contents: write` — коммит бота есть, сайт старый (коммиты GITHUB_TOKEN
+  не запускают push-конвейеры); задание `publish` с `uses: ./.github/workflows/deploy.yml`, в deploy.yml `workflow_call` и
+  `checkout ref: main`, `git pull` перед отправкой — сайт с временем запуска на GitHub (весь путь 1 мин 56 с). Cron в UTC
+  (0 21 * * * = 00:00 МСК), 60 дней без активности. Код `tools/code34`, съёмка `shots_34.py` (local/perm/publish, помощники
+  из shots_33), кадры GitHub `gh34.mjs` (рамки в своём popover поверх окон Primer), `crop_34.py`.
+  Telegram, Playwright/Lighthouse, страницы сайта и история — автоматизация А3 и проект модуля 3.

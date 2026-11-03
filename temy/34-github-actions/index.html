@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>3.4 GitHub Actions: конвейер и расписание · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch .on-dark-soft { fill: #c8d0e0; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; stroke-dasharray: 6 4; }
+    .sch .ng-text { fill: #C2185B; }
+    .sch .dash { stroke-dasharray: 6 4; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 3 · Несколько экранов, публикация, расписание</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 3 · несколько экранов, публикация, расписание</p>
+          <p class="running__folio">3.4</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">3.4</span>
+          <h1>GitHub Actions: конвейер и расписание</h1>
+          <p class="lead">В этой главе монитор начинает проверять сайты. Скрипт на Node.js открывает каждый адрес из <code>sites.json</code> и записывает результат в <code>results.json</code>, а приложение показывает, какие сайты работают. Второй конвейер GitHub Actions запускает скрипт каждую ночь, сохраняет результаты коммитом от имени бота и публикует сайт заново. По пути разобраны две ошибки на настоящих запусках: боту не хватает права записи в репозиторий, а коммит бота не запускает публикацию.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>GitHub Actions, расписание</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект и репозиторий <code>monitoring</code> после главы 3.3, сайт на GitHub Pages</dd></div>
+          <div><dt>Результат</dt><dd>Конвейер <code>check.yml</code>: каждую ночь в 00:00 по Москве проверка сайтов, коммит <code>results.json</code> и новая публикация</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Скрипт проверки сайтов</a></li>
+            <li><a href="#s2">Статусы в приложении</a></li>
+            <li><a href="#s3">Конвейер по расписанию</a></li>
+            <li><a href="#s4">Право записи для бота</a></li>
+            <li><a href="#s5">Публикация после проверки</a></li>
+            <li><a href="#s6">Частые ошибки</a></li>
+            <li><a href="#s7">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Скрипт проверки сайтов</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что значит «проверить сайт»</p>
+
+        <p>Проверка сайта — запрос по его адресу и ответ сервера. Код ответа <code>200</code> значит, что страница отдана; <code>404</code> — страницы по адресу нет; если сервер не ответил за отведённое время, кода нет совсем. Вместе с кодом удобно записать время ответа в миллисекундах.</p>
+
+        <p>Такой запрос выполняет функция <code>fetch</code> из главы 1.7, но здесь она работает не в браузере, а в Node.js: скрипт запускается командой <code>node</code> в терминале, без страницы и без React. Скрипту нужно прочитать <code>sites.json</code>, проверить сайты по очереди и дописать результат в начало файла <code>results.json</code>. Файл хранит историю последних 30 проверок.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Пишем и запускаем скрипт</p>
+
+        <ol class="steps">
+          <li><b>Создайте скрипт</b><p>Откройте папку <code>monitoring</code> в VS Code. В корне проекта создайте папку <code>scripts</code>, в ней — файл <code>check.mjs</code>.</p>
+            <!--CODE tools/code34/check.mjs | monitoring/scripts/check.mjs--><figure class="code"><figcaption><span>monitoring/scripts/check.mjs</span></figcaption><pre><span class="k">import</span> { readFile, writeFile } <span class="k">from</span> <span class="s">'node:fs/promises'</span>
+
+<span class="k">const</span> SITES = <span class="s">'public/data/sites.json'</span>
+<span class="k">const</span> RESULTS = <span class="s">'public/data/results.json'</span>
+
+<span class="k">const</span> sites = JSON.<span class="f">parse</span>(await <span class="f">readFile</span>(SITES, <span class="s">'utf8'</span>))
+<span class="k">let</span> history = []
+try {
+  history = JSON.<span class="f">parse</span>(await <span class="f">readFile</span>(RESULTS, <span class="s">'utf8'</span>)).history
+} catch {
+  <span class="c">// Первый запуск: файла с результатами ещё нет.</span>
+}
+
+<span class="k">const</span> checks = []
+for (<span class="k">const</span> site of sites) {
+  <span class="k">const</span> check = { id: site.id, ok: <span class="k">false</span>, status: <span class="n">0</span>, ms: <span class="n">0</span>, error: <span class="s">''</span> }
+  <span class="k">const</span> start = Date.<span class="f">now</span>()
+  try {
+    <span class="k">const</span> response = await <span class="f">fetch</span>(site.url, { signal: AbortSignal.<span class="f">timeout</span>(<span class="n">15000</span>) })
+    check.status = response.status
+    check.ok = response.ok
+  } catch (e) {
+    check.error = e.message
+  }
+  check.ms = Date.<span class="f">now</span>() - start
+  console.<span class="f">log</span>(<span class="s">`${check.ok ? 'OK  ' : 'FAIL'} ${check.status} ${check.ms} мс ${site.url}`</span>)
+  checks.<span class="f">push</span>(check)
+}
+
+history = [{ time: <span class="k">new</span> <span class="f">Date</span>().<span class="f">toISOString</span>(), checks }, ...history].<span class="f">slice</span>(<span class="n">0</span>, <span class="n">30</span>)
+await <span class="f">writeFile</span>(RESULTS, JSON.<span class="f">stringify</span>({ history }, <span class="k">null</span>, <span class="n">2</span>) + <span class="s">'\n'</span>)</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-check-mjs.png" width="1240" height="780" alt="VS Code: scripts/check.mjs, цикл for по sites, fetch с AbortSignal.timeout(15000)" loading="lazy"><figcaption>scripts/check.mjs</figcaption></figure></li>
+          <li><b>Запустите проверку</b><p>Выполните в терминале VS Code команду.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>node scripts/check.mjs</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-check-zapusk.png" width="1240" height="280" alt="Терминал: node scripts/check.mjs; OK 200 для пяти сайтов, FAIL 404 155 мс https://maximbytecamp.github.io/staryy-proekt/" loading="lazy"><figcaption>Пять сайтов отвечают 200, «Старый проект» — 404</figcaption></figure></li>
+          <li><b>Откройте результаты</b><p>В папке <code>public/data</code> появился файл <code>results.json</code>. Откройте его.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-results-json.png" width="1240" height="780" alt="VS Code: public/data/results.json, history, time 2026-11-02T05:50:22.607Z, checks: id git, ok true, status 200, ms 2510, error пустая строка" loading="lazy"><figcaption>results.json: одна проверка в истории</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что делает скрипт</p>
+
+        <!--CODE tools/code34/check.mjs | check.mjs · по строкам | pins=1:1,6:2,9:3,19:4,23:5,30:6,31:7--><figure class="code" data-read><figcaption><span>check.mjs · по строкам</span></figcaption><pre><span class="k">import</span> { readFile, writeFile } <span class="k">from</span> <span class="s">'node:fs/promises'</span>  <span class="pin">1</span>
+
+<span class="k">const</span> SITES = <span class="s">'public/data/sites.json'</span>
+<span class="k">const</span> RESULTS = <span class="s">'public/data/results.json'</span>
+
+<span class="k">const</span> sites = JSON.<span class="f">parse</span>(await <span class="f">readFile</span>(SITES, <span class="s">'utf8'</span>))  <span class="pin">2</span>
+<span class="k">let</span> history = []
+try {
+  history = JSON.<span class="f">parse</span>(await <span class="f">readFile</span>(RESULTS, <span class="s">'utf8'</span>)).history  <span class="pin">3</span>
+} catch {
+  <span class="c">// Первый запуск: файла с результатами ещё нет.</span>
+}
+
+<span class="k">const</span> checks = []
+for (<span class="k">const</span> site of sites) {
+  <span class="k">const</span> check = { id: site.id, ok: <span class="k">false</span>, status: <span class="n">0</span>, ms: <span class="n">0</span>, error: <span class="s">''</span> }
+  <span class="k">const</span> start = Date.<span class="f">now</span>()
+  try {
+    <span class="k">const</span> response = await <span class="f">fetch</span>(site.url, { signal: AbortSignal.<span class="f">timeout</span>(<span class="n">15000</span>) })  <span class="pin">4</span>
+    check.status = response.status
+    check.ok = response.ok
+  } catch (e) {
+    check.error = e.message  <span class="pin">5</span>
+  }
+  check.ms = Date.<span class="f">now</span>() - start
+  console.<span class="f">log</span>(<span class="s">`${check.ok ? 'OK  ' : 'FAIL'} ${check.status} ${check.ms} мс ${site.url}`</span>)
+  checks.<span class="f">push</span>(check)
+}
+
+history = [{ time: <span class="k">new</span> <span class="f">Date</span>().<span class="f">toISOString</span>(), checks }, ...history].<span class="f">slice</span>(<span class="n">0</span>, <span class="n">30</span>)  <span class="pin">6</span>
+await <span class="f">writeFile</span>(RESULTS, JSON.<span class="f">stringify</span>({ history }, <span class="k">null</span>, <span class="n">2</span>) + <span class="s">'\n'</span>)  <span class="pin">7</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Модуль <code>node:fs/promises</code> входит в Node.js и работает с файлами: <code>readFile</code> читает файл, <code>writeFile</code> записывает. Расширение <code>.mjs</code> разрешает в Node.js <code>import</code> и <code>await</code> вне функции.</p></div></li>
+          <li><span class="pin">2</span><div><p>Пути отсчитываются от папки, в которой запущен <code>node</code>, — от корня проекта. <code>JSON.parse</code> превращает текст файла в массив объектов.</p></div></li>
+          <li><span class="pin">3</span><div><p>Прошлые проверки. При первом запуске файла нет, <code>readFile</code> выбрасывает ошибку, и пустой блок <code>catch</code> оставляет историю пустой.</p></div></li>
+          <li><span class="pin">4</span><div><p><code>AbortSignal.timeout(15000)</code> прерывает запрос через 15 секунд. Без него зависший сайт задержал бы всю проверку.</p></div></li>
+          <li><span class="pin">5</span><div><p>Сюда попадают сетевые ошибки и прерывание по времени: ответа нет, код остаётся <code>0</code>, текст ошибки сохраняется в <code>error</code>. При коде 404 <code>fetch</code> ошибку не выбрасывает: ответ получен, и <code>response.ok</code> равен <code>false</code>.</p></div></li>
+          <li><span class="pin">6</span><div><p>Новая проверка — в начало массива, <code>slice(0, 30)</code> оставляет 30 последних. Время записывается функцией <code>toISOString()</code> во всемирном времени UTC — буква <code>Z</code> в конце строки.</p></div></li>
+          <li><span class="pin">7</span><div><p><code>JSON.stringify(…, null, 2)</code> записывает JSON с отступом в два пробела, чтобы файл читался и изменения в нём были видны в истории Git.</p></div></li>
+        </ol>
+
+        <p class="bridge">Результаты лежат в <code>public/data</code> рядом со списком сайтов. Приложение может загрузить их так же, как <code>sites.json</code>.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Статусы в приложении</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Показываем результат последней проверки</p>
+
+        <ol class="steps">
+          <li><b>Дополните типы</b><p>Замените содержимое <code>src/types.ts</code>: добавлены результат проверки одного сайта <code>Check</code> и проверка всех сайтов <code>Run</code>.</p>
+            <!--CODE tools/code34/types.ts | monitoring/src/types.ts | mark=7-18--><figure class="code"><figcaption><span>monitoring/src/types.ts</span></figcaption><pre><span class="k">export</span> <span class="k">type</span> Site = {
+  id: string
+  name: string
+  url: string
+}
+
+<span class="hl"><span class="k">export</span> <span class="k">type</span> Check = {</span>
+<span class="hl">  id: string</span>
+<span class="hl">  ok: boolean</span>
+<span class="hl">  status: number</span>
+<span class="hl">  ms: number</span>
+<span class="hl">  error: string</span>
+<span class="hl">}</span>
+<span class="hl"></span>
+<span class="hl"><span class="k">export</span> <span class="k">type</span> Run = {</span>
+<span class="hl">  time: string</span>
+<span class="hl">  checks: Check[]</span>
+<span class="hl">}</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/04-types.png" width="1240" height="780" alt="VS Code: types.ts, типы Site, Check, Run" loading="lazy"><figcaption>Типы Check и Run</figcaption></figure></li>
+          <li><b>Замените App.tsx</b><p>Замените содержимое <code>src/App.tsx</code>.</p>
+            <!--CODE tools/code34/App.tsx | monitoring/src/App.tsx | mark=2,4-20,24,31-35,49,55-59,64-68,74-75--><figure class="code"><figcaption><span>monitoring/src/App.tsx</span></figcaption><pre><span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>
+<span class="hl"><span class="k">import</span> <span class="k">type</span> { Check, Run, Site } <span class="k">from</span> <span class="s">'./types'</span></span>
+
+<span class="hl">async <span class="k">function</span> <span class="f">loadJson</span>(name: string) {</span>
+<span class="hl">  <span class="k">const</span> response = await <span class="f">fetch</span>(<span class="s">`${import.meta.env.BASE_URL}data/${name}`</span>)</span>
+<span class="hl">  <span class="k">if</span> (!response.ok) {</span>
+<span class="hl">    throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">`Файл ${name} не загрузился: код ${response.status}.`</span>)</span>
+<span class="hl">  }</span>
+<span class="hl">  <span class="k">return</span> response.<span class="f">json</span>()</span>
+<span class="hl">}</span>
+<span class="hl"></span>
+<span class="hl"><span class="k">function</span> <span class="f">statusText</span>(check: Check | <span class="k">undefined</span>) {</span>
+<span class="hl">  <span class="k">if</span> (check === <span class="k">undefined</span>) {</span>
+<span class="hl">    <span class="k">return</span> <span class="s">'Не проверялся'</span></span>
+<span class="hl">  }</span>
+<span class="hl">  <span class="k">if</span> (check.ok) {</span>
+<span class="hl">    <span class="k">return</span> <span class="s">`Работает · ${check.ms} мс`</span></span>
+<span class="hl">  }</span>
+<span class="hl">  <span class="k">return</span> <span class="s">`Не открывается · ${check.status || check.error}`</span></span>
+<span class="hl">}</span>
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">const</span> [sites, setSites] = useState<span class="t">&lt;Site</span>[]<span class="t">&gt;</span>([])
+<span class="hl">  <span class="k">const</span> [history, setHistory] = useState<span class="t">&lt;Run</span>[]<span class="t">&gt;</span>([])</span>
+  <span class="k">const</span> [error, setError] = <span class="f">useState</span>(<span class="s">''</span>)
+
+  <span class="f">useEffect</span>(() =<span class="t">&gt;</span> {
+    <span class="k">let</span> ignore = <span class="k">false</span>
+    async <span class="k">function</span> <span class="f">load</span>() {
+      try {
+<span class="hl">        <span class="k">const</span> list: Site[] = await <span class="f">loadJson</span>(<span class="s">'sites.json'</span>)</span>
+<span class="hl">        <span class="k">const</span> results: { history: Run[] } = await <span class="f">loadJson</span>(<span class="s">'results.json'</span>)</span>
+<span class="hl">        <span class="k">if</span> (!ignore) {</span>
+<span class="hl">          <span class="f">setSites</span>(list)</span>
+<span class="hl">          <span class="f">setHistory</span>(results.history)</span>
+        }
+      } catch (e) {
+        <span class="k">if</span> (!ignore) {
+          <span class="f">setError</span>((e as Error).message)
+        }
+      }
+    }
+    <span class="f">load</span>()
+    <span class="k">return</span> () =<span class="t">&gt;</span> {
+      ignore = <span class="k">true</span>
+    }
+  }, [])
+
+<span class="hl">  <span class="k">const</span> last = history[<span class="n">0</span>]</span>
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;header</span> <span class="a">className</span>=<span class="s">"header"</span><span class="t">&gt;</span>
+        <span class="t">&lt;h1</span><span class="t">&gt;</span>Мониторинг сайтов группы<span class="t">&lt;/h1</span><span class="t">&gt;</span>
+<span class="hl">        <span class="t">&lt;p</span><span class="t">&gt;</span></span>
+<span class="hl">          {last === <span class="k">undefined</span></span>
+<span class="hl">            ? <span class="s">'Проверок ещё не было'</span></span>
+<span class="hl">            : <span class="s">`Последняя проверка: ${new Date(last.time).toLocaleString('ru')}`</span>}</span>
+<span class="hl">        <span class="t">&lt;/p</span><span class="t">&gt;</span></span>
+      <span class="t">&lt;/header</span><span class="t">&gt;</span>
+      <span class="t">&lt;main</span> <span class="a">className</span>=<span class="s">"main"</span><span class="t">&gt;</span>
+        {error !== <span class="s">''</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"load-error"</span><span class="t">&gt;</span>{error}<span class="t">&lt;/p</span><span class="t">&gt;</span>}
+        <span class="t">&lt;ul</span> <span class="a">className</span>=<span class="s">"sites"</span><span class="t">&gt;</span>
+<span class="hl">          {sites.<span class="f">map</span>((site) =<span class="t">&gt;</span> {</span>
+<span class="hl">            <span class="k">const</span> check = last?.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === site.id)</span>
+<span class="hl">            <span class="k">return</span> (</span>
+<span class="hl">              <span class="t">&lt;li</span> <span class="a">key</span>={site.id} <span class="a">className</span>={check?.ok ? <span class="s">'site'</span> : <span class="s">'site site--bad'</span>}<span class="t">&gt;</span></span>
+<span class="hl">                <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"site__status"</span><span class="t">&gt;</span>{<span class="f">statusText</span>(check)}<span class="t">&lt;/span</span><span class="t">&gt;</span></span>
+                <span class="t">&lt;h2</span><span class="t">&gt;</span>{site.name}<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+                <span class="t">&lt;a</span> <span class="a">href</span>={site.url} <span class="a">target</span>=<span class="s">"_blank"</span> <span class="a">rel</span>=<span class="s">"noreferrer"</span><span class="t">&gt;</span>
+                  {site.url}
+                <span class="t">&lt;/a</span><span class="t">&gt;</span>
+              <span class="t">&lt;/li</span><span class="t">&gt;</span>
+<span class="hl">            )</span>
+<span class="hl">          })}</span>
+        <span class="t">&lt;/ul</span><span class="t">&gt;</span>
+      <span class="t">&lt;/main</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> App</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-app.png" width="1240" height="780" alt="VS Code: App.tsx, функция statusText, состояние history, загрузка sites.json и results.json через loadJson" loading="lazy"><figcaption>App загружает два файла</figcaption></figure></li>
+          <li><b>Добавьте стили</b><p>Вставьте правила в конец <code>src/index.css</code>: зелёная или красная полоса слева от карточки и строка статуса.</p>
+            <!--CODE tools/code34/index-add.css | monitoring/src/index.css · в конец файла--><figure class="code"><figcaption><span>monitoring/src/index.css · в конец файла</span></figcaption><pre>
+.site {
+  <span class="a">border-left</span>: <span class="n">6px</span> solid <span class="n">#2e9d5b</span>;
+}
+
+.site--bad {
+  <span class="a">border-left-color</span>: <span class="n">#d23b3b</span>;
+}
+
+.site__status {
+  <span class="a">display</span>: block;
+  <span class="a">margin-bottom</span>: <span class="n">6px</span>;
+  <span class="a">color</span>: <span class="n">#2e9d5b</span>;
+  <span class="a">font-size</span>: <span class="n">13px</span>;
+  <span class="a">font-weight</span>: <span class="n">600</span>;
+}
+
+.site--bad .site__status {
+  <span class="a">color</span>: <span class="n">#d23b3b</span>;
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/06-css.png" width="1240" height="780" alt="VS Code: index.css, правила .site, .site--bad, .site__status в конце файла" loading="lazy"><figcaption>Стили статусов</figcaption></figure></li>
+          <li><b>Проверьте приложение</b><p>Запустите <code>npm run dev</code> и откройте адрес <code>localhost:5173/monitoring/</code>: после главы 3.3 у приложения подпапка <code>base</code> и в режиме разработки. В шапке — время проверки, у «Старого проекта» красная полоса и «Не открывается · 404».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/07-dev-statusy.png" width="1100" height="476" alt="Браузер, localhost:5173/monitoring/: Последняя проверка: 02.11.2026, 08:50:22; пять карточек Работает с временем ответа, Старый проект — Не открывается · 404 с красной полосой" loading="lazy"><figcaption>Статусы сайтов из results.json</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Новое в App.tsx</p>
+
+        <!--CODE tools/code34/App.tsx | App.tsx · строки 4–20 | lines=4-20 pins=4:1,9:2,12:3,19:4--><figure class="code" data-read><figcaption><span>App.tsx · строки 4–20</span></figcaption><pre>async <span class="k">function</span> <span class="f">loadJson</span>(name: string) {  <span class="pin">1</span>
+  <span class="k">const</span> response = await <span class="f">fetch</span>(<span class="s">`${import.meta.env.BASE_URL}data/${name}`</span>)
+  <span class="k">if</span> (!response.ok) {
+    throw <span class="k">new</span> <span class="f">Error</span>(<span class="s">`Файл ${name} не загрузился: код ${response.status}.`</span>)
+  }
+  <span class="k">return</span> response.<span class="f">json</span>()  <span class="pin">2</span>
+}
+
+<span class="k">function</span> <span class="f">statusText</span>(check: Check | <span class="k">undefined</span>) {  <span class="pin">3</span>
+  <span class="k">if</span> (check === <span class="k">undefined</span>) {
+    <span class="k">return</span> <span class="s">'Не проверялся'</span>
+  }
+  <span class="k">if</span> (check.ok) {
+    <span class="k">return</span> <span class="s">`Работает · ${check.ms} мс`</span>
+  }
+  <span class="k">return</span> <span class="s">`Не открывается · ${check.status || check.error}`</span>  <span class="pin">4</span>
+}</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Два файла загружаются одинаково, поэтому запрос вынесен в функцию <code>loadJson</code> вне компонента. Имя файла передаётся параметром.</p></div></li>
+          <li><span class="pin">2</span><div><p>Функция возвращает разобранный JSON. Тип у результата <code>response.json()</code> не задан, поэтому в строках 31–32 тип указан у переменной: <code>const list: Site[]</code>, <code>const results: { history: Run[] }</code>.</p></div></li>
+          <li><span class="pin">3</span><div><p><code>statusText</code> — текст статуса по результату проверки. Тип <code>Check | undefined</code>: результата может не быть, если сайт добавили в список после последней проверки.</p></div></li>
+          <li><span class="pin">4</span><div><p>Оператор <code>||</code> берёт первое непустое значение: код ответа, а если он <code>0</code> — текст ошибки.</p></div></li>
+        </ol>
+
+        <!--CODE tools/code34/App.tsx | App.tsx · строки 64–68 | lines=64-68 pins=65:1,67:2--><figure class="code" data-read><figcaption><span>App.tsx · строки 64–68</span></figcaption><pre>          {sites.<span class="f">map</span>((site) =<span class="t">&gt;</span> {
+            <span class="k">const</span> check = last?.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === site.id)  <span class="pin">1</span>
+            <span class="k">return</span> (
+              <span class="t">&lt;li</span> <span class="a">key</span>={site.id} <span class="a">className</span>={check?.ok ? <span class="s">'site'</span> : <span class="s">'site site--bad'</span>}<span class="t">&gt;</span>  <span class="pin">2</span>
+                <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"site__status"</span><span class="t">&gt;</span>{<span class="f">statusText</span>(check)}<span class="t">&lt;/span</span><span class="t">&gt;</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p><code>last</code> — первый элемент истории, последняя по времени проверка (строка 49). Если истории нет, <code>last</code> равен <code>undefined</code>, и запись <code>last?.checks</code> возвращает <code>undefined</code> вместо ошибки: знак <code>?.</code> читает поле, только если слева не <code>undefined</code> и не <code>null</code>. <code>find</code> ищет результат этого сайта по <code>id</code>.</p></div></li>
+          <li><span class="pin">2</span><div><p>Класс карточки зависит от результата: <code>site</code> — зелёная полоса, <code>site site--bad</code> — красная.</p></div></li>
+        </ol>
+
+        <p>Время в шапке выводит <code>new Date(last.time).toLocaleString('ru')</code>: строка UTC из файла превращается в дату и записывается по-русски во времени компьютера. В <code>results.json</code> — <code>05:50:22Z</code>, на странице в Москве — <code>08:50:22</code>.</p>
+
+        <p class="bridge">Проверка запущена вручную на вашем компьютере. Чтобы она шла каждую ночь без вас, её запускает GitHub Actions.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Конвейер по расписанию</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Конвейер ночной проверки</p>
+
+        <ol class="steps">
+          <li><b>Создайте конвейер</b><p>В папке <code>.github/workflows</code> создайте файл <code>check.yml</code>. Это первая версия: в разделах §4 и §5 она будет дополнена.</p>
+            <!--CODE tools/code34/check-1.yml | monitoring/.github/workflows/check.yml · первая версия--><figure class="code"><figcaption><span>monitoring/.github/workflows/check.yml · первая версия</span></figcaption><pre><span class="a">name</span>: Ночная проверка сайтов
+
+<span class="a">on</span>:
+<span class="a">  schedule</span>:
+<span class="a">    - cron</span>: <span class="s">'0 21 * * *'</span>
+<span class="a">  workflow_dispatch</span>:
+
+<span class="a">jobs</span>:
+<span class="a">  check</span>:
+<span class="a">    runs-on</span>: ubuntu-latest
+<span class="a">    steps</span>:
+<span class="a">      - name</span>: Получить код
+<span class="a">        uses</span>: actions/checkout@v7
+<span class="a">      - name</span>: Установить Node.js
+<span class="a">        uses</span>: actions/setup-node@v7
+<span class="a">        with</span>:
+<span class="a">          node-version</span>: <span class="n">24</span>
+<span class="a">      - name</span>: Проверить сайты
+<span class="a">        run</span>: node scripts/check.mjs
+<span class="a">      - name</span>: Сохранить результаты в репозиторий
+<span class="a">        run</span>: |
+          git config user.name <span class="s">"github-actions[bot]"</span>
+          git config user.email <span class="s">"41898282+github-actions[bot]@users.noreply.github.com"</span>
+          git add public/data/results.json
+          git commit -m <span class="s">"Результаты ночной проверки"</span>
+          git push</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/08-check-yml.png" width="1240" height="780" alt="VS Code: check.yml, on schedule cron 0 21 * * *, workflow_dispatch, задание check с шагами" loading="lazy"><figcaption>check.yml, первая версия</figcaption></figure></li>
+          <li><b>Отправьте изменения</b><p>Скрипт, результаты, приложение и конвейер отправляются одним коммитом.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>git add .
+git commit -m "Ночная проверка сайтов"
+git push</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/09-push-check.png" width="1240" height="393" alt="Терминал: git commit Ночная проверка сайтов, 6 files changed, create mode .github/workflows/check.yml, public/data/results.json, scripts/check.mjs; git push" loading="lazy"><figcaption>Шесть файлов отправлены</figcaption></figure></li>
+          <li><b>Запустите проверку вручную</b><p>До ночи ждать не нужно. На вкладке <strong>Actions</strong> выберите слева «Ночная проверка сайтов» (1) и нажмите <strong>Run workflow</strong> (2).</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/10-run-workflow.png" width="1280" height="560" alt="GitHub Actions: слева выбран workflow Ночная проверка сайтов (1), справа кнопка Run workflow (2), This workflow has no runs yet" loading="lazy"><figcaption>Конвейер ночной проверки на вкладке Actions</figcaption></figure>
+            <p>В открывшемся окне оставьте ветку <code>main</code> и нажмите зелёную кнопку <strong>Run workflow</strong> (3).</p>
+            <figure class="shot" style="max-width: 646px"><img src="img/10a-run-workflow.png" width="640" height="260" alt="Окно Use workflow from: main, кнопки Cancel и Run workflow (3)" loading="lazy"><figcaption>Ручной запуск</figcaption></figure></li>
+          <li><b>Посмотрите результат</b><p>Через несколько секунд запуск появится в списке. Откройте его: красный крестик, задание <code>check</code> завершилось ошибкой.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/11-run.png" width="1280" height="700" alt="Ночная проверка сайтов #1: Manually triggered, Status Failure, задание check с красным крестиком 6s, Annotations: Process completed with exit code 128" loading="lazy"><figcaption>Первый запуск: ошибка</figcaption></figure>
+            <p>Нажмите на задание <code>check</code>. Упавший шаг «Сохранить результаты в репозиторий» раскрыт.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/11a-log.png" width="1280" height="900" alt="Журнал задания check: шаги Получить код, Установить Node.js, Проверить сайты 1s успешны; шаг Сохранить результаты в репозиторий: Результаты ночной проверки 1 file changed, remote: Permission to MaximBytecamp/monitoring.git denied to github-actions[bot]., fatal: … error: 403, Error: Process completed with exit code 128." loading="lazy"><figcaption>«Permission … denied to github-actions[bot]», код 403</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Расписание и шаги конвейера</p>
+
+        <!--CODE tools/code34/check-1.yml | check.yml · первая версия по строкам | pins=4:1,6:2,20:3,21:4,24:5--><figure class="code" data-read><figcaption><span>check.yml · первая версия по строкам</span></figcaption><pre><span class="a">name</span>: Ночная проверка сайтов
+
+<span class="a">on</span>:
+<span class="a">  schedule</span>:  <span class="pin">1</span>
+<span class="a">    - cron</span>: <span class="s">'0 21 * * *'</span>
+<span class="a">  workflow_dispatch</span>:  <span class="pin">2</span>
+
+<span class="a">jobs</span>:
+<span class="a">  check</span>:
+<span class="a">    runs-on</span>: ubuntu-latest
+<span class="a">    steps</span>:
+<span class="a">      - name</span>: Получить код
+<span class="a">        uses</span>: actions/checkout@v7
+<span class="a">      - name</span>: Установить Node.js
+<span class="a">        uses</span>: actions/setup-node@v7
+<span class="a">        with</span>:
+<span class="a">          node-version</span>: <span class="n">24</span>
+<span class="a">      - name</span>: Проверить сайты
+<span class="a">        run</span>: node scripts/check.mjs
+<span class="a">      - name</span>: Сохранить результаты в репозиторий  <span class="pin">3</span>
+<span class="a">        run</span>: |  <span class="pin">4</span>
+          git config user.name <span class="s">"github-actions[bot]"</span>
+          git config user.email <span class="s">"41898282+github-actions[bot]@users.noreply.github.com"</span>
+          git add public/data/results.json  <span class="pin">5</span>
+          git commit -m <span class="s">"Результаты ночной проверки"</span>
+          git push</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p><code>schedule</code> — запуск по расписанию в формате <span class="term">cron</span>. Пять полей через пробел: минута, час, день месяца, месяц, день недели; звёздочка — «любой». <code>0 21 * * *</code> — «каждый день в 21:00». Время в расписании GitHub — всемирное UTC, а Москва живёт по UTC+3, поэтому проверка выполняется в 00:00 по Москве.</p></div></li>
+          <li><span class="pin">2</span><div><p><code>workflow_dispatch</code> добавляет кнопку <strong>Run workflow</strong>. Без неё первую проверку пришлось бы ждать до ночи.</p></div></li>
+          <li><span class="pin">3</span><div><p>Скрипт использует только встроенные модули Node.js, поэтому шагов <code>npm ci</code> и сборки здесь нет. Шаг занял 1 секунду: у машин GitHub быстрый канал.</p></div></li>
+          <li><span class="pin">4</span><div><p><code>run: |</code> — несколько команд подряд, каждая на своей строке. Первые две задают имя и почту автора коммита: на машине GitHub их нет. <code>github-actions[bot]</code> и эта почта — стандартные данные бота GitHub Actions; с ними коммит в истории показывается с его значком.</p></div></li>
+          <li><span class="pin">5</span><div><p>Коммит создан (в журнале «1 file changed»), а отправка отклонена.</p></div></li>
+        </ol>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Будильник в телефоне ставят один раз, и он звонит каждый день в заданное время, пока его не выключат. Расписание <code>schedule</code> — такой будильник для конвейера, а кнопка <strong>Run workflow</strong> — проверка, что будильник звонит, не дожидаясь утра.</p>
+          <p class="miss">Будильник звонит минута в минуту. Запуск по расписанию GitHub может начаться позже назначенного времени, когда у GitHub много работы.</p>
+        </div></div>
+
+        <p>У расписания есть ещё два правила из документации GitHub. Расписание читается из ветки по умолчанию — <code>main</code>. В публичном репозитории запуски по расписанию отключаются, если в репозитории 60 дней не было активности; включить их снова можно кнопкой на вкладке Actions.</p>
+
+        <p class="bridge">Скрипт на машине GitHub отработал, но отправить коммит не смог. Ответ — в слове «Permission».</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Право записи для бота</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Чем ограничен конвейер</p>
+
+        <p>Каждому запуску GitHub выдаёт временный ключ <span class="term">GITHUB_TOKEN</span>, и все действия конвейера с репозиторием выполняются по нему: <code>actions/checkout</code> скачивает код, <code>git push</code> отправляет коммит. Права ключа задаёт раздел <code>permissions</code>. В <code>deploy.yml</code> он есть — <code>contents: read</code>, только чтение. В первой версии <code>check.yml</code> раздела нет, и действуют права по умолчанию; для новых репозиториев это тоже только чтение. Отсюда отказ 403.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Разрешаем запись и запускаем снова</p>
+
+        <ol class="steps">
+          <li><b>Добавьте permissions</b><p>В <code>check.yml</code> после строки 6 <code>workflow_dispatch:</code> добавьте раздел прав.</p>
+            <!--CODE tools/code34/check-2.yml | check.yml · строки 8–9 | lines=8-9--><figure class="code"><figcaption><span>check.yml · строки 8–9</span></figcaption><pre><span class="a">permissions</span>:
+<span class="a">  contents</span>: write</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/12-check-permissions.png" width="1240" height="780" alt="VS Code: check.yml, строки 8–9 permissions: contents: write" loading="lazy"><figcaption>Право записи в репозиторий</figcaption></figure></li>
+          <li><b>Отправьте изменение</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>git add .
+git commit -m "Право записи для ночной проверки"
+git push</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/13-push-perm.png" width="1240" height="345" alt="Терминал: git commit Право записи для ночной проверки, git push" loading="lazy"><figcaption>Изменение отправлено</figcaption></figure></li>
+          <li><b>Запустите проверку</b><p>На вкладке Actions снова нажмите <strong>Run workflow</strong> → <strong>Run workflow</strong>. Запуск №2 завершился зелёной галочкой.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/15-run.png" width="1280" height="700" alt="Ночная проверка сайтов #2: Manually triggered, Status Success, 13s, задание check с зелёной галочкой 9s" loading="lazy"><figcaption>Второй запуск: успех</figcaption></figure></li>
+          <li><b>Посмотрите историю коммитов</b><p>На вкладке <strong>Code</strong> нажмите на число коммитов. Сверху — «Результаты ночной проверки» от <code>github-actions[bot]</code>.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/16-commits.png" width="1280" height="700" alt="Commits: Результаты ночной проверки, github-actions[bot] committed now; ниже коммиты MaximBytecamp: Право записи для ночной проверки, Ночная проверка сайтов и другие" loading="lazy"><figcaption>Коммит бота с результатами</figcaption></figure></li>
+          <li><b>Откройте сайт</b><p>Откройте <code>https://&lt;логин&gt;.github.io/monitoring/</code>. В шапке — время проверки с вашего компьютера, 08:50:22. Время запуска на GitHub на сайт не попало.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/17-sayt-staryy.png" width="1100" height="476" alt="Сайт https://maximbytecamp.github.io/monitoring/: Последняя проверка: 02.11.2026, 08:50:22, статусы сайтов" loading="lazy"><figcaption>На сайте старые результаты</figcaption></figure></li>
+          <li><b>Посмотрите список запусков</b><p>Откройте <strong>Actions</strong> → <strong>All workflows</strong>. После ночной проверки №2 публикация не запускалась: последняя «Публикация на GitHub Pages» — по вашему коммиту «Право записи для ночной проверки».</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/18-actions.png" width="1280" height="760" alt="All workflows, 7 workflow runs: Ночная проверка сайтов #2 успешно; Право записи для ночной проверки — Публикация на GitHub Pages #6; Ночная проверка сайтов #1 с ошибкой; Ночная проверка сайтов — Публикация #5 и более ранние" loading="lazy"><figcaption>Коммит бота публикацию не запустил</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему сайт не обновился</p>
+
+        <p>Публикация запускается событием <code>push</code> в ветку <code>main</code>. Коммит бота — тоже отправка в <code>main</code>, но GitHub не запускает конвейеры по событиям, которые создал ключ <code>GITHUB_TOKEN</code>. Так устроено намеренно: иначе конвейер, который делает коммит при каждом push, запускал бы себя повторно без конца. Результаты лежат в репозитории, а <code>dist</code> на Pages собран из предыдущего коммита.</p>
+
+        <p class="bridge">Публикацию нужно запустить из самого конвейера проверки — после того как результаты сохранены.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Публикация после проверки</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Вызов одного конвейера из другого</p>
+
+        <p>Конвейер можно вызвать из другого конвейера как отдельное задание — для этого у вызываемого конвейера должно быть событие <code>workflow_call</code>. Так <code>check.yml</code> после задания <code>check</code> выполнит весь <code>deploy.yml</code>, и шаги публикации не придётся копировать.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Подключаем deploy.yml к ночной проверке</p>
+
+        <ol class="steps">
+          <li><b>Дополните deploy.yml</b><p>Замените содержимое <code>.github/workflows/deploy.yml</code>. Добавлены событие <code>workflow_call</code> (строка 7) и параметр <code>ref: main</code> у шага «Получить код» (строки 27–28).</p>
+            <!--CODE tools/code34/deploy.yml | monitoring/.github/workflows/deploy.yml | mark=7,27-28--><figure class="code"><figcaption><span>monitoring/.github/workflows/deploy.yml</span></figcaption><pre><span class="a">name</span>: Публикация на GitHub Pages
+
+<span class="a">on</span>:
+<span class="a">  push</span>:
+<span class="a">    branches</span>: [main]
+<span class="a">  workflow_dispatch</span>:
+<span class="hl"><span class="a">  workflow_call</span>:</span>
+
+<span class="a">permissions</span>:
+<span class="a">  contents</span>: read
+<span class="a">  pages</span>: write
+<span class="a">  id-token</span>: write
+
+<span class="a">concurrency</span>:
+<span class="a">  group</span>: pages
+<span class="a">  cancel-in-progress</span>: false
+
+<span class="a">jobs</span>:
+<span class="a">  deploy</span>:
+<span class="a">    runs-on</span>: ubuntu-latest
+<span class="a">    environment</span>:
+<span class="a">      name</span>: github-pages
+<span class="a">      url</span>: <span class="s">${{ steps.deployment.outputs.page_url }}</span>
+<span class="a">    steps</span>:
+<span class="a">      - name</span>: Получить код
+<span class="a">        uses</span>: actions/checkout@v7
+<span class="hl"><span class="a">        with</span>:</span>
+<span class="hl"><span class="a">          ref</span>: main</span>
+<span class="a">      - name</span>: Установить Node.js
+<span class="a">        uses</span>: actions/setup-node@v7
+<span class="a">        with</span>:
+<span class="a">          node-version</span>: <span class="n">24</span>
+<span class="a">          cache</span>: npm
+<span class="a">      - name</span>: Установить зависимости
+<span class="a">        run</span>: npm ci
+<span class="a">      - name</span>: Собрать сайт
+<span class="a">        run</span>: npm run build
+<span class="a">      - name</span>: Упаковать папку dist
+<span class="a">        uses</span>: actions/upload-pages-artifact@v5
+<span class="a">        with</span>:
+<span class="a">          path</span>: dist
+<span class="a">      - name</span>: Опубликовать
+<span class="a">        id</span>: deployment
+<span class="a">        uses</span>: actions/deploy-pages@v5</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/19-deploy-call.png" width="1240" height="780" alt="VS Code: deploy.yml, строка 7 workflow_call:" loading="lazy"><figcaption>deploy.yml можно вызвать из другого конвейера</figcaption></figure></li>
+          <li><b>Дополните check.yml</b><p>Замените содержимое <code>.github/workflows/check.yml</code>. Добавлены права для публикации и второе задание <code>publish</code>.</p>
+            <!--CODE tools/code34/check.yml | monitoring/.github/workflows/check.yml | mark=10-11,33-35--><figure class="code"><figcaption><span>monitoring/.github/workflows/check.yml</span></figcaption><pre><span class="a">name</span>: Ночная проверка сайтов
+
+<span class="a">on</span>:
+<span class="a">  schedule</span>:
+<span class="a">    - cron</span>: <span class="s">'0 21 * * *'</span>
+<span class="a">  workflow_dispatch</span>:
+
+<span class="a">permissions</span>:
+<span class="a">  contents</span>: write
+<span class="hl"><span class="a">  pages</span>: write</span>
+<span class="hl"><span class="a">  id-token</span>: write</span>
+
+<span class="a">jobs</span>:
+<span class="a">  check</span>:
+<span class="a">    runs-on</span>: ubuntu-latest
+<span class="a">    steps</span>:
+<span class="a">      - name</span>: Получить код
+<span class="a">        uses</span>: actions/checkout@v7
+<span class="a">      - name</span>: Установить Node.js
+<span class="a">        uses</span>: actions/setup-node@v7
+<span class="a">        with</span>:
+<span class="a">          node-version</span>: <span class="n">24</span>
+<span class="a">      - name</span>: Проверить сайты
+<span class="a">        run</span>: node scripts/check.mjs
+<span class="a">      - name</span>: Сохранить результаты в репозиторий
+<span class="a">        run</span>: |
+          git config user.name <span class="s">"github-actions[bot]"</span>
+          git config user.email <span class="s">"41898282+github-actions[bot]@users.noreply.github.com"</span>
+          git add public/data/results.json
+          git commit -m <span class="s">"Результаты ночной проверки"</span>
+          git push
+
+<span class="hl"><span class="a">  publish</span>:</span>
+<span class="hl"><span class="a">    needs</span>: check</span>
+<span class="hl"><span class="a">    uses</span>: ./.github/workflows/deploy.yml</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/20-check-publish.png" width="1240" height="780" alt="VS Code: check.yml, задание publish: needs: check, uses: ./.github/workflows/deploy.yml" loading="lazy"><figcaption>Задание publish вызывает deploy.yml</figcaption></figure></li>
+          <li><b>Заберите коммит бота и отправьте</b><p>В репозитории на GitHub теперь есть коммит бота, которого нет у вас. Обычный <code>git push</code> будет отклонён, поэтому сначала выполните <code>git pull</code>.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>git pull
+git add .
+git commit -m "Публикация после ночной проверки"
+git push</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/21-pull-push.png" width="1240" height="537" alt="Терминал: git pull, Fast-forward public/data/results.json 47 +; git commit Публикация после ночной проверки, 2 files changed; git push" loading="lazy"><figcaption>git pull забрал results.json от бота</figcaption></figure></li>
+          <li><b>Запустите проверку</b><p>Снова <strong>Run workflow</strong> → <strong>Run workflow</strong> и откройте запуск №3. В нём два задания: <code>check</code> и <code>publish / deploy</code>, у второго — адрес сайта.</p>
+            <figure class="shot" style="max-width: 1286px"><img src="img/23-run.png" width="1280" height="700" alt="Ночная проверка сайтов #3: Success, Total duration 1m 56s, Artifacts 1; схема check 9s → publish / deploy 17s со ссылкой на сайт" loading="lazy"><figcaption>Проверка, затем публикация</figcaption></figure></li>
+          <li><b>Откройте сайт</b><p>Обновите страницу сайта. Время в шапке — время запуска на GitHub, 09:08:22.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/24-sayt-novyy.png" width="1100" height="476" alt="Сайт https://maximbytecamp.github.io/monitoring/: Последняя проверка: 02.11.2026, 09:08:22; Работает · 218 мс и другие времена ответа; Старый проект — Не открывается · 404" loading="lazy"><figcaption>На сайте результаты проверки с GitHub</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как устроен итоговый конвейер</p>
+
+        <!--CODE tools/code34/check.yml | check.yml · строки 8–11 и 33–35 | lines=8-11 pins=9:1,10:2--><figure class="code" data-read><figcaption><span>check.yml · строки 8–11 и 33–35</span></figcaption><pre><span class="a">permissions</span>:
+<span class="a">  contents</span>: write  <span class="pin">1</span>
+<span class="a">  pages</span>: write  <span class="pin">2</span>
+<span class="a">  id-token</span>: write</pre></figure><!--/CODE-->
+        <!--CODE tools/code34/check.yml | | lines=33-35 pins=34:3,35:4--><figure class="code" data-read><figcaption><span></span></figcaption><pre><span class="a">  publish</span>:
+<span class="a">    needs</span>: check  <span class="pin">3</span>
+<span class="a">    uses</span>: ./.github/workflows/deploy.yml  <span class="pin">4</span></pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Запись в репозиторий — для коммита с результатами.</p></div></li>
+          <li><span class="pin">2</span><div><p>Права для публикации. Вызванный конвейер получает права вызвавшего, поэтому всё, что нужно <code>deploy.yml</code>, должно быть разрешено и здесь.</p></div></li>
+          <li><span class="pin">3</span><div><p><code>needs: check</code> — задание начнётся только после успешного <code>check</code>. Без этого задания выполнялись бы одновременно, и публикация не дождалась бы новых результатов.</p></div></li>
+          <li><span class="pin">4</span><div><p><code>uses</code> на уровне задания вызывает другой конвейер из этого же репозитория — путь начинается с <code>./</code>.</p></div></li>
+        </ol>
+
+        <p><code>ref: main</code> в <code>deploy.yml</code> нужен из-за порядка событий. Вызванный конвейер скачивает код того коммита, с которого начался запуск, — а он был до коммита бота. Без <code>ref</code> публикация собрала бы сайт со старым <code>results.json</code>. С <code>ref: main</code> скачивается последнее состояние ветки — уже с результатами.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Ночной запуск check.yml</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 230" role="img" aria-label="21:00 UTC расписание запускает check.yml. Задание check: checkout, setup-node, node scripts/check.mjs, git commit и push results.json от github-actions[bot] в main. Затем задание publish вызывает deploy.yml: checkout ref main, npm ci, build, deploy-pages. Сайт показывает новые результаты">
+              <rect x="20" y="80" width="110" height="70" fill="#ffffff"/><text class="mono" x="32" y="106">schedule</text><text class="soft" x="32" y="126">21:00 UTC</text><text class="soft" x="32" y="142">или кнопка</text>
+              <path d="M130 115 H 158"/><path d="M150 109 L 158 115 L 150 121"/>
+              <rect x="166" y="20" width="250" height="190" fill="#161A2E"/><text class="mono on-dark" x="180" y="44">check</text>
+              <text class="soft on-dark-soft" x="180" y="72">checkout</text><text class="soft on-dark-soft" x="180" y="94">setup-node 24</text><text class="soft on-dark-soft" x="180" y="116">node scripts/check.mjs</text><text class="soft on-dark-soft" x="180" y="138">git commit results.json</text><text class="soft on-dark-soft" x="180" y="160">git push от бота</text><text class="soft on-dark-soft" x="180" y="190">permissions: contents: write</text>
+              <path d="M416 115 H 444"/><path d="M436 109 L 444 115 L 436 121"/>
+              <rect x="452" y="20" width="170" height="190" fill="#D6F0F9"/><text class="mono" x="466" y="44">publish</text><text class="soft" x="466" y="66">deploy.yml</text>
+              <text class="soft" x="466" y="94">checkout ref: main</text><text class="soft" x="466" y="116">npm ci</text><text class="soft" x="466" y="138">npm run build</text><text class="soft" x="466" y="160">deploy-pages</text><text class="soft" x="466" y="190">needs: check</text>
+              <path d="M622 115 H 650"/><path d="M642 109 L 650 115 L 642 121"/>
+              <rect x="658" y="80" width="82" height="70" fill="#D4EEDF"/><text class="mono" x="668" y="106">Pages</text><text class="soft" x="668" y="126">новые</text><text class="soft" x="668" y="142">статусы</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Весь путь занял 1 мин 56 с. Дальше он повторяется каждую ночь по расписанию.</p>
+        </figure>
+
+        <p>После коммитов бота локальная копия отстаёт от GitHub, поэтому работа в репозитории <code>monitoring</code> начинается с <code>git pull</code>. Запускать <code>node scripts/check.mjs</code> на компьютере и отправлять свой <code>results.json</code> больше не нужно: если файл изменён и у вас, и у бота, <code>git pull</code> остановится с конфликтом в этом файле.</p>
+
+        <!-- скрыто: архив конца главы
+        <div class="starter starter--finish">
+          <p class="starter__head">Проект после главы</p>
+          <div class="starter__body">
+            <a class="starter__btn" href="monitoring-konec-3-4.zip" download>monitoring-konec-3-4.zip</a>
+          </div>
+        </div>
+        -->
+
+        <p class="bridge">Монитор проверяет сайты каждую ночь, но узнать о сломанном сайте можно, только открыв монитор. Автоматизация модуля 3 отправляет сообщение в Telegram, когда сайт не открывается.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Частые ошибки</h2>
+
+        <p>Сообщения получены в репозитории <code>monitoring</code>: в журнале запуска на GitHub и в терминале.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td><code>remote: Permission to &lt;логин&gt;/monitoring.git denied to github-actions[bot].</code> и <code>The requested URL returned error: 403</code></td><td>У ключа запуска нет права записи</td><td>Добавить в <code>check.yml</code> <code>permissions: contents: write</code></td></tr>
+              <tr><td>Проверка прошла, коммит бота есть, а сайт показывает старое время</td><td>Коммит бота не запускает конвейеры по <code>push</code></td><td>Вызвать <code>deploy.yml</code> заданием <code>publish</code> через <code>workflow_call</code></td></tr>
+              <tr><td>Задание <code>publish</code> есть, но на сайте результаты предыдущей проверки</td><td><code>deploy.yml</code> скачивает коммит до коммита бота</td><td>Добавить <code>ref: main</code> в шаг <code>actions/checkout</code></td></tr>
+              <tr><td>Нет кнопки <strong>Run workflow</strong></td><td>В <code>on</code> нет <code>workflow_dispatch</code> или конвейер ещё не отправлен в <code>main</code></td><td>Добавить <code>workflow_dispatch:</code> и отправить</td></tr>
+              <tr><td><code>git push</code> на компьютере: <code>! [rejected] main -&gt; main (fetch first)</code></td><td>На GitHub есть коммит бота, которого нет локально</td><td>Выполнить <code>git pull</code>, затем <code>git push</code></td></tr>
+              <tr><td>Ночью проверка не запустилась</td><td>Расписание в UTC; запуск может задержаться; после 60 дней без активности расписание отключается</td><td>Пересчитать время: МСК = UTC + 3; проверить вкладку Actions и включить конвейер</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s7"><span class="sec">§7</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Чем ответ 404 отличается для скрипта от сайта, который не отвечает?</summary>
+          <p>При 404 сервер ответил: <code>status</code> равен 404, <code>ok</code> — <code>false</code>. Если ответа нет, <code>fetch</code> выбрасывает ошибку, код остаётся 0, а текст ошибки записывается в <code>error</code>.</p>
+        </details>
+        <details>
+          <summary>В какое время по Москве сработает <code>cron: '30 4 * * 1'</code>?</summary>
+          <p>Каждый понедельник в 04:30 UTC, то есть в 07:30 по Москве.</p>
+        </details>
+        <details>
+          <summary>Зачем в <code>check.yml</code> строка <code>workflow_dispatch</code>, если есть расписание?</summary>
+          <p>Она добавляет кнопку Run workflow для запуска вручную — проверить конвейер, не дожидаясь ночи.</p>
+        </details>
+        <details>
+          <summary>Почему первый запуск упал только на шаге <code>git push</code>?</summary>
+          <p>Скачать код и создать коммит можно с правом чтения. Право записи нужно только для отправки, а его у ключа запуска не было.</p>
+        </details>
+        <details>
+          <summary>Почему коммит бота не запустил <code>deploy.yml</code>?</summary>
+          <p>GitHub не запускает конвейеры по событиям, созданным ключом <code>GITHUB_TOKEN</code>, чтобы конвейеры не запускали друг друга без конца.</p>
+        </details>
+        <details>
+          <summary>Что изменится, если убрать <code>needs: check</code> из задания <code>publish</code>?</summary>
+          <p>Задания выполнятся одновременно: публикация может собрать сайт до того, как бот сохранит новые результаты, и опубликуется даже при упавшей проверке.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Проверка в Node.js</b><code>fetch(url, { signal: AbortSignal.timeout(15000) })</code></div>
+          <div><b>Запустить скрипт</b><code>node scripts/check.mjs</code></div>
+          <div><b>Расписание</b><code>schedule: - cron: '0 21 * * *'</code> — 21:00 UTC = 00:00 МСК</div>
+          <div><b>Кнопка запуска</b><code>workflow_dispatch:</code></div>
+          <div><b>Право коммита</b><code>permissions: contents: write</code></div>
+          <div><b>Автор коммита</b><code>github-actions[bot]</code>, <code>41898282+github-actions[bot]@users.noreply.github.com</code></div>
+          <div><b>Вызвать конвейер</b>в нём <code>workflow_call:</code>, в задании <code>uses: ./.github/workflows/deploy.yml</code></div>
+          <div><b>После коммитов бота</b><code>git pull</code> перед работой</div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <p>Скрипт <code>scripts/check.mjs</code> на Node.js запрашивает каждый сайт из <code>sites.json</code> функцией <code>fetch</code> с ограничением 15 секунд и дописывает в <code>results.json</code> код ответа и время для каждого сайта; история хранит 30 проверок. Приложение загружает оба файла и показывает статус каждого сайта по последней проверке. Конвейер <code>check.yml</code> запускается по расписанию <code>cron</code> в UTC и кнопкой Run workflow, выполняет скрипт на машине GitHub и сохраняет результаты коммитом от <code>github-actions[bot]</code>; для отправки нужно право <code>contents: write</code>. Коммиты, сделанные ключом <code>GITHUB_TOKEN</code>, другие конвейеры не запускают, поэтому публикация вызывается из <code>check.yml</code> заданием <code>publish</code> через <code>workflow_call</code>, с <code>needs: check</code> и <code>ref: main</code>. После коммитов бота работа в репозитории начинается с <code>git pull</code>.</p>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule" target="_blank" rel="noreferrer">GitHub Docs — Events that trigger workflows: schedule</a></li>
+          <li><a href="https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/disabling-and-enabling-a-workflow" target="_blank" rel="noreferrer">GitHub Docs — Disabling and enabling a workflow</a></li>
+          <li><a href="https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication" target="_blank" rel="noreferrer">GitHub Docs — Automatic token authentication (GITHUB_TOKEN)</a></li>
+          <li><a href="https://docs.github.com/en/actions/sharing-automations/reusing-workflows" target="_blank" rel="noreferrer">GitHub Docs — Reusing workflows</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static" target="_blank" rel="noreferrer">MDN — AbortSignal.timeout()</a></li>
+          <li><a href="https://nodejs.org/api/fs.html#promises-api" target="_blank" rel="noreferrer">Node.js — File system: Promises API</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../33-github-pages/index.html">← 3.3 Сборка и публикация на GitHub Pages</a>
+          <a href="../../index.html">К оглавлению →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>
