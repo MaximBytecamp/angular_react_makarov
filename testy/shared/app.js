@@ -170,19 +170,19 @@ function updateLeaves() {
 
 /* ---------- общие части карточки ---------- */
 
-function codeBlock(code, cls = '', file = 'main.py') {
-  return `<figure class="q-code ${cls}"><figcaption><span>${esc(file)}</span><span>Python 3.12</span></figcaption><pre>${
+function codeBlock(code, cls = '', file = 'App.tsx', lang = 'TypeScript · React') {
+  return `<figure class="q-code ${cls}"><figcaption><span>${esc(file)}</span><span>${esc(lang)}</span></figcaption><pre>${
     code.split('\n').map((line, i) => `<span class="ln" data-l="${i}">${esc(line) || ' '}</span>`).join('')}</pre></figure>`;
 }
 
 /* Несколько файлов проекта — вкладками. Открыт первый, остальные по нажатию. */
-function filesBlock(files) {
+function filesBlock(files, lang = 'TypeScript · React') {
   const lines = code => code.split('\n').map((line, i) => `<span class="ln" data-l="${i}">${esc(line) || ' '}</span>`).join('');
   return `<figure class="q-code q-files">
     <div class="tabs" role="tablist" aria-label="Файлы проекта">${files.map((f, i) =>
       `<button type="button" class="tab${i ? '' : ' on'}" role="tab" aria-selected="${i ? 'false' : 'true'}" data-tab="${i}">${esc(f.name)}</button>`).join('')}</div>
     ${files.map((f, i) => `<div class="pane" data-pane="${i}"${i ? ' hidden' : ''}>${f.note ? `<p class="pane-note">${esc(f.note)}</p>` : ''}<pre>${lines(f.code)}</pre></div>`).join('')}
-    <figcaption><span>Нажмите имя файла, чтобы открыть его</span><span>Python 3.12</span></figcaption>
+    <figcaption><span>Нажмите имя файла, чтобы открыть его</span><span>${esc(lang)}</span></figcaption>
   </figure>`;
 }
 
@@ -195,12 +195,20 @@ document.addEventListener('click', e => {
 });
 
 function sourceBlock(q) {
-  if (q.files) return filesBlock(q.files);
-  return q.code && q.type !== 'line' ? codeBlock(q.code, '', q.file) : '';
+  if (q.files) return filesBlock(q.files, q.lang);
+  return q.code && q.type !== 'line' ? codeBlock(q.code, '', q.file, q.lang) : '';
 }
 
 function imageBlock(img) {
-  return img ? `<figure class="q-img">${img.svg}<figcaption>${esc(img.caption)}</figcaption></figure>` : '';
+  if (!img) return '';
+  const media = img.svg || `<img src="${esc(img.src)}" alt="${esc(img.alt || '')}" loading="lazy">`;
+  return `<figure class="q-img">${media}<figcaption>${esc(img.caption)}</figcaption></figure>`;
+}
+
+function situationBlock(q) {
+  if (!q.situation) return '';
+  const s = q.situation;
+  return `<section class="q-situation"><b>${esc(s.title || 'Ситуация')}</b><ul>${s.facts.map(x => `<li>${x}</li>`).join('')}</ul></section>`;
 }
 
 function questionHead(q, pos, extra = '') {
@@ -277,6 +285,7 @@ function renderQuestions() {
     card.className = 'q';
     card.id = 'card-' + q.id;
     card.innerHTML = questionHead(q, pos)
+      + situationBlock(q)
       + imageBlock(q.image)
       + sourceBlock(q)
       + (HINT[q.type] ? `<p class="q-hint">${HINT[q.type]}</p>` : '')
@@ -588,6 +597,7 @@ async function renderResult(r, returning) {
     const verdict = `<span class="verdict ${d.ok ? 'ok' : 'bad'}">${d.ok ? '✓ верно' : '✗ неверно'}</span>`;
     return `<article class="q rv ${d.ok ? 'ok' : 'bad'}" id="rv-${q.id}">
       ${questionHead(q, pos, verdict)}
+      ${situationBlock(q)}
       ${imageBlock(q.image)}
       ${sourceBlock(q)}
       ${reviewBody(q, raw[q.id], key)}

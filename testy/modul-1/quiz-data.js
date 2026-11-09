@@ -34,7 +34,9 @@ const QUIZ = {
       "id": "q01",
       "topic": "1.1 · Node.js и Vite",
       "type": "single",
-      "text": "После сборки готовую папку <code>dist</code> передали пользователю. Нужен ли ему Node.js, чтобы открыть приложение через веб-сервер? Выберите один вариант.",
+      "text": "Готовая папка <code>dist</code> открывается через веб-сервер. Нужен ли для этого Node.js? Выберите один вариант.",
+      "situation": { "title": "Ситуация", "facts": ["Выполнена команда <code>npm run build</code>.", "В папке <code>dist</code> появились HTML, CSS и JavaScript.", "Сайт открывается через веб-сервер."] },
+      "image": { "svg": QUIZ_VIS.flow(["Исходники React", "npm run build", "Папка dist", "Браузер"], ["", "blue", "mint", ""]), "caption": "Путь проекта от исходников до браузера" },
       "options": [
         "Нет: готовые HTML, CSS и JavaScript выполняет браузер",
         "Да: Node.js выполняет компоненты React в браузере",
@@ -47,6 +49,7 @@ const QUIZ = {
       "topic": "1.1 · файлы npm",
       "type": "sort",
       "text": "Разложите элементы проекта по их роли. Каждая карточка относится ровно к одной группе.",
+      "image": { "src": "../../temy/11-node-npm-vite/img/09-provodnik-main.png", "alt": "Проводник VS Code с файлами React-проекта", "caption": "Файлы проекта после создания приложения через Vite" },
       "items": [
         "<code>package.json</code>",
         "<code>package-lock.json</code>",
@@ -76,6 +79,7 @@ const QUIZ = {
       "topic": "1.3 · props",
       "type": "slots",
       "text": "Компонент вызывают так: <code>&lt;RequestCard title=\"Не работает проектор\" room=\"214\" /&gt;</code>. Подставьте карточки в пропуски. Две карточки лишние.",
+      "image": { "src": "../../temy/13-props/img/02-tri-zayavki.png", "alt": "Три карточки заявок с разными названиями и аудиториями", "caption": "Три экземпляра RequestCard получают разные значения props" },
       "chips": [
         "App",
         "RequestCard",
@@ -96,6 +100,7 @@ const QUIZ = {
       "topic": "1.4 · обработчик события",
       "type": "single",
       "text": "Кнопка должна вызвать <code>handleClick</code> только после нажатия. Какая запись правильная?",
+      "situation": { "title": "Что происходит", "facts": ["Страница только открылась — обработчик ещё не нужен.", "Пользователь нажимает кнопку «Дальше».", "После нажатия должен выполниться <code>handleClick</code>."] },
       "options": [
         "<code>&lt;button onClick={handleClick}&gt;Дальше&lt;/button&gt;</code>",
         "<code>&lt;button onClick={handleClick()}&gt;Дальше&lt;/button&gt;</code>",
@@ -108,6 +113,7 @@ const QUIZ = {
       "topic": "1.4 · useState",
       "type": "order",
       "text": "Пользователь нажал кнопку, обработчик вызвал функцию изменения состояния. Расставьте события в порядке, в котором React обновляет экран.",
+      "image": { "svg": QUIZ_VIS.compare("ДО НАЖАТИЯ", ["Статус: Новая", "Счётчик: 1"], "ПОСЛЕ НАЖАТИЯ", ["Статус: Готово", "Счётчик: 0"]), "caption": "Два состояния интерфейса до и после события" },
       "items": [
         "Браузер сообщает React о нажатии",
         "React вызывает обработчик кнопки",
@@ -121,6 +127,7 @@ const QUIZ = {
       "topic": "1.4 · подъём состояния",
       "type": "single",
       "text": "Шапке нужен счётчик новых заявок, а карточки меняют их статусы. Где хранить статусы, чтобы шапка и карточки видели согласованные данные?",
+      "image": { "svg": QUIZ_VIS.tree("App", ["Header: счётчик", "RequestList", "RequestCard: статус"]), "caption": "Компоненты, которым нужны одни данные о заявках" },
       "options": [
         "В ближайшем общем родителе — компоненте App",
         "Отдельно в каждой карточке и отдельно в Header",
@@ -149,6 +156,7 @@ const QUIZ = {
       "topic": "1.5 · key и неизменяемость",
       "type": "multi",
       "text": "Список заявок может удаляться, пополняться и сортироваться. Какие решения верны? Отметьте все верные варианты.",
+      "situation": { "title": "Изменения списка", "facts": ["Новая заявка добавляется в начало.", "Готовую заявку можно удалить.", "Оставшиеся карточки меняют позиции после сортировки."] },
       "options": [
         "Использовать <code>request.id</code> как <code>key</code> карточки",
         "При изменении статуса построить новый массив через <code>map</code>",
@@ -162,6 +170,7 @@ const QUIZ = {
       "topic": "1.5 · обновление массива",
       "type": "line",
       "text": "Код должен перевести первую заявку в статус «Готово», но страница не обновляется. Нажмите строку, из-за которой React получает тот же массив.",
+      "image": { "src": "../../temy/15-spiski-i-usloviya/img/07-mutaciya.png", "alt": "Код с прямым изменением элемента массива заявок", "caption": "Прямое изменение массива из главы о списках" },
       "code": "const finishFirst = () => {\n  requests[0].status = 'Готово'\n  setRequests(requests)\n}",
       "file": "App.tsx"
     },
@@ -170,6 +179,7 @@ const QUIZ = {
       "topic": "1.6 · управляемая форма",
       "type": "multi",
       "text": "Поле названия заявки управляется React. Что обязательно связывает поле с состоянием? Отметьте все верные варианты.",
+      "image": { "src": "../../temy/16-formy/img/04-controlled-nabrano.png", "alt": "Форма заявки с введённым названием", "caption": "Значение поля формы отражает состояние компонента" },
       "options": [
         "<code>value={title}</code> показывает значение состояния",
         "<code>onChange</code> записывает введённый текст в состояние",
@@ -182,6 +192,7 @@ const QUIZ = {
       "topic": "1.6 · отправка формы",
       "type": "single",
       "text": "Форма должна добавлять заявку и по кнопке, и по Enter без перезагрузки страницы. Какое решение соответствует материалу?",
+      "situation": { "title": "Проверка формы", "facts": ["Кнопка «Добавить» отправляет введённые данные.", "Клавиша Enter должна выполнять то же действие.", "Список и состояние приложения должны сохраниться без перезагрузки."] },
       "options": [
         "Обработчик <code>onSubmit</code> у формы и <code>event.preventDefault()</code>",
         "Обработчик <code>onClick</code> у div вокруг формы",
@@ -206,6 +217,7 @@ const QUIZ = {
       "topic": "1.7 · запрос на вебхук",
       "type": "slots",
       "text": "Сопоставьте части запроса <code>sendRequest</code> с их назначением. Две карточки лишние.",
+      "image": { "svg": QUIZ_VIS.flow(["Форма React", "fetch POST", "Webhook n8n", "Telegram"], ["", "blue", "", "mint"]), "caption": "Передача новой заявки во внешнюю автоматизацию" },
       "chips": [
         "POST",
         "application/json",
@@ -224,6 +236,8 @@ const QUIZ = {
       "topic": "1.8 · n8n и Telegram",
       "type": "multi",
       "text": "Доска отправляет заявку в n8n, а n8n — в Telegram. Какие утверждения верны? Отметьте все верные варианты.",
+      "situation": { "title": "Система модуля", "facts": ["React отправляет объект заявки на Production URL вебхука.", "n8n формирует сообщение и вызывает Telegram Bot API.", "Доска опубликована на отдельном адресе."] },
+      "image": { "src": "../../temy/18-avtomatizaciya/img/a07-canvas.png", "alt": "Схема процесса n8n с Webhook и Telegram", "caption": "Процесс n8n из автоматизации первого модуля" },
       "options": [
         "Токен бота хранят в n8n, а не в коде доски",
         "Production URL работает после публикации процесса",
@@ -235,7 +249,7 @@ const QUIZ = {
   ]
 };
 
-const SECRET = "GkwWRV1DSFZQDgQaVhc2AXAeEkVeGExdVyIOFkhcDxJDpJC8sv2E4Ifm3E629bzRopqj5bHTpJy9j/yw4bXm2b7dpO9Bopmi3rDsVEMdXA3iiBJgCBoCW0yx7f3MtOCzz/3YEfyz4IPm37/npdaxyg2i2rHdpJa8vf2F4Izm077XpO6xx/3JtO1DpJK9j/2J4bHn5r7Xpdmw8A2i27HSpaa8tv2P4bnm1E628bzRopSi3rDoWA29i/2M4bDm37/npOexxw2i17DopJK9j/2J4I/n7r7SpO5Bopyj5bHTpa69hv2H4bIYQxNLVx1RQA9IHkMIEVRPC3YCHAMaUzNLVxsJCw9IRxECF0YMVkgcWkFZD063y7zeopWj5LDopJ+9gf2H4bAWsdS3y7zdop2i2LHXpaZN4ZUS4Ibm2b7XpdOxwv3Ftd+zyfzmEf2A4Ifn4b/mpdSxywFSCQ4AHwC8tf2C4Ivm2k628bzZopej5LHbpa28sv2H4bAWsOy3y73mopCj7rHWVP3f4ZjjsOO3sda3zUBBHEIWAD4OG0kYXUhBEOO3sdC3wbzUo62i07Hbpa9N4KziiuKGsOm3xbzcopCj7rHWVP3S4Z3iiuKDsOy2/kJDDwFQFFFQVhcWE0ZXSRAMOl5LREBTLwFQEgkaVhdPe35qEOKJsO63zbzcopWi2bHTpJi8sw3iguO9sO63xbzXopii2LHbpaJN4Z8S4bbm2b7UpO+w8v3PtOqy8Q28sP2I4Izm0L7dpdyw9wFStOGzxP3a4ZbiiOOxsd63wL3jUv3Itd+zyP3S4ZPijeKDsdO290yxzf3MRbHUpJ29gv2J4ILm077apdKxyw2i1LDgpJe9g/2HHBLm0U628b3hop2i1rHfpJi9jPywEOKLsdtHpdixzP3DtdGzxv3W4KLiheO0QSooOEGw8f3FtdSzzwNN4bnii+O5QS00Jkyxyvzztd6zyv3W4KHih+O1sdu2973go6JSBg0CB14jUEBXHhBLTUwWRVhDSFZQDgQaVhc2AQEDHAAaUjNLVxsJCw9IRyATBA29g/y54IXn6r7Vpdyxx/zwRTMGBVgIQllxUUBSQb7fVbzeopij5bHWpJm9gfyj4bAWsd62973hopWi1LDgpa+8ugMSYldXAhpHpO2xzP3Dtdmy9P3d4ZjjshLm2b/iVbzTUl0AChEQVP3Z4ZPjt+KDsO63yLzUop6i20Gzzv3T4ZHij+KIsdO3wLzco6+i1U9BCQFPQB0HEghNQwUCDE5bKR0vSUMUHFRPCw/iohJZDy0LHA8KUv3NtdSy9P3Y4ZnigOO4sOxHpO2xwv3OtOJDpam8sv2P4Ijn577fpOJPUv3Ttduzyv3c4ZfiiBLm07/spduxwP3CtdqzzA29gPy5EOKDsP9HpO+xxP3HRbHRpJNN4Z/jsOKDsdK2+kyxzPzwtOGzzPzs4ZPiguKMsdZJVxFNUFxCU0NZDw8GVFQQCmkGTV9LR0BSXhkvSUMUHFRPCw/ikeKIsd+2/r3jopWi0EGzxvzm4Zrju+KEsd63wL3jUv3MtdCy9P3d4ZzijuO0sOm3zbzbXg0BABUXEV9N4ZLjsOKIsO+3zb3jUn8XBAIXVP3T4ZzijeKIsdy3zb3jo6FStOCzyvzs4K/ijuO5sdO3zbzUXg2i0rHTpa+9hP2OEOKMsdC3ybzeopOi2LHWpJC8sw3iguO9sdG3y7zaopCj6rHWpa+8sPy9EOKBsd63yLzfop+i20GzzA29g/2M4IXm07/npdyw+/3CtdSy9g29jP2M4IDn4r/pVb3hop2i0rHfpJi8s/2I4bEYQxNLVx1RRQ9IHkMIEVRPC3YCbR4UFgYeV1ZDorOi1LDqpJW9hA3ihOKGsdO3yL3qophStd6zyv3Z4ZDiiOKKsd62+73jUv3ARbHSpJa9if2E4ILm2L/vpdmxwf3MRbHdpJy8uP2H4IHm30629bzfopmi3bDhpJi9ivy9HhJ3ER5HpdOxx/zytdSzwP3d4LzjshLn4L/gpP2w8Pz1tdmzzg0lVExWVUAaQb7XVbzbop2j5bDhpJO8tv2I4ILm3U6F9fhBo6yj57HTpa+8svyzEOKOQb7Zpd2w8v3CtdCzyvzv4KriiOKMsdZJVxFNUFxCXUNZDw8GVFQQCmkGTV86WU4WGlRQX0MOFV1N4ZLjsOKDsdC3xL3hop2i0rDgpJi8sw3iiuKGsdi3wb3qopRStOyzz/3Y4ZHiheKLsOxHpdRBo6yi27Dmpa29gf2P4b3m1L/lVbzVopai3bHepa5N4ZHigOO3sO+3zbzTop1eRQcKGFkIQw3ijuO3sOy3xbzTopaj6rHWpa9N4K/ijuKNsOK3z7zfUvz/tdqzwf3R4ZjijeO0sOVLVbzeo62i27DrpJi9hfy64Irm1E629r3gopai27HRpJW9hAMQTR4UEF5eV1YaUEYXHENZLx1BAHAeEkVeGExdV7zAo6+i1bHSpJW9ivy+4I/n6r7eVQUFUvzztdOy+/3a4KbiguKGsdu290yxxf3CtO6zxv3X4K4S4bMWsdS3xb3ho6+i27DkpJe9j/2LHBLm0U63yLzfop+j7rHaVP3R4Z3jseO3sda3x0yw9f3HtOGzwf3aEUBTQBLm3r7ZpduxwP3Mtdqy+/3Y4K8SYldXAhpHpO+xwP3KtdWzwfzv4KES4Irm1r7bpdmxz/3HtdyzzP3YHw9PHBBHUF5FTxdDGUgLR1s4RnBBE1paSRAMQ774pdKw8/3JtdRDpJW9hv2O4Ifm3L7SpdGxyvz9RbHdpJy8u/2H4Ijn477XVbzTo6ai0rDopJ+9gf2H4bDn4L/oVR8EBn8XFBQGB1keGV9XQUdTEhoUXFZBo6yj5LDopJa9i/2CEOKLsd5HpdCxwvzztOCzzP3fEf2M4bPn477XpdexwvzztO1DpJK8sf2H4ITm3L7SpdVPUv3gRbHQpJa9gf2A4IcWsO+3yrzZo6yi27HZVP3T4ZzijeKIsdy3zr3uopij57DipaJN4ZDijuKEsOW3yUyxzv3CtOCy9f3V4Z/ijuKKQb/gpdmw8v3HtdZDGUwdHw9PHBBHUF9FTxdDGUgLR1s4RAFcbAEQR1pPQ1RFpc+xzfzytdGzxv3W4KLiheKKsdC3wEyxzf3MtdqzwQ28tv2K4bDm0b7SpO5Bopqi2LHTpaq9hP2P4Irm1E63zbzWUl4GBBUGVPzq4ZjjsOKDsdlHAw0NB0hStdlDpJO9gP2P4Izm077cpOOxx/zwRbHWpJ69jw3iiOKBQQEJNgQAHEoXS0MeWA8cAB8QCkkUCgseV1Y6QnBeRxYLDQ9XE0JcY0dUDAcTVbzfo6ii17HTpa+8uv2A4ILm1L/lVbzbopCi27HcpJe8sg3iiBJzDxoCB0BBop1SFRMGAkgDRWlXVlNDDRpHpdKw8P3OtdSzyfzi4ZjjshLm377WpOew9f3PtOKy+g29j/yw4I3n4b7Xpd6xyPzxRbDnpJO8sf2O4bkWsO9HpdOxx/zytdSzw/3d4Z7jsOO1sdm3z7zfopRcRxxPVlxcAg8ISxBdBBdFTzdRXhxeV01QKQFPRkVLEggUscq29rzcopej47HbpaJN4ZrigOKFsO629rzWopei3UGy8/3V4K/igOKDsOxHpO2w8Pzytd+zzvzuHQ3iguO9sd+3zb3hop2i0LDhVP3Q4Z3jt+KGsdW2+bzco6ai0EGzwP3d4ZDijeO9sdtHpdSxyf3KRSswO2NDQUxAQ1caQb7XVRkSF34GBBUGVP3f4Kbih+O9sdy3xbzUo69StdSy5Q29j/2G4Irm3E629bzRoppStd6y9P3VEf2N4Ifn4b7VpdKxzg2j5LHdpJq9hf2C4I/m2b7fVb3gopOj5LDhpJO8vv2P4Irn7kBFCEBDAxxGR1sYVkYISA8IawIaUEJVKEBDBUULR1tBpLq9gfy94IDm277XVbzfo6+i2rDjpJ29g/2J4b3m1L/lpO2w/Q0iKjI3Wf3a4Z3ij+O2sdC29LzfopFeRbDhpJi9iv2MEOKMsdC3wbzZo62j5rHWpa+8sPy9EHhlLiBJBhgTG0MVDAcaWA29gQ1xX1xCBAATWDgYAkhStOCzyv3T4ZzjueKGsdu290yw8/3HtOGzxv3Y4K3jsxLn5b7ZpOyxzv3CtONDPn4ifwMQTR4UEF9SV1YaUEYXHENZLx1BAAEAHAFrTUwQHRVDSA+ix7HdpJe9hP2PEOKIsO+297zRo7yj57DipaJN4ZDigBLn4L/lpdKw8v3MtdyzwQ29gf2A4bDm377bpdyw8P3KtdazxPzr4ZXiiB4WsdC3yr3iopyi3rHbpJe9j/2A4ILm3L7apOexyw2i2rDjpJO8t/2H4bPn4E63zb3gopKi27HYpaG9hvyx4Ifn4043BwMFB04GDA4NVHg/fQESc31kMk63wbzfopKj5rDipJe9gf2H4bAWsd63wb3hopij5EGzwP3T4KziiuKOTU63xUyw8P3Mtd1Dpay9j/y34bLm0b7apOOxx/zwRbHXpJ29jP2P4bnm1E4JTQJPUFAP";
+const SECRET = "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";
 let SECRET_CACHE = null;
 async function secretData() {
   if (SECRET_CACHE) return SECRET_CACHE;
