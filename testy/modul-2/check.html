@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Проверка кодов · модуль 2 · Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:opsz,wght@7..72,600;7..72,700&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/styles.css">
+</head>
+<body>
+<header class="site-head"><a class="brand" href="index.html"><span class="brand-mark">R</span><span>ANGULAR И REACT · МОДУЛЬ 2<br><b>Проверка кодов</b></span></a></header>
+<main class="wrap">
+  <section id="gate"><p class="eyebrow">для преподавателя</p><h1>Проверка кодов результата</h1><div class="panel"><label class="field"><span>Пароль</span><input id="pw" type="password" autocomplete="off"></label><p id="pw-err" class="err"></p><button id="pw-btn" class="btn">Открыть</button></div></section>
+  <section id="tool" class="hidden"><p class="eyebrow">модуль 2</p><h1>Эффекты, PocketBase и события</h1><div class="panel"><label class="field"><span>Коды результатов — по одному в строке</span><textarea id="in" rows="8" spellcheck="false"></textarea></label><button id="btn" class="btn">Проверить</button><button id="btn-tsv" class="btn ghost hidden">Скопировать сводку для таблицы</button></div><div id="summary"></div><div id="out"></div></section>
+</main>
+<script src="quiz-data.js"></script><script src="../shared/check.js"></script>
+</body>
+</html>
+

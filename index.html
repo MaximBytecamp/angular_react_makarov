@@ -73,6 +73,13 @@
     .toc--work a { color: var(--ink); background: var(--page); box-shadow: 3px 3px 0 var(--acc); }
     .toc--work .work-kind { flex: 0 0 112px; white-space: nowrap; font: 600 10px/1.6 var(--pixel); letter-spacing: 1px; text-transform: uppercase; color: var(--acc); }
     .module--ng .toc--work .work-kind { color: var(--ng); }
+    .test-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; margin-top: 16px; padding: 14px; border: 3px solid var(--ink); background: var(--ink); color: #fff; text-decoration: none; box-shadow: 5px 5px 0 var(--acc); transition: transform .15s ease, box-shadow .15s ease; }
+    .test-card:hover { color: #fff; transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--acc-bright); }
+    .test-card__tag { padding: 7px 10px; background: var(--acc); color: #fff; font: 700 11px/1 var(--pixel); letter-spacing: 1.5px; text-transform: uppercase; }
+    .test-card__body b { display: block; font: 700 17px/1.25 var(--display); }
+    .test-card__body span { display: block; margin-top: 4px; color: #C9D0E4; font-size: 12px; line-height: 1.45; }
+    .test-card__go { padding: 9px 11px; border: 2px solid #fff; font: 700 10px/1 var(--mono); letter-spacing: .5px; white-space: nowrap; text-transform: uppercase; }
+    @media (max-width: 700px) { .test-card { grid-template-columns: 1fr; gap: 10px; } .test-card__tag, .test-card__go { justify-self: start; } }
   </style>
 </head>
 <body>
@@ -153,6 +160,7 @@
                 <li><a href="temy/19-proekt-doska-zayavok/index.html"><span class="work-kind">ПРОЕКТ</span><span>Доска заявок</span><em>читать</em></a></li>
                 <li><a href="temy/18-avtomatizaciya/index.html"><span class="work-kind">АВТОМАТИЗАЦИЯ</span><span>Заявка → n8n → сообщение в Telegram</span><em>читать</em></a></li>
               </ul>
+              <a class="test-card" href="testy/modul-1/index.html"><span class="test-card__tag">Тест 1</span><span class="test-card__body"><b>Проверочная работа по модулю 1</b><span>15 заданий · 35 минут · одна попытка · разбор после отправки</span></span><span class="test-card__go">Открыть →</span></a>
             </div>
           </article>
 
@@ -173,6 +181,7 @@
                 <li><a href="temy/29-proekt-doska-s-bazoy/index.html"><span class="work-kind">ПРОЕКТ</span><span>Доска заявок с базой</span><em>читать</em></a></li>
                 <li><a href="temy/28-ii-dispetcher/index.html"><span class="work-kind">АВТОМАТИЗАЦИЯ</span><span>ИИ-диспетчер и кнопки «Взять» в Telegram</span><em>читать</em></a></li>
               </ul>
+              <a class="test-card" href="testy/modul-2/index.html"><span class="test-card__tag">Тест 2</span><span class="test-card__body"><b>Проверочная работа по модулю 2</b><span>15 заданий · 35 минут · одна попытка · разбор после отправки</span></span><span class="test-card__go">Открыть →</span></a>
             </div>
           </article>
 
@@ -192,6 +201,7 @@
                 <li><a href="temy/39-proekt-monitoring/index.html"><span class="work-kind">ПРОЕКТ</span><span>Мониторинг сайтов группы</span><em>читать</em></a></li>
                 <li><a href="temy/38-opoveshchenie/index.html"><span class="work-kind">АВТОМАТИЗАЦИЯ</span><span>Ночная проверка сайтов и оповещение</span><em>читать</em></a></li>
               </ul>
+              <a class="test-card" href="testy/modul-3/index.html"><span class="test-card__tag">Тест 3</span><span class="test-card__body"><b>Проверочная работа по модулю 3</b><span>15 заданий · 35 минут · одна попытка · разбор после отправки</span></span><span class="test-card__go">Открыть →</span></a>
             </div>
           </article>
 
