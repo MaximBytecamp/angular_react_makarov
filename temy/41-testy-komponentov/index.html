@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>4.1 Тесты компонентов · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch .on-dark-soft { fill: #c8d0e0; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; }
+    .sch .ng-text { fill: #C2185B; }
+    .sch .ok-text { fill: #1E7A46; }
+    .sch .dash { stroke-dasharray: 6 4; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 4 · Работа с ИИ-агентом и обзор Angular</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 4 · работа с ИИ-агентом и обзор Angular</p>
+          <p class="running__folio">4.1</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">4.1</span>
+          <h1>Тесты компонентов</h1>
+          <p class="lead">В модуле 4 код начинает писать ИИ-агент, а человек проверяет его работу. Тесты — первое, чем она проверяется. Тест — это небольшая программа: она запускает ваш код на заранее известных данных и сравнивает результат с тем, что должно получиться. В этой главе к приложению «Мониторинг сайтов группы» из проекта модуля 3 добавляются тесты на Vitest и Testing Library. Тесты, написанные по требованиям к странице, находят в готовом проекте две ошибки, которые при проверке руками не видны. Затем тесты становятся шагом публикации: сайт с упавшим тестом не публикуется.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>Тесты, Vitest, Testing Library</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект и репозиторий <code>monitoring</code> после проекта модуля 3</dd></div>
+          <div><dt>Результат</dt><dd>19 тестов, команда <code>npm test</code>, исправлены две ошибки страницы «Сайты», шаг тестов в <code>deploy.yml</code></dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Зачем тесты</a></li>
+            <li><a href="#s2">Vitest и первый тест</a></li>
+            <li><a href="#s3">Тест страницы</a></li>
+            <li><a href="#s4">Тесты по требованиям находят ошибки</a></li>
+            <li><a href="#s5">Щелчок и ошибка загрузки</a></li>
+            <li><a href="#s6">Тест, который ничего не ловит</a></li>
+            <li><a href="#s7">Тесты перед публикацией</a></li>
+            <li><a href="#s8">Частые ошибки</a></li>
+            <li><a href="#s9">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Зачем тесты</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Проверка руками и проверка программой</p>
+
+        <p>До сих пор приложение проверялось руками: запустить <code>npm run dev</code>, открыть страницу, посмотреть, пощёлкать. Такая проверка работает, пока изменений мало и вы помните, что проверять. Главная страница монитора должна выполнять несколько требований, и после каждого изменения кода их нужно перепроверить все.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Требование к странице «Сайты»</th><th>Как проверить руками</th></tr></thead>
+            <tbody>
+              <tr><td>Сводка считает сайты, которые не открылись при последней проверке</td><td>Найти в <code>results.json</code> сайт с ошибкой, сравнить число со сводкой</td></tr>
+              <tr><td>Карточка ведёт на страницу своего сайта</td><td>Щёлкнуть по карточке, посмотреть адрес</td></tr>
+              <tr><td>Пока данные загружаются, видна надпись «Загрузка результатов…»</td><td>Замедлить сеть в DevTools и обновить страницу</td></tr>
+              <tr><td>Если все сайты открылись, сводка так и говорит, по-русски правильно</td><td>Подменить <code>results.json</code> так, чтобы все сайты работали</td></tr>
+              <tr><td>Если проверок ещё не было, сводка не утверждает, что сайты не открываются</td><td>Очистить историю в <code>results.json</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В задачнике ответы напечатаны в конце книги. Решив задачу, ученик сверяет свой ответ с напечатанным: совпал — решено верно. Ответ записан в книге до того, как ученик начал решать.</p>
+          <p class="miss">В задачнике ответ проверяет человек. Тест сверяет ответ программой, сам и за секунды, сколько бы раз его ни запускали. Проверяет он только те случаи, которые в него записали.</p>
+        </div></div>
+
+        <p>Последние две строки руками почти никто не проверяет: для них нужно готовить особые данные. <span class="term">Тест</span> делает такую проверку программой. Он готовит данные, запускает код и сравнивает результат с ожидаемым. Если результат совпал, тест <em>проходит</em>, если нет — <em>падает</em> и сообщает, что получилось вместо ожидаемого.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Из чего состоит тест</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 200" role="img" aria-label="Три части теста. Подготовить: придуманные данные, например три сайта и одна проверка. Выполнить: вызвать функцию или показать компонент. Сравнить: результат с ожидаемым. Совпало — тест прошёл, зелёная галочка. Не совпало — тест упал, красный крест и сообщение: ожидалось одно, получено другое">
+              <rect x="20" y="40" width="190" height="110" fill="#ffffff"/><text x="34" y="66">1. Подготовить</text><text class="soft" x="34" y="92">придуманные данные:</text><text class="soft" x="34" y="110">3 сайта, 1 проверка</text>
+              <path d="M210 95 H 246"/><path d="M238 89 L 246 95 L 238 101"/>
+              <rect x="254" y="40" width="190" height="110" fill="#161A2E"/><text class="on-dark" x="268" y="66">2. Выполнить</text><text class="soft on-dark-soft" x="268" y="92">вызвать функцию</text><text class="soft on-dark-soft" x="268" y="110">или показать компонент</text>
+              <path d="M444 95 H 480"/><path d="M472 89 L 480 95 L 472 101"/>
+              <rect x="488" y="40" width="130" height="110" fill="#D6F0F9"/><text x="502" y="66">3. Сравнить</text><text class="soft" x="502" y="92">результат</text><text class="soft" x="502" y="110">и ожидание</text>
+              <path d="M618 70 H 650"/><path d="M642 64 L 650 70 L 642 76"/>
+              <path d="M618 122 H 650"/><path d="M642 116 L 650 122 L 642 128"/>
+              <text class="ok-text" x="658" y="75">✓ прошёл</text>
+              <text class="ng-text" x="658" y="127">✗ упал</text>
+              <text class="soft" x="658" y="146">ожидалось /</text><text class="soft" x="658" y="162">получено</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Данные в тесте придуманы заранее, поэтому правильный ответ известен до запуска.</p>
+        </figure>
+
+        <p>На схеме слева направо — три части любого теста. Данные в первой части придуманы автором теста: три сайта, одна проверка, один сайт с ошибкой. Ответ на таких данных можно посчитать в уме — «не открывается 1 из 3». Во второй части запускается проверяемый код, в третьей его результат сравнивается с этим ответом. Устройство кода внутри тест не проверяет: он сравнивает только результат.</p>
+
+        <p>В главе 0.5 список проверки кода, написанного ИИ, начинается с двух пунктов: сборка и тесты. Агент в модуле 4 будет писать и код, и тесты к нему. Чтобы принять или вернуть его работу, нужно уметь прочитать тест и понять, проверяет ли он требование.</p>
+
+        <p class="bridge">Тесты запускает отдельная программа. Для проектов на Vite обычно берут Vitest.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Vitest и первый тест</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что понадобится</p>
+
+        <p><span class="term">Vitest</span> — программа для запуска тестов, сделанная авторами Vite. Она берёт настройки из <code>vite.config.ts</code> и запускает файлы на TypeScript и JSX без дополнительной настройки. Тесты лежат в файлах с окончанием <code>.test.ts</code> или <code>.test.tsx</code> рядом с проверяемым кодом; Vitest находит их сам.</p>
+
+        <p>Для тестов компонентов понадобятся ещё пять пакетов. Ставятся они вместе с Vitest одной командой.</p>
+
+        <ul>
+          <li><code>vitest</code> — запуск тестов.</li>
+          <li><code>jsdom</code> — страница браузера в памяти, без окна. Компоненту нужен <code>document</code>, а в Node.js его нет.</li>
+          <li><code>@testing-library/react</code> и <code>@testing-library/dom</code> — показ компонента на этой странице и поиск на ней текста, кнопок, ссылок.</li>
+          <li><code>@testing-library/user-event</code> — действия пользователя: щелчки, ввод текста.</li>
+          <li><code>@testing-library/jest-dom</code> — дополнительные проверки для элементов страницы, например «элемент есть на странице».</li>
+        </ul>
+
+        <p class="phase phase--do"><span>Делаем</span>Устанавливаем Vitest и пишем первый тест</p>
+
+        <ol class="steps">
+          <li><b>Установите пакеты</b><p>Откройте папку <code>monitoring</code> в VS Code и выполните в терминале команду. Ключ <code>-D</code> записывает пакеты в <code>devDependencies</code>: они нужны при разработке, в собранный сайт не попадают.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm install -D vitest@5.1.0 jsdom@31.0.0 @testing-library/react@16.3.3 @testing-library/dom@10.4.2 @testing-library/user-event@14.6.10 @testing-library/jest-dom@7.0.1</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-npm-install.png" width="1240" height="297" alt="Терминал: npm install -D vitest@5.1.0 и пакеты Testing Library; added 72 packages, found 0 vulnerabilities; предупреждения npm warn install-scripts про fsevents@2.3.3" loading="lazy"><figcaption>Добавлено 72 пакета, уязвимостей нет</figcaption></figure>
+            <p>Строки <code>npm warn install-scripts</code> на macOS относятся к пакету <code>fsevents</code>: npm не запускает установочные скрипты пакетов, которые вы не разрешили. Для тестов этот скрипт не нужен, предупреждение можно не трогать. На Windows и Linux этой строки нет.</p></li>
+          <li><b>Добавьте команду запуска</b><p>Выполните в терминале команду. Она добавит в <code>package.json</code> скрипт <code>test</code>.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm pkg set scripts.test=vitest</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-package-json.png" width="1240" height="780" alt="VS Code: package.json, в scripts добавлена строка test: vitest, в devDependencies — @testing-library/dom, jest-dom, react, user-event, jsdom, vitest" loading="lazy"><figcaption>package.json: скрипт test и шесть новых пакетов</figcaption></figure></li>
+          <li><b>Напишите первый тест</b><p>Первым проверим функцию <code>statusText</code> из <code>src/status.ts</code>: она превращает результат проверки в строку на карточке. Компонентов и страницы ей не нужно. Создайте рядом файл <code>src/status.test.ts</code>.</p>
+            <!--CODE tools/code41/status.test.ts | monitoring/src/status.test.ts--><figure class="code"><figcaption><span>monitoring/src/status.test.ts</span></figcaption><pre><span class="k">import</span> { describe, expect, it } <span class="k">from</span> <span class="s">'vitest'</span>
+<span class="k">import</span> { statusText } <span class="k">from</span> <span class="s">'./status'</span>
+
+<span class="f">describe</span>(<span class="s">'statusText'</span>, () =<span class="t">&gt;</span> {
+  <span class="f">it</span>(<span class="s">'сайт ещё не проверялся'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">expect</span>(<span class="f">statusText</span>(<span class="k">undefined</span>)).<span class="f">toBe</span>(<span class="s">'Не проверялся'</span>)
+  })
+
+  <span class="f">it</span>(<span class="s">'сайт работает'</span>, () =<span class="t">&gt;</span> {
+    <span class="k">const</span> check = { id: <span class="s">'git'</span>, ok: <span class="k">true</span>, status: <span class="n">200</span>, ms: <span class="n">340</span>, error: <span class="s">''</span> }
+    <span class="f">expect</span>(<span class="f">statusText</span>(check)).<span class="f">toBe</span>(<span class="s">'Работает · 340 мс'</span>)
+  })
+
+  <span class="f">it</span>(<span class="s">'сервер ответил ошибкой'</span>, () =<span class="t">&gt;</span> {
+    <span class="k">const</span> check = { id: <span class="s">'git'</span>, ok: <span class="k">false</span>, status: <span class="n">404</span>, ms: <span class="n">120</span>, error: <span class="s">''</span> }
+    <span class="f">expect</span>(<span class="f">statusText</span>(check)).<span class="f">toBe</span>(<span class="s">'Не открывается · 404'</span>)
+  })
+
+  <span class="f">it</span>(<span class="s">'сервер не ответил'</span>, () =<span class="t">&gt;</span> {
+    <span class="k">const</span> check = { id: <span class="s">'git'</span>, ok: <span class="k">false</span>, status: <span class="n">0</span>, ms: <span class="n">15000</span>, error: <span class="s">'timeout'</span> }
+    <span class="f">expect</span>(<span class="f">statusText</span>(check)).<span class="f">toBe</span>(<span class="s">'Не открывается · timeout'</span>)
+  })
+})</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-status-test.png" width="1240" height="780" alt="VS Code: src/status.test.ts рядом с status.ts, describe statusText и четыре it" loading="lazy"><figcaption>status.test.ts лежит рядом с status.ts</figcaption></figure></li>
+          <li><b>Запустите тесты</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm test</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/04-npm-test.png" width="1240" height="457" alt="Терминал: npm test, DEV v5.1.0; src/status.test.ts 4 tests, четыре зелёные галочки; Test Files 1 passed, Tests 4 passed; PASS Waiting for file changes, press h to show help, press q to quit" loading="lazy"><figcaption>Четыре теста прошли, Vitest следит за файлами</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как устроен файл теста</p>
+
+        <!--CODE tools/code41/status.test.ts | status.test.ts · по строкам | pins=1:1,4:2,9:3,10:4,11:5--><figure class="code" data-read><figcaption><span>status.test.ts · по строкам</span></figcaption><pre><span class="k">import</span> { describe, expect, it } <span class="k">from</span> <span class="s">'vitest'</span>  <span class="pin">1</span>
+<span class="k">import</span> { statusText } <span class="k">from</span> <span class="s">'./status'</span>
+
+<span class="f">describe</span>(<span class="s">'statusText'</span>, () =<span class="t">&gt;</span> {  <span class="pin">2</span>
+  <span class="f">it</span>(<span class="s">'сайт ещё не проверялся'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">expect</span>(<span class="f">statusText</span>(<span class="k">undefined</span>)).<span class="f">toBe</span>(<span class="s">'Не проверялся'</span>)
+  })
+
+  <span class="f">it</span>(<span class="s">'сайт работает'</span>, () =<span class="t">&gt;</span> {  <span class="pin">3</span>
+    <span class="k">const</span> check = { id: <span class="s">'git'</span>, ok: <span class="k">true</span>, status: <span class="n">200</span>, ms: <span class="n">340</span>, error: <span class="s">''</span> }  <span class="pin">4</span>
+    <span class="f">expect</span>(<span class="f">statusText</span>(check)).<span class="f">toBe</span>(<span class="s">'Работает · 340 мс'</span>)  <span class="pin">5</span>
+  })
+
+  <span class="f">it</span>(<span class="s">'сервер ответил ошибкой'</span>, () =<span class="t">&gt;</span> {
+    <span class="k">const</span> check = { id: <span class="s">'git'</span>, ok: <span class="k">false</span>, status: <span class="n">404</span>, ms: <span class="n">120</span>, error: <span class="s">''</span> }
+    <span class="f">expect</span>(<span class="f">statusText</span>(check)).<span class="f">toBe</span>(<span class="s">'Не открывается · 404'</span>)
+  })
+
+  <span class="f">it</span>(<span class="s">'сервер не ответил'</span>, () =<span class="t">&gt;</span> {
+    <span class="k">const</span> check = { id: <span class="s">'git'</span>, ok: <span class="k">false</span>, status: <span class="n">0</span>, ms: <span class="n">15000</span>, error: <span class="s">'timeout'</span> }
+    <span class="f">expect</span>(<span class="f">statusText</span>(check)).<span class="f">toBe</span>(<span class="s">'Не открывается · timeout'</span>)
+  })
+})</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Три функции Vitest. Их импортируют явно, как <code>useState</code> из React.</p></div></li>
+          <li><span class="pin">2</span><div><p><code>describe</code> объединяет тесты одной темы под общим заголовком. В выводе Vitest заголовок <code>statusText</code> стоит над четырьмя тестами.</p></div></li>
+          <li><span class="pin">3</span><div><p><code>it</code> — один тест. Первый аргумент — что проверяется, обычными словами: эта строка появится в выводе со знаком ✓ или ✗. Второй — функция с самой проверкой. Название записывают как требование: «сайт работает».</p></div></li>
+          <li><span class="pin">4</span><div><p>Подготовка: придуманная проверка сайта — ответ 200 за 340 мс. Объект имеет тот же вид, что элементы <code>checks</code> в <code>results.json</code>.</p></div></li>
+          <li><span class="pin">5</span><div><p>Выполнение и сравнение в одной строке. <code>expect(значение)</code> берёт результат, <code>.toBe(ожидание)</code> сравнивает его с ожидаемым. Если строки различаются хоть одним знаком, тест падает.</p></div></li>
+        </ol>
+
+        <p>Четыре теста соответствуют четырём веткам <code>statusText</code>. Первые три: проверки не было (<code>undefined</code>), сайт ответил, сервер вернул ошибку с кодом. Четвёртая: сервер не ответил, кода нет, и выводится текст ошибки. Так каждая ветка функции проверена хотя бы одним тестом.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: ломаем функцию</p>
+
+        <p>Тест, который ни разу не падал, ничего не доказывает: может быть, он не проверяет то, что написано в его названии. Сломаем функцию и посмотрим, заметит ли тест.</p>
+
+        <ol class="steps">
+          <li><b>Испортите подпись</b><p>Не останавливая <code>npm test</code>, откройте <code>src/status.ts</code> и замените в строке «Работает» русское <code>мс</code> на латинское <code>ms</code>. Сохраните файл.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-test-upal.png" width="1240" height="665" alt="Терминал: RERUN src/status.ts x1; сайт работает — красный крест; FAIL src/status.test.ts > statusText > сайт работает; AssertionError: expected 'Работает · 340 ms' to be 'Работает · 340 мс'; Expected: Работает · 340 мс, Received: Работает · 340 ms; Tests 1 failed | 3 passed" loading="lazy"><figcaption>Vitest перезапустил тесты сам: один упал</figcaption></figure></li>
+          <li><b>Верните как было</b><p>Замените <code>ms</code> обратно на <code>мс</code> и сохраните.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/06-snova-zeleno.png" width="1240" height="361" alt="Терминал: RERUN src/status.ts x2; четыре зелёные галочки; Tests 4 passed; PASS Waiting for file changes" loading="lazy"><figcaption>Снова четыре зелёных</figcaption></figure></li>
+        </ol>
+
+        <p>Сообщение о падении на кадре состоит из трёх частей. Сверху — какой тест упал: <code>statusText &gt; сайт работает</code>. Ниже — <code>Expected</code>, что ожидал тест, и <code>Received</code>, что вернула функция; различающиеся буквы подсвечены. Ещё ниже — строка теста со стрелкой под сравнением. Остальные три теста прошли: ветки ошибок порчу не задели.</p>
+
+        <p>Тесты перезапустились без новой команды. <code>npm test</code> запускает Vitest в <span class="term">режиме наблюдения</span>. Он следит за файлами проекта и после каждого сохранения повторяет тесты, которые зависят от изменённого файла. На кадре это строка <code>RERUN src/status.ts</code>. Пока вы пишете код, Vitest держат открытым в отдельном терминале. Клавиша <kbd>q</kbd> в терминале завершает наблюдение, <kbd>a</kbd> повторяет все тесты.</p>
+
+        <div class="margin-note">
+          <b>Когда Vitest завершается сразу</b>
+          <p>Если в окружении есть переменная <code>CI</code>, Vitest считает, что работает на сервере сборки: выполняет тесты один раз и завершается. Так же он поступает, когда его запустил ИИ-агент: агенты оставляют свои переменные окружения, например <code>AI_AGENT</code> или <code>CLAUDECODE</code>, и Vitest проверяет и их. Агент читает итог одного прогона, наблюдение ему не нужно.</p>
+        </div>
+
+        <p class="bridge">Функцию можно проверить вызовом. Компонент возвращает разметку, и проверять нужно то, что увидит пользователь на странице.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Тест страницы</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Страница без браузера</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Актёры репетируют спектакль в декорациях без зрителей. Сцена, мебель и реквизит такие же, как на премьере, а зала нет. Страница <code>jsdom</code> — такие декорации для компонента: <code>document</code> и элементы на нём есть, окна браузера нет.</p>
+          <p class="miss">На репетиции видно, как выглядит сцена. <code>jsdom</code> ничего не рисует: размеров, цветов и расположения элементов в нём нет. Поэтому тест проверяет текст и разметку, а внешний вид страницы — нет.</p>
+        </div></div>
+
+        <p>Компонент <code>SitesPage</code> показывает сводку и карточки сайтов. Проверить его — значит показать его где-то и найти на странице нужный текст. Открывать для этого настоящий браузер долго, поэтому тест показывает компонент на странице, которую <code>jsdom</code> держит в памяти. Testing Library выполняет ту же работу, что <code>createRoot(…).render(…)</code> в <code>main.tsx</code>, только на этой странице, и даёт функции для поиска на ней.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Страница «Сайты» в тесте</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 250" role="img" aria-label="Тест передаёт придуманные данные: три сайта и одну проверку. render показывает SitesPage внутри MemoryRouter и MonitoringContext на странице jsdom в памяти. На странице сводка «Не открываются: 1 из 3» и три ссылки-карточки. screen.getByText ищет текст сводки, expect проверяет, что он найден. Файлы sites.json и results.json и сеть не нужны">
+              <rect x="20" y="30" width="160" height="120" fill="#ffffff"/><text x="34" y="56">Тест</text><text class="soft" x="34" y="82">sites: 3 сайта</text><text class="soft" x="34" y="100">history: 1 проверка</text><text class="soft" x="34" y="118">react — 404</text>
+              <path d="M180 90 H 226"/><path d="M218 84 L 226 90 L 218 96"/><text class="soft" x="184" y="80">render</text>
+              <rect x="234" y="20" width="250" height="210" fill="#161A2E"/><text class="on-dark" x="248" y="44">jsdom: страница в памяти</text>
+              <text class="soft on-dark-soft" x="248" y="72">MemoryRouter</text><text class="soft on-dark-soft" x="262" y="92">MonitoringContext value</text><text class="soft on-dark-soft" x="276" y="112">SitesPage</text>
+              <text class="soft on-dark-soft" x="248" y="146">&lt;p&gt;Не открываются: 1 из 3&lt;/p&gt;</text><text class="soft on-dark-soft" x="248" y="168">&lt;a href="/site/git"&gt;…</text><text class="soft on-dark-soft" x="248" y="186">&lt;a href="/site/react"&gt;…</text><text class="soft on-dark-soft" x="248" y="204">&lt;a href="/site/sql"&gt;…</text>
+              <path d="M484 140 H 520"/><path d="M512 134 L 520 140 L 512 146"/>
+              <rect x="528" y="90" width="212" height="100" fill="#D6F0F9"/><text class="mono" x="542" y="116">screen.getByText(…)</text><text class="mono" x="542" y="140">expect(…)</text><text class="soft" x="542" y="166">.toBeInTheDocument()</text>
+              <text class="soft" x="528" y="44">без fetch, без файлов</text><text class="soft" x="528" y="62">public/data</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Провайдер с загрузкой файлов заменён контекстом с готовыми данными.</p>
+        </figure>
+
+        <p>На схеме видно, откуда страница берёт данные. В приложении их загружает <code>MonitoringProvider</code> из файлов <code>public/data</code>. В тесте провайдера нет: компонент обёрнут прямо в <code>MonitoringContext</code> из главы 3.2, и в <code>value</code> передаются придуманные данные. Поэтому тест не зависит от сети и от того, что лежит в <code>results.json</code> сегодня. Вторая обёртка, <code>MemoryRouter</code>, нужна карточкам: <code>Link</code> работает только внутри маршрутизатора. <code>MemoryRouter</code> хранит адрес в памяти: адресной строки у <code>jsdom</code> нет.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Настраиваем jsdom и пишем тесты страницы</p>
+
+        <ol class="steps">
+          <li><b>Настройте Vitest</b><p>Замените содержимое <code>vite.config.ts</code>. Функция <code>defineConfig</code> теперь импортируется из <code>vitest/config</code>: в ней описан раздел <code>test</code>.</p>
+            <!--CODE tools/code41/vite.config.ts | monitoring/vite.config.ts | mark=2,8-11--><figure class="code"><figcaption><span>monitoring/vite.config.ts</span></figcaption><pre><span class="k">import</span> react <span class="k">from</span> <span class="s">'@vitejs/plugin-react'</span>
+<span class="hl"><span class="k">import</span> { defineConfig } <span class="k">from</span> <span class="s">'vitest/config'</span></span>
+
+<span class="c">// https://vite.dev/config/</span>
+<span class="k">export</span> <span class="k">default</span> <span class="f">defineConfig</span>({
+  plugins: [<span class="f">react</span>()],
+  base: <span class="s">'/monitoring/'</span>,
+<span class="hl">  test: {</span>
+<span class="hl">    environment: <span class="s">'jsdom'</span>,</span>
+<span class="hl">    setupFiles: <span class="s">'./src/setupTests.ts'</span>,</span>
+<span class="hl">  },</span>
+})</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/07-vite-config.png" width="1240" height="780" alt="VS Code: vite.config.ts, import defineConfig from vitest/config, раздел test: environment jsdom, setupFiles ./src/setupTests.ts" loading="lazy"><figcaption>vite.config.ts: раздел test</figcaption></figure>
+            <p><code>environment: 'jsdom'</code> подключает страницу в памяти. <code>setupFiles</code> — файл, который Vitest выполняет перед каждым файлом тестов.</p></li>
+          <li><b>Создайте файл подготовки</b><p>Создайте <code>src/setupTests.ts</code>.</p>
+            <!--CODE tools/code41/setupTests.ts | monitoring/src/setupTests.ts--><figure class="code"><figcaption><span>monitoring/src/setupTests.ts</span></figcaption><pre><span class="k">import</span> <span class="s">'@testing-library/jest-dom/vitest'</span>
+<span class="k">import</span> { cleanup } <span class="k">from</span> <span class="s">'@testing-library/react'</span>
+<span class="k">import</span> { afterEach } <span class="k">from</span> <span class="s">'vitest'</span>
+
+<span class="f">afterEach</span>(() =<span class="t">&gt;</span> {
+  <span class="f">cleanup</span>()
+})</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/08-setup-tests.png" width="1240" height="780" alt="VS Code: src/setupTests.ts, import @testing-library/jest-dom/vitest, afterEach с cleanup" loading="lazy"><figcaption>setupTests.ts</figcaption></figure>
+            <p>Первая строка добавляет к <code>expect</code> проверки для элементов страницы: <code>toBeInTheDocument</code>, <code>toHaveAttribute</code> и другие. <code>afterEach</code> выполняет функцию после каждого теста, <code>cleanup</code> убирает со страницы всё, что показал тест. Без неё карточки одного теста остаются на странице, когда начинается следующий.</p></li>
+          <li><b>Напишите тесты страницы</b><p>Создайте <code>src/pages/SitesPage.test.tsx</code> рядом с <code>SitesPage.tsx</code>. Окончание <code>.tsx</code> нужно, потому что в тесте есть JSX.</p>
+            <!--CODE tools/code41/SitesPage-1.test.tsx | monitoring/src/pages/SitesPage.test.tsx--><figure class="code"><figcaption><span>monitoring/src/pages/SitesPage.test.tsx</span></figcaption><pre><span class="k">import</span> { render, screen } <span class="k">from</span> <span class="s">'@testing-library/react'</span>
+<span class="k">import</span> { MemoryRouter } <span class="k">from</span> <span class="s">'react-router'</span>
+<span class="k">import</span> { describe, expect, it } <span class="k">from</span> <span class="s">'vitest'</span>
+<span class="k">import</span> { MonitoringContext, <span class="k">type</span> Monitoring } <span class="k">from</span> <span class="s">'../monitoring'</span>
+<span class="k">import</span> <span class="k">type</span> { Run, Site } <span class="k">from</span> <span class="s">'../types'</span>
+<span class="k">import</span> SitesPage <span class="k">from</span> <span class="s">'./SitesPage'</span>
+
+<span class="k">const</span> sites: Site[] = [
+  { id: <span class="s">'git'</span>, name: <span class="s">'Справочник по Git'</span>, url: <span class="s">'https://example.org/git/'</span> },
+  { id: <span class="s">'react'</span>, name: <span class="s">'Справочник по React'</span>, url: <span class="s">'https://example.org/react/'</span> },
+  { id: <span class="s">'sql'</span>, name: <span class="s">'Задачник по SQL'</span>, url: <span class="s">'https://example.org/sql/'</span> },
+]
+
+<span class="k">const</span> run: Run = {
+  time: <span class="s">'2026-11-12T21:00:00Z'</span>,
+  checks: [
+    { id: <span class="s">'git'</span>, ok: <span class="k">true</span>, status: <span class="n">200</span>, ms: <span class="n">340</span>, error: <span class="s">''</span> },
+    { id: <span class="s">'react'</span>, ok: <span class="k">false</span>, status: <span class="n">404</span>, ms: <span class="n">120</span>, error: <span class="s">''</span> },
+    { id: <span class="s">'sql'</span>, ok: <span class="k">true</span>, status: <span class="n">200</span>, ms: <span class="n">510</span>, error: <span class="s">''</span> },
+  ],
+}
+
+<span class="k">function</span> <span class="f">show</span>(monitoring: Partial<span class="t">&lt;Monitoring</span><span class="t">&gt;</span>) {
+  <span class="k">const</span> value: Monitoring = {
+    sites,
+    history: [run],
+    loading: <span class="k">false</span>,
+    error: <span class="s">''</span>,
+    ...monitoring,
+  }
+  <span class="f">render</span>(
+    <span class="t">&lt;MemoryRouter</span><span class="t">&gt;</span>
+      <span class="t">&lt;MonitoringContext</span> <span class="a">value</span>={value}<span class="t">&gt;</span>
+        <span class="t">&lt;SitesPage</span> <span class="t">/&gt;</span>
+      <span class="t">&lt;/MonitoringContext</span><span class="t">&gt;</span>
+    <span class="t">&lt;/MemoryRouter</span><span class="t">&gt;</span>,
+  )
+}
+
+<span class="f">describe</span>(<span class="s">'SitesPage'</span>, () =<span class="t">&gt;</span> {
+  <span class="f">it</span>(<span class="s">'считает сайты, которые не открываются'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">show</span>({})
+    <span class="f">expect</span>(screen.<span class="f">getByText</span>(<span class="s">'Не открываются: 1 из 3'</span>)).<span class="f">toBeInTheDocument</span>()
+  })
+
+  <span class="f">it</span>(<span class="s">'ведёт на страницу сайта'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">show</span>({})
+    <span class="k">const</span> link = screen.<span class="f">getByRole</span>(<span class="s">'link'</span>, { name: /Справочник по React/ })
+    <span class="f">expect</span>(link).<span class="f">toHaveAttribute</span>(<span class="s">'href'</span>, <span class="s">'/site/react'</span>)
+  })
+
+  <span class="f">it</span>(<span class="s">'пока идёт загрузка, пишет об этом'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">show</span>({ loading: <span class="k">true</span> })
+    <span class="f">expect</span>(screen.<span class="f">getByText</span>(<span class="s">'Загрузка результатов…'</span>)).<span class="f">toBeInTheDocument</span>()
+  })
+})</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/09-sitespage-test.png" width="1240" height="780" alt="VS Code: src/pages/SitesPage.test.tsx, массив sites из трёх сайтов example.org, run с тремя проверками, функция show" loading="lazy"><figcaption>Данные теста: три сайта и одна проверка</figcaption></figure></li>
+          <li><b>Посмотрите на результат</b><p>Если <code>npm test</code> запущен, Vitest перезапустится сам: изменился <code>vite.config.ts</code>. Если нет — выполните <code>npm test</code>.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/10-tri-testa.png" width="1240" height="361" alt="Терминал: RERUN src/pages/SitesPage.test.tsx; SitesPage 3 теста: считает сайты, которые не открываются; ведёт на страницу сайта; пока идёт загрузка, пишет об этом; Tests 3 passed" loading="lazy"><figcaption>Три теста страницы прошли</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что происходит в тесте страницы</p>
+
+        <p>Пройдём первый тест по шагам. Слева — код из файла, справа — что происходит на каждом шаге и что лежит на странице <code>jsdom</code>.</p>
+
+        <figure class="trace">
+          <figcaption class="trace__head">Тест «считает сайты, которые не открываются»</figcaption>
+          <div class="trace__grid">
+            <!--CODE tools/code41/SitesPage-1.test.tsx | | bare lines=23-44--><pre class="trace__code" data-start="23"><span class="k">function</span> <span class="f">show</span>(monitoring: Partial<span class="t">&lt;Monitoring</span><span class="t">&gt;</span>) {
+  <span class="k">const</span> value: Monitoring = {
+    sites,
+    history: [run],
+    loading: <span class="k">false</span>,
+    error: <span class="s">''</span>,
+    ...monitoring,
+  }
+  <span class="f">render</span>(
+    <span class="t">&lt;MemoryRouter</span><span class="t">&gt;</span>
+      <span class="t">&lt;MonitoringContext</span> <span class="a">value</span>={value}<span class="t">&gt;</span>
+        <span class="t">&lt;SitesPage</span> <span class="t">/&gt;</span>
+      <span class="t">&lt;/MonitoringContext</span><span class="t">&gt;</span>
+    <span class="t">&lt;/MemoryRouter</span><span class="t">&gt;</span>,
+  )
+}
+
+<span class="f">describe</span>(<span class="s">'SitesPage'</span>, () =<span class="t">&gt;</span> {
+  <span class="f">it</span>(<span class="s">'считает сайты, которые не открываются'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">show</span>({})
+    <span class="f">expect</span>(screen.<span class="f">getByText</span>(<span class="s">'Не открываются: 1 из 3'</span>)).<span class="f">toBeInTheDocument</span>()
+  })</pre><!--/CODE-->
+            <div class="trace__panel">
+              <ol class="trace__steps">
+                <li data-lines="41-42"><b>Тест вызывает show({})</b>
+                  <p>Пустой объект значит «ничего не менять в данных по умолчанию».</p>
+                  <div class="vars"><span class="var var--new"><i>monitoring</i><span>{}</span></span></div></li>
+                <li data-lines="24-30"><b>Собираются данные</b>
+                  <p>Три сайта, одна проверка, загрузка закончена, ошибки нет. Последняя строка <code>...monitoring</code> поверх них записывает то, что передал тест. Сейчас переписывать нечего.</p>
+                  <div class="vars"><span class="var var--new"><i>value</i><span>sites: 3 · history: 1 · loading: false</span></span></div></li>
+                <li data-lines="31-37"><b>render показывает страницу</b>
+                  <p>React отрисовывает <code>SitesPage</code> на странице <code>jsdom</code>. <code>useMonitoring()</code> внутри страницы берёт <code>value</code> из ближайшего <code>MonitoringContext</code>. В последней проверке <code>react</code> ответил 404, остальные — 200.</p>
+                  <div class="minis"><div class="mini"><em>200</em><b>Справочник по Git</b><small>/site/git</small></div><div class="mini"><em>404</em><b>Справочник по React</b><small>/site/react</small></div><div class="mini"><em>200</em><b>Задачник по SQL</b><small>/site/sql</small></div></div></li>
+                <li data-lines="43"><b>getByText ищет сводку</b>
+                  <p><code>screen</code> — вся страница <code>jsdom</code>. <code>getByText</code> ищет элемент, текст которого совпадает со строкой целиком. Найден <code>&lt;p&gt;Не открываются: 1 из 3&lt;/p&gt;</code>.</p></li>
+                <li data-lines="43"><b>Сравнение</b>
+                  <p><code>toBeInTheDocument()</code> проверяет, что найденный элемент есть на странице. Тест прошёл. Если бы такого текста не было, <code>getByText</code> упал бы раньше с сообщением «Unable to find an element with the text».</p></li>
+              </ol>
+              <div class="trace__nav"></div>
+            </div>
+          </div>
+        </figure>
+
+        <p>Второй тест ищет карточку по-другому: <code>getByRole('link', { name: /Справочник по React/ })</code> — «ссылку, в названии которой есть эти слова». <span class="term">Роль</span> — то, чем элемент является для пользователя: ссылка, кнопка, заголовок, поле ввода. Названием ссылки считается весь её текст: статус, название сайта и адрес. Косые черты вокруг слов задают поиск по части текста. По ролям и названиям находят элементы программы чтения с экрана для незрячих. Testing Library советует искать по роли в первую очередь: тест проверяет то, что человек видит на странице. Классы в разметке можно переименовать, и такой тест от этого не сломается.</p>
+
+        <p>Третий тест передаёт <code>show({ loading: true })</code>, и <code>...monitoring</code> переписывает <code>loading</code> в данных. Функция <code>show</code> нужна, чтобы каждый тест менял только то, что ему важно, а остальные данные брал общие.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Функция поиска</th><th>Если элемента нет</th><th>Когда нужна</th></tr></thead>
+            <tbody>
+              <tr><td><code>getByText</code>, <code>getByRole</code></td><td>Тест падает сразу</td><td>Элемент должен быть на странице</td></tr>
+              <tr><td><code>queryByText</code>, <code>queryByRole</code></td><td>Возвращает <code>null</code></td><td>Проверить, что элемента <em>нет</em></td></tr>
+              <tr><td><code>findByText</code>, <code>findByRole</code></td><td>Ждёт до 1 секунды, потом падает</td><td>Элемент появится позже, например после загрузки; пишется с <code>await</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="bridge">Три теста проверили требования, которые и так видно при открытии страницы. Добавим два оставшихся из таблицы §1.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Тесты по требованиям находят ошибки</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Ещё два требования</p>
+
+        <ol class="steps">
+          <li><b>Добавьте два теста</b><p>Допишите в конец <code>describe</code> в <code>SitesPage.test.tsx</code> два теста. Первый: все три сайта открылись — сводка должна сказать «Все 3 сайта открываются». Второй: истории проверок нет — на странице не должно быть слов «Не открываются». Ожидаемый текст взят из требования.</p>
+            <!--CODE tools/code41/SitesPage.test.tsx | monitoring/src/pages/SitesPage.test.tsx · новые тесты | lines=57-65--><figure class="code"><figcaption><span>monitoring/src/pages/SitesPage.test.tsx · новые тесты</span></figcaption><pre>  <span class="f">it</span>(<span class="s">'все сайты открываются'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">show</span>({ history: [{ ...run, checks: run.checks.<span class="f">map</span>((c) =<span class="t">&gt;</span> ({ ...c, ok: <span class="k">true</span> })) }] })
+    <span class="f">expect</span>(screen.<span class="f">getByText</span>(<span class="s">'Все 3 сайта открываются'</span>)).<span class="f">toBeInTheDocument</span>()
+  })
+
+  <span class="f">it</span>(<span class="s">'проверок ещё не было'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">show</span>({ history: [] })
+    <span class="f">expect</span>(screen.<span class="f">queryByText</span>(/Не открываются/)).not.<span class="f">toBeInTheDocument</span>()
+  })</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/11-dva-krasnyh.png" width="1240" height="780" alt="Терминал: FAIL SitesPage > проверок ещё не было; expected document not to contain element, found p class summary summary--bad Не открываются: 3 из 3 instead; выше — строка 59 getByText Все 3 сайта открываются; Tests 2 failed | 3 passed" loading="lazy"><figcaption>Оба новых теста упали</figcaption></figure></li>
+        </ol>
+
+        <p>Оба падения указывают на ошибки в коде страницы. Первый тест сообщает: «Unable to find an element with the text: Все 3 сайта открываются». В коде страницы слово записано одной строкой <code>`Все ${sites.length} сайтов открываются`</code>, и при трёх сайтах получается «Все 3 сайтов». В группе из шести сайтов ошибки не видно — «Все 6 сайтов» звучит правильно, поэтому её никто не заметил.</p>
+
+        <p>Второй тест сообщает, что нашёл элемент, которого быть не должно: <code>&lt;p class="summary summary--bad"&gt;Не открываются: 3 из 3&lt;/p&gt;</code>. Когда проверок не было, страница объявляет все сайты сломанными. Убедимся, что это видно и в приложении.</p>
+
+        <ol class="steps">
+          <li><b>Очистите историю</b><p>Временно замените содержимое <code>public/data/results.json</code> на <code>{"history":[]}</code> — так выглядит монитор сразу после создания, до первой ночной проверки. Запустите <code>npm run dev</code> во втором терминале и откройте страницу.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/12-bez-proverok.png" width="1100" height="572" alt="Браузер localhost:5173/monitoring/: шапка «Проверок ещё не было», под ней красная сводка «Не открываются: 6 из 6», шесть карточек со статусом «Не проверялся»" loading="lazy"><figcaption>Шапка: «Проверок ещё не было». Сводка: «Не открываются: 6 из 6»</figcaption></figure>
+            <p>Шапка и сводка противоречат друг другу. Карточки пишут «Не проверялся», а сводка считает такой сайт неработающим: условие <code>!last?.checks.find(…)?.ok</code> истинно и тогда, когда проверки нет совсем. Верните <code>results.json</code>: <code>git checkout public/data/results.json</code>. Сервер разработки можно остановить.</p></li>
+        </ol>
+
+        <p class="phase phase--do"><span>Делаем</span>Исправляем страницу</p>
+
+        <ol class="steps">
+          <li><b>Функция для слова «сайт»</b><p>Создайте <code>src/plural.ts</code>. Функция выбирает форму слова по числу.</p>
+            <!--CODE tools/code41/plural.ts | monitoring/src/plural.ts--><figure class="code"><figcaption><span>monitoring/src/plural.ts</span></figcaption><pre><span class="k">export</span> <span class="k">function</span> <span class="f">sitesWord</span>(count: number) {
+  <span class="k">const</span> last = count % <span class="n">10</span>
+  <span class="k">const</span> lastTwo = count % <span class="n">100</span>
+  <span class="k">if</span> (last === <span class="n">1</span> &amp;&amp; lastTwo !== <span class="n">11</span>) {
+    <span class="k">return</span> <span class="s">'сайт'</span>
+  }
+  <span class="k">if</span> (last <span class="t">&gt;</span>= <span class="n">2</span> &amp;&amp; last &lt;= <span class="n">4</span> &amp;&amp; (lastTwo &lt; <span class="n">12</span> || lastTwo <span class="t">&gt;</span> <span class="n">14</span>)) {
+    <span class="k">return</span> <span class="s">'сайта'</span>
+  }
+  <span class="k">return</span> <span class="s">'сайтов'</span>
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/13-plural.png" width="1240" height="780" alt="VS Code: src/plural.ts, функция sitesWord: last = count % 10, lastTwo = count % 100; сайт, сайта, сайтов" loading="lazy"><figcaption>plural.ts</figcaption></figure>
+            <p>Форма зависит от последней цифры числа (<code>count % 10</code> — остаток от деления на 10) и от двух последних (<code>count % 100</code>). Последняя цифра 1 — «сайт» (1, 21, 101), кроме 11. Последняя цифра 2–4 — «сайта» (3, 24), кроме 12–14. Все остальные — «сайтов» (6, 11, 12, 111).</p></li>
+          <li><b>Исправьте сводку</b><p>Замените содержимое <code>src/pages/SitesPage.tsx</code>. Текст сводки теперь собирается в переменной <code>summary</code>: сначала — вариант «все открываются», затем он заменяется, если проверок не было или есть неработающие сайты.</p>
+            <!--CODE tools/code41/SitesPage.tsx | monitoring/src/pages/SitesPage.tsx | mark=3,18-23,27-29--><figure class="code"><figcaption><span>monitoring/src/pages/SitesPage.tsx</span></figcaption><pre><span class="k">import</span> { Link } <span class="k">from</span> <span class="s">'react-router'</span>
+<span class="k">import</span> { useMonitoring } <span class="k">from</span> <span class="s">'../monitoring'</span>
+<span class="hl"><span class="k">import</span> { sitesWord } <span class="k">from</span> <span class="s">'../plural'</span></span>
+<span class="k">import</span> { statusText } <span class="k">from</span> <span class="s">'../status'</span>
+
+<span class="k">function</span> <span class="f">SitesPage</span>() {
+  <span class="k">const</span> { sites, history, loading, error } = <span class="f">useMonitoring</span>()
+
+  <span class="k">if</span> (loading) {
+    <span class="k">return</span> <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Загрузка результатов…<span class="t">&lt;/p</span><span class="t">&gt;</span>
+  }
+  <span class="k">if</span> (error !== <span class="s">''</span>) {
+    <span class="k">return</span> <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"load-error"</span><span class="t">&gt;</span>{error}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+  }
+
+  <span class="k">const</span> last = history[<span class="n">0</span>]
+  <span class="k">const</span> down = sites.<span class="f">filter</span>((site) =<span class="t">&gt;</span> !last?.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === site.id)?.ok).length
+<span class="hl">  <span class="k">let</span> summary = <span class="s">`Все ${sites.length} ${sitesWord(sites.length)} открываются`</span></span>
+<span class="hl">  <span class="k">if</span> (last === <span class="k">undefined</span>) {</span>
+<span class="hl">    summary = <span class="s">'Проверок ещё не было'</span></span>
+<span class="hl">  } <span class="k">else</span> <span class="k">if</span> (down <span class="t">&gt;</span> <span class="n">0</span>) {</span>
+<span class="hl">    summary = <span class="s">`Не открываются: ${down} из ${sites.length}`</span></span>
+<span class="hl">  }</span>
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+<span class="hl">      <span class="t">&lt;p</span> <span class="a">className</span>={last !== <span class="k">undefined</span> &amp;&amp; down <span class="t">&gt;</span> <span class="n">0</span> ? <span class="s">'summary summary--bad'</span> : <span class="s">'summary'</span>}<span class="t">&gt;</span></span>
+<span class="hl">        {summary}</span>
+<span class="hl">      <span class="t">&lt;/p</span><span class="t">&gt;</span></span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"sites"</span><span class="t">&gt;</span>
+        {sites.<span class="f">map</span>((site) =<span class="t">&gt;</span> {
+          <span class="k">const</span> check = last?.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === site.id)
+          <span class="k">return</span> (
+            <span class="t">&lt;Link</span> <span class="a">key</span>={site.id} <span class="a">to</span>={<span class="s">`/site/${site.id}`</span>} <span class="a">className</span>={check?.ok ? <span class="s">'site'</span> : <span class="s">'site site--bad'</span>}<span class="t">&gt;</span>
+              <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"site__status"</span><span class="t">&gt;</span>{<span class="f">statusText</span>(check)}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+              <span class="t">&lt;h2</span><span class="t">&gt;</span>{site.name}<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+              <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"site__url"</span><span class="t">&gt;</span>{site.url}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+            <span class="t">&lt;/Link</span><span class="t">&gt;</span>
+          )
+        })}
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> SitesPage</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/14-sitespage.png" width="1240" height="780" alt="VS Code: SitesPage.tsx, import sitesWord, let summary, if last === undefined — Проверок ещё не было, else if down > 0 — Не открываются" loading="lazy"><figcaption>SitesPage.tsx: переменная summary</figcaption></figure>
+            <p>Красная рамка сводки (<code>summary--bad</code>) теперь включается, только когда проверка была и в ней есть неработающие сайты. Список карточек показывается, даже если проверок не было: на карточках стоит «Не проверялся».</p></li>
+          <li><b>Посмотрите на тесты</b>
+            <figure class="shot" style="max-width: 1246px"><img src="img/15-ispravleno.png" width="1240" height="393" alt="Терминал: RERUN src/pages/SitesPage.tsx x3; SitesPage 5 тестов, все зелёные, включая все сайты открываются и проверок ещё не было; Tests 5 passed" loading="lazy"><figcaption>Пять тестов страницы прошли</figcaption></figure></li>
+        </ol>
+
+        <p>Пример проекта модуля 3 проверялся руками при съёмке главы 3.4 и проекта, и обе ошибки остались незамеченными. Их нашли тесты, которые описывали требования к странице, включая неудобные случаи: три сайта вместо шести, пустая история. Такие случаи и стоит искать первыми: пустой список, один элемент, ошибка загрузки, числа 1, 2, 5, 11.</p>
+
+        <p class="bridge">Тесты страницы показывали её и читали текст. Пользователь ещё и щёлкает, а данные приходят из сети.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Щелчок и ошибка загрузки</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Ещё три файла тестов</p>
+
+        <ol class="steps">
+          <li><b>Щелчок по карточке</b><p>Создайте <code>src/App.test.tsx</code>. Тест показывает всё приложение с маршрутами, щёлкает по карточке и проверяет, что открылась страница сайта.</p>
+            <!--CODE tools/code41/App.test.tsx | monitoring/src/App.test.tsx--><figure class="code"><figcaption><span>monitoring/src/App.test.tsx</span></figcaption><pre><span class="k">import</span> { render, screen } <span class="k">from</span> <span class="s">'@testing-library/react'</span>
+<span class="k">import</span> userEvent <span class="k">from</span> <span class="s">'@testing-library/user-event'</span>
+<span class="k">import</span> { MemoryRouter } <span class="k">from</span> <span class="s">'react-router'</span>
+<span class="k">import</span> { describe, expect, it } <span class="k">from</span> <span class="s">'vitest'</span>
+<span class="k">import</span> App <span class="k">from</span> <span class="s">'./App'</span>
+<span class="k">import</span> { MonitoringContext, <span class="k">type</span> Monitoring } <span class="k">from</span> <span class="s">'./monitoring'</span>
+
+<span class="k">const</span> monitoring: Monitoring = {
+  sites: [
+    { id: <span class="s">'git'</span>, name: <span class="s">'Справочник по Git'</span>, url: <span class="s">'https://example.org/git/'</span> },
+    { id: <span class="s">'react'</span>, name: <span class="s">'Справочник по React'</span>, url: <span class="s">'https://example.org/react/'</span> },
+  ],
+  history: [
+    {
+      time: <span class="s">'2026-11-12T21:00:00Z'</span>,
+      checks: [
+        { id: <span class="s">'git'</span>, ok: <span class="k">true</span>, status: <span class="n">200</span>, ms: <span class="n">340</span>, error: <span class="s">''</span> },
+        { id: <span class="s">'react'</span>, ok: <span class="k">false</span>, status: <span class="n">404</span>, ms: <span class="n">120</span>, error: <span class="s">''</span> },
+      ],
+    },
+    {
+      time: <span class="s">'2026-11-11T21:00:00Z'</span>,
+      checks: [
+        { id: <span class="s">'git'</span>, ok: <span class="k">true</span>, status: <span class="n">200</span>, ms: <span class="n">310</span>, error: <span class="s">''</span> },
+        { id: <span class="s">'react'</span>, ok: <span class="k">true</span>, status: <span class="n">200</span>, ms: <span class="n">290</span>, error: <span class="s">''</span> },
+      ],
+    },
+  ],
+  loading: <span class="k">false</span>,
+  error: <span class="s">''</span>,
+}
+
+<span class="f">describe</span>(<span class="s">'App'</span>, () =<span class="t">&gt;</span> {
+  <span class="f">it</span>(<span class="s">'по щелчку на карточке открывает страницу сайта'</span>, async () =<span class="t">&gt;</span> {
+    <span class="k">const</span> user = userEvent.<span class="f">setup</span>()
+    <span class="f">render</span>(
+      <span class="t">&lt;MemoryRouter</span><span class="t">&gt;</span>
+        <span class="t">&lt;MonitoringContext</span> <span class="a">value</span>={monitoring}<span class="t">&gt;</span>
+          <span class="t">&lt;App</span> <span class="t">/&gt;</span>
+        <span class="t">&lt;/MonitoringContext</span><span class="t">&gt;</span>
+      <span class="t">&lt;/MemoryRouter</span><span class="t">&gt;</span>,
+    )
+    await user.<span class="f">click</span>(screen.<span class="f">getByRole</span>(<span class="s">'link'</span>, { name: /Справочник по React/ }))
+    <span class="k">const</span> heading = screen.<span class="f">getByRole</span>(<span class="s">'heading'</span>, { name: <span class="s">'Справочник по React'</span> })
+    <span class="f">expect</span>(heading).<span class="f">toBeInTheDocument</span>()
+    <span class="k">const</span> text = screen.<span class="f">getByText</span>(<span class="s">'Открывался в 1 из 2 последних проверок.'</span>)
+    <span class="f">expect</span>(text).<span class="f">toBeInTheDocument</span>()
+  })
+})</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/16-app-test.png" width="1240" height="780" alt="VS Code: src/App.test.tsx, monitoring с двумя сайтами и двумя проверками: react 404 в последней, 200 в предыдущей" loading="lazy"><figcaption>Два сайта, две проверки</figcaption></figure></li>
+          <li><b>Ошибка загрузки</b><p>Создайте <code>src/MonitoringProvider.test.tsx</code>. Здесь проверяется сам провайдер: что он покажет, если файл не загрузился.</p>
+            <!--CODE tools/code41/MonitoringProvider.test.tsx | monitoring/src/MonitoringProvider.test.tsx--><figure class="code"><figcaption><span>monitoring/src/MonitoringProvider.test.tsx</span></figcaption><pre><span class="k">import</span> { render, screen } <span class="k">from</span> <span class="s">'@testing-library/react'</span>
+<span class="k">import</span> { afterEach, describe, expect, it, vi } <span class="k">from</span> <span class="s">'vitest'</span>
+<span class="k">import</span> MonitoringProvider <span class="k">from</span> <span class="s">'./MonitoringProvider'</span>
+<span class="k">import</span> SitesPage <span class="k">from</span> <span class="s">'./pages/SitesPage'</span>
+<span class="k">import</span> { MemoryRouter } <span class="k">from</span> <span class="s">'react-router'</span>
+
+<span class="f">afterEach</span>(() =<span class="t">&gt;</span> {
+  vi.<span class="f">unstubAllGlobals</span>()
+})
+
+<span class="f">describe</span>(<span class="s">'MonitoringProvider'</span>, () =<span class="t">&gt;</span> {
+  <span class="f">it</span>(<span class="s">'сообщает, какой файл не загрузился'</span>, async () =<span class="t">&gt;</span> {
+    vi.<span class="f">stubGlobal</span>(<span class="s">'fetch'</span>, vi.<span class="f">fn</span>(async () =<span class="t">&gt;</span> <span class="k">new</span> <span class="f">Response</span>(<span class="s">''</span>, { status: <span class="n">404</span> })))
+    <span class="f">render</span>(
+      <span class="t">&lt;MemoryRouter</span><span class="t">&gt;</span>
+        <span class="t">&lt;MonitoringProvider</span><span class="t">&gt;</span>
+          <span class="t">&lt;SitesPage</span> <span class="t">/&gt;</span>
+        <span class="t">&lt;/MonitoringProvider</span><span class="t">&gt;</span>
+      <span class="t">&lt;/MemoryRouter</span><span class="t">&gt;</span>,
+    )
+    <span class="k">const</span> message = await screen.<span class="f">findByText</span>(<span class="s">'Файл sites.json не загрузился: код 404.'</span>)
+    <span class="f">expect</span>(message).<span class="f">toBeInTheDocument</span>()
+  })
+})</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/17-provider-test.png" width="1240" height="780" alt="VS Code: src/MonitoringProvider.test.tsx, vi.stubGlobal fetch, Response с status 404, await screen.findByText Файл sites.json не загрузился: код 404" loading="lazy"><figcaption>fetch подменён ответом 404</figcaption></figure></li>
+          <li><b>Формы слова</b><p>Создайте <code>src/plural.test.ts</code> — тесты функции из §4 на восьми числах.</p>
+            <!--CODE tools/code41/plural.test.ts | monitoring/src/plural.test.ts--><figure class="code"><figcaption><span>monitoring/src/plural.test.ts</span></figcaption><pre><span class="k">import</span> { expect, it } <span class="k">from</span> <span class="s">'vitest'</span>
+<span class="k">import</span> { sitesWord } <span class="k">from</span> <span class="s">'./plural'</span>
+
+it.<span class="f">each</span>([
+  [<span class="n">1</span>, <span class="s">'сайт'</span>],
+  [<span class="n">3</span>, <span class="s">'сайта'</span>],
+  [<span class="n">6</span>, <span class="s">'сайтов'</span>],
+  [<span class="n">11</span>, <span class="s">'сайтов'</span>],
+  [<span class="n">12</span>, <span class="s">'сайтов'</span>],
+  [<span class="n">21</span>, <span class="s">'сайт'</span>],
+  [<span class="n">24</span>, <span class="s">'сайта'</span>],
+  [<span class="n">111</span>, <span class="s">'сайтов'</span>],
+])(<span class="s">'%i — %s'</span>, (count, word) =<span class="t">&gt;</span> {
+  <span class="f">expect</span>(<span class="f">sitesWord</span>(count)).<span class="f">toBe</span>(word)
+})</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/18-plural-test.png" width="1240" height="780" alt="VS Code: src/plural.test.ts, it.each с парами 1 сайт, 3 сайта, 6 сайтов, 11 сайтов, 12 сайтов, 21 сайт, 24 сайта, 111 сайтов" loading="lazy"><figcaption>Восемь чисел — восемь тестов</figcaption></figure></li>
+          <li><b>Запустите все тесты</b><p>Остановите наблюдение клавишей <kbd>q</kbd> и снова выполните <code>npm test</code>: первый прогон показывает все файлы.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/19-vse-testy.png" width="1240" height="441" alt="Терминал: npm test, DEV v5.1.0; status.test.ts 4 tests, plural.test.ts 8 tests, MonitoringProvider.test.tsx 1 test, SitesPage.test.tsx 5 tests, App.test.tsx 1 test; Test Files 5 passed, Tests 19 passed, Duration 1.70s" loading="lazy"><figcaption>5 файлов, 19 тестов, меньше двух секунд</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Действия пользователя и подмена сети</p>
+
+        <!--CODE tools/code41/App.test.tsx | App.test.tsx · строки 34–48 | lines=34-48 pins=34:1,35:2,39:3,43:4,44:5--><figure class="code" data-read><figcaption><span>App.test.tsx · строки 34–48</span></figcaption><pre>  <span class="f">it</span>(<span class="s">'по щелчку на карточке открывает страницу сайта'</span>, async () =<span class="t">&gt;</span> {  <span class="pin">1</span>
+    <span class="k">const</span> user = userEvent.<span class="f">setup</span>()  <span class="pin">2</span>
+    <span class="f">render</span>(
+      <span class="t">&lt;MemoryRouter</span><span class="t">&gt;</span>
+        <span class="t">&lt;MonitoringContext</span> <span class="a">value</span>={monitoring}<span class="t">&gt;</span>
+          <span class="t">&lt;App</span> <span class="t">/&gt;</span>  <span class="pin">3</span>
+        <span class="t">&lt;/MonitoringContext</span><span class="t">&gt;</span>
+      <span class="t">&lt;/MemoryRouter</span><span class="t">&gt;</span>,
+    )
+    await user.<span class="f">click</span>(screen.<span class="f">getByRole</span>(<span class="s">'link'</span>, { name: /Справочник по React/ }))  <span class="pin">4</span>
+    <span class="k">const</span> heading = screen.<span class="f">getByRole</span>(<span class="s">'heading'</span>, { name: <span class="s">'Справочник по React'</span> })  <span class="pin">5</span>
+    <span class="f">expect</span>(heading).<span class="f">toBeInTheDocument</span>()
+    <span class="k">const</span> text = screen.<span class="f">getByText</span>(<span class="s">'Открывался в 1 из 2 последних проверок.'</span>)
+    <span class="f">expect</span>(text).<span class="f">toBeInTheDocument</span>()
+  })</pre></figure><!--/CODE-->
+        <ol class="anno">
+          <li><span class="pin">1</span><div><p>Функция теста помечена <code>async</code>: внутри неё есть <code>await</code>.</p></div></li>
+          <li><span class="pin">2</span><div><p><code>userEvent.setup()</code> создаёт «пользователя». Он щёлкает так, как это делает человек: наводит указатель, нажимает и отпускает кнопку мыши, и на странице возникают все те же события.</p></div></li>
+          <li><span class="pin">3</span><div><p>Показывается всё приложение: шапка, маршруты, страницы. <code>MemoryRouter</code> без настроек начинает с адреса <code>/</code>, поэтому сначала открыта страница «Сайты».</p></div></li>
+          <li><span class="pin">4</span><div><p>Щелчок по карточке React. <code>await</code> ждёт, пока React обработает щелчок и <code>Link</code> сменит адрес в <code>MemoryRouter</code> на <code>/site/react</code>.</p></div></li>
+          <li><span class="pin">5</span><div><p>Теперь показана <code>SitePage</code>: заголовок с названием сайта и строка «Открывался в 1 из 2 последних проверок» — в последней проверке 404, в предыдущей 200. Тест проверил сразу маршрут <code>/site/:id</code>, поиск сайта по <code>id</code> и подсчёт по истории.</p></div></li>
+        </ol>
+
+        <p>В тесте провайдера данные должны прийти через <code>fetch</code>, а сети в тесте нет. Функция <code>vi.stubGlobal('fetch', …)</code> подменяет глобальную <code>fetch</code> на время теста. Подменой служит <code>vi.fn(async () => new Response('', { status: 404 }))</code>. Это функция, которая на любой адрес отвечает пустым ответом с кодом 404, как Pages на файл, которого нет. Провайдер получает ответ, <code>loadJson</code> выбрасывает ошибку «Файл sites.json не загрузился: код 404.», страница показывает её. Всё это происходит после первой отрисовки, в эффекте. Поэтому текст ищется через <code>await screen.findByText</code>: функция ждёт, пока он появится. <code>vi.unstubAllGlobals()</code> в <code>afterEach</code> возвращает настоящую <code>fetch</code>, чтобы подмена не перешла в другие тесты.</p>
+
+        <p>В <code>plural.test.ts</code> восемь одинаковых тестов записаны одним: <code>it.each</code> принимает таблицу пар «число — слово» и создаёт по тесту на строку. В название подставляются значения: <code>%i</code> — число, <code>%s</code> — строка; в выводе тесты называются «1 — сайт», «3 — сайта» и так далее.</p>
+
+        <p class="bridge">Все тесты зелёные. Но зелёный тест ещё не значит, что код правильный.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Тест, который ничего не ловит</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Ожидание, списанное с результата</p>
+
+        <p>Тесты к странице можно написать по-другому: запустить страницу, посмотреть, что она показывает, и записать это в <code>toBe</code>. Ожидания в двух последних тестах тогда выглядят так.</p>
+
+        <!--CODE tools/code41/SitesPage-kopiya.test.tsx | SitesPage.test.tsx · ожидания списаны со страницы | lines=57-65 mark=59,64--><figure class="code"><figcaption><span>SitesPage.test.tsx · ожидания списаны со страницы</span></figcaption><pre>  <span class="f">it</span>(<span class="s">'все сайты открываются'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">show</span>({ history: [{ ...run, checks: run.checks.<span class="f">map</span>((c) =<span class="t">&gt;</span> ({ ...c, ok: <span class="k">true</span> })) }] })
+<span class="hl">    <span class="f">expect</span>(screen.<span class="f">getByText</span>(<span class="s">'Все 3 сайтов открываются'</span>)).<span class="f">toBeInTheDocument</span>()</span>
+  })
+
+  <span class="f">it</span>(<span class="s">'проверок ещё не было'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">show</span>({ history: [] })
+<span class="hl">    <span class="f">expect</span>(screen.<span class="f">getByText</span>(<span class="s">'Не открываются: 3 из 3'</span>)).<span class="f">toBeInTheDocument</span>()</span>
+  })</pre></figure><!--/CODE-->
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: возвращаем старую страницу</p>
+
+        <ol class="steps">
+          <li><b>Верните код проекта модуля 3</b><p>Отложите исправленную страницу в корень проекта и верните из репозитория версию с ошибками. Затем замените два ожидания в <code>SitesPage.test.tsx</code>, как в блоке выше.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>cp src/pages/SitesPage.tsx SitesPage-fixed.tsx
+git checkout src/pages/SitesPage.tsx</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/20-kopiya-zelenaya.png" width="1240" height="313" alt="Терминал: RERUN src/pages/SitesPage.tsx; MonitoringProvider.test.tsx 1 test, SitesPage.test.tsx 5 tests, App.test.tsx 1 test — все зелёные; Tests 7 passed" loading="lazy"><figcaption>Код с обеими ошибками, тесты зелёные</figcaption></figure></li>
+          <li><b>Верните исправленную версию</b><p>Верните исправленную страницу на место и ожидания по требованиям в тестах.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>mv SitesPage-fixed.tsx src/pages/SitesPage.tsx</pre></figure></li>
+        </ol>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Учитель составил ключ к контрольной по работе одного ученика. Ошибки этого ученика попали в ключ как правильные ответы. Теперь такие же ошибки в других работах засчитываются как верные.</p>
+          <p class="miss">Ключ к контрольной можно исправить перед проверкой. Тест со списанным ожиданием ещё и мешает исправить код: после исправления он падает.</p>
+        </div></div>
+
+        <p>Тест, списанный с результата, подтверждает, что код делает то, что делает. Ошибка попадает в ожидание, и тест её охраняет: если кто-то исправит «Все 3 сайтов», такой тест упадёт. Ожидание в тесте берут из требования: из задания, из таблицы §1, из того, что ждёт пользователь.</p>
+
+        <p>В модуле 4 тесты будет писать агент, поэтому ловушка касается и его работы. Если попросить агента «напиши тесты к этому файлу» и не дать требований, у него есть только код, и ожидания ему взять неоткуда, кроме этого кода. Поэтому в задании агенту требования перечисляют явно, а его тесты проверяют двумя вопросами:</p>
+
+        <ul>
+          <li><b>Что проверяет тест?</b> Его название и ожидание должны совпадать с требованием из задания.</li>
+          <li><b>Может ли он упасть?</b> Сломайте код по требованию — как в опыте с <code>мс</code> в §2 — и посмотрите, покраснеет ли тест. Тест, который не падает при поломке, ничего не проверяет.</li>
+        </ul>
+
+        <p class="bridge">Тесты запускаются на вашем компьютере, когда вы о них помните. Конвейер публикации может запускать их сам перед каждой публикацией.</p>
+
+        <h2 id="s7"><span class="sec">§7</span>Тесты перед публикацией</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Шаг тестов в deploy.yml</p>
+
+        <ol class="steps">
+          <li><b>Добавьте шаг</b><p>Откройте <code>.github/workflows/deploy.yml</code> и вставьте шаг «Запустить тесты» между установкой зависимостей и сборкой.</p>
+            <!--CODE tools/code41/deploy.yml | monitoring/.github/workflows/deploy.yml · шаги | lines=25-48 mark=36-37--><figure class="code"><figcaption><span>monitoring/.github/workflows/deploy.yml · шаги</span></figcaption><pre><span class="a">      - name</span>: Получить код
+<span class="a">        uses</span>: actions/checkout@v7
+<span class="a">        with</span>:
+<span class="a">          ref</span>: main
+<span class="a">      - name</span>: Установить Node.js
+<span class="a">        uses</span>: actions/setup-node@v7
+<span class="a">        with</span>:
+<span class="a">          node-version</span>: <span class="n">24</span>
+<span class="a">          cache</span>: npm
+<span class="a">      - name</span>: Установить зависимости
+<span class="a">        run</span>: npm ci
+<span class="hl"><span class="a">      - name</span>: Запустить тесты</span>
+<span class="hl"><span class="a">        run</span>: npm test</span>
+<span class="a">      - name</span>: Собрать сайт
+<span class="a">        run</span>: npm run build
+<span class="a">      - name</span>: Копия index.html для прямых ссылок
+<span class="a">        run</span>: cp dist/index.html dist/404.html
+<span class="a">      - name</span>: Упаковать папку dist
+<span class="a">        uses</span>: actions/upload-pages-artifact@v5
+<span class="a">        with</span>:
+<span class="a">          path</span>: dist
+<span class="a">      - name</span>: Опубликовать
+<span class="a">        id</span>: deployment
+<span class="a">        uses</span>: actions/deploy-pages@v5</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/21-deploy-yml.png" width="1240" height="780" alt="VS Code: deploy.yml, после шага Установить зависимости (npm ci) — шаг Запустить тесты, run: npm test; затем Собрать сайт" loading="lazy"><figcaption>Тесты — после npm ci и перед сборкой</figcaption></figure></li>
+          <li><b>Проверьте, как тесты пройдут на сервере</b><p>GitHub Actions задаёт на своих машинах переменную <code>CI=true</code>. Выполните тесты с ней локально.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>CI=true npm test</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/22-ci-true.png" width="1240" height="425" alt="Терминал: CI=true npm test; RUN v5.1.0; пять файлов тестов с галочками; Test Files 5 passed, Tests 19 passed, Duration 725ms; снова приглашение monitoring $" loading="lazy"><figcaption>Один прогон без наблюдения — 19 тестов</figcaption></figure>
+            <p>Вместо <code>DEV</code> в выводе стоит <code>RUN</code>, а после итога сразу появляется приглашение терминала: Vitest выполнил тесты один раз и завершился. Так же он отработает в конвейере. В Windows PowerShell переменная задаётся по-другому: <code>$env:CI="true"; npm test</code>.</p></li>
+          <li><b>Отправьте изменения</b><p>Сохраните тесты в репозитории.</p>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>git pull
+git add .
+git commit -m "Тесты страницы сайтов, исправлены сводка и склонение"
+git push</pre></figure>
+            <p><code>git pull</code> нужен, потому что ночная проверка из главы 3.4 добавляет в репозиторий коммиты бота. После отправки откройте вкладку Actions: в запуске «Публикация на GitHub Pages» среди шагов есть «Запустить тесты».</p></li>
+        </ol>
+
+        <figure class="scheme">
+          <p class="scheme__head">Публикация с тестами</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 220" role="img" aria-label="git push запускает deploy.yml: checkout, npm ci, npm test. Если тесты прошли, дальше npm run build и deploy-pages, на сайте новая версия. Если хоть один тест упал, шаг завершается ошибкой, следующие шаги пропускаются, на сайте остаётся прежняя версия">
+              <rect x="20" y="70" width="100" height="70" fill="#ffffff"/><text class="mono" x="34" y="100">git push</text><text class="soft" x="34" y="120">в main</text>
+              <path d="M120 105 H 150"/><path d="M142 99 L 150 105 L 142 111"/>
+              <rect x="158" y="50" width="200" height="110" fill="#161A2E"/><text class="mono on-dark" x="172" y="76">deploy.yml</text><text class="soft on-dark-soft" x="172" y="102">checkout</text><text class="soft on-dark-soft" x="172" y="122">npm ci</text><text class="soft on-dark-soft" x="172" y="146">npm test</text>
+              <path d="M358 85 C 390 85 390 50 420 50"/><path d="M412 44 L 420 50 L 412 56"/>
+              <path class="ng" d="M358 130 C 390 130 390 170 420 170"/><path class="ng" d="M412 164 L 420 170 L 412 176"/>
+              <rect x="428" y="20" width="160" height="60" fill="#D4EEDF"/><text class="ok-text" x="442" y="44">✓ 19 passed</text><text class="soft" x="442" y="64">build, deploy-pages</text>
+              <path d="M588 50 H 618"/><path d="M610 44 L 618 50 L 610 56"/>
+              <rect x="626" y="20" width="114" height="60" fill="#ffffff"/><text x="640" y="44">Pages</text><text class="soft" x="640" y="64">новая версия</text>
+              <rect x="428" y="140" width="160" height="60" fill="#FBE3EA"/><text class="ng-text" x="442" y="164">✗ тест упал</text><text class="soft" x="442" y="184">сборки нет</text>
+              <path class="ng" d="M588 170 H 618"/><path class="ng" d="M610 164 L 618 170 L 610 176"/>
+              <rect x="626" y="140" width="114" height="60" fill="#ffffff"/><text x="640" y="164">Pages</text><text class="soft" x="640" y="184">старая версия</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Упавший шаг останавливает задание: сборка и публикация не выполняются.</p>
+        </figure>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>На заводе отдел технического контроля проверяет партию до отправки в магазин. Бракованная партия остаётся на складе, а в магазине лежит товар из прошлой партии.</p>
+          <p class="miss">Контролёр осматривает каждое изделие. Шаг тестов проверяет только то, что описано в тестах: ошибку, для которой теста нет, он пропустит.</p>
+        </div></div>
+
+        <p>Схема показывает, зачем тесты стоят перед сборкой. Каждый шаг задания выполняется, только если предыдущие прошли успешно. Vitest с упавшим тестом завершается с ошибкой, шаг «Запустить тесты» становится красным, и GitHub пропускает сборку и публикацию. На сайте остаётся прежняя версия, а GitHub по умолчанию присылает уведомление об упавшем запуске. Сломанная сводка не попадёт к пользователям, даже если вы забыли запустить тесты дома.</p>
+
+        <p>Ночная проверка из главы 3.4 вызывает этот же <code>deploy.yml</code> заданием <code>publish</code>, поэтому тесты выполняются и перед каждой ночной публикацией.</p>
+
+        <h2 id="s8"><span class="sec">§8</span>Частые ошибки</h2>
+
+        <p>Сообщения получены на проекте <code>monitoring</code>: в каждой строке убрана одна часть настройки из этой главы.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td><code>ReferenceError: document is not defined</code></td><td>Тесты выполняются в Node.js без страницы</td><td>Добавить <code>environment: 'jsdom'</code> в раздел <code>test</code> файла <code>vite.config.ts</code></td></tr>
+              <tr><td><code>Error: Invalid Chai property: toBeInTheDocument</code></td><td>Проверки jest-dom не подключены</td><td>Проверить <code>setupFiles</code> и строку <code>import '@testing-library/jest-dom/vitest'</code></td></tr>
+              <tr><td><code>Found multiple elements with the role "link" and name …</code></td><td>Страница прошлого теста не убрана</td><td>Добавить <code>cleanup</code> в <code>afterEach</code> в <code>setupTests.ts</code></td></tr>
+              <tr><td><code>TypeError: Cannot destructure property 'basename' of 'React$1.useContext(...)' as it is null.</code></td><td><code>Link</code> показан без маршрутизатора</td><td>Обернуть компонент в <code>MemoryRouter</code></td></tr>
+              <tr><td><code>Error: useMonitoring вызван вне MonitoringProvider</code></td><td>Компоненту не передан контекст</td><td>Обернуть в <code>MonitoringContext value={…}</code> с придуманными данными</td></tr>
+              <tr><td><code>Unable to find an element with the text: …</code></td><td>Текст на странице другой или разбит на несколько элементов</td><td>Посмотреть разметку под сообщением; если ожидание верное — ошибка в коде</td></tr>
+              <tr><td>Vitest выполнил тесты и завершился, хотя запущен <code>npm test</code></td><td>В окружении есть <code>CI</code> или переменные ИИ-агента</td><td>Так и должно быть в конвейере; дома запускать из обычного терминала</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s9"><span class="sec">§9</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Тест проходит. Что нужно сделать, чтобы убедиться, что он что-то проверяет?</summary>
+          <p>Сломать код так, чтобы нарушилось требование из названия теста, и убедиться, что тест упал. Потом вернуть код.</p>
+        </details>
+        <details>
+          <summary>Почему в тесте страницы нет <code>MonitoringProvider</code>?</summary>
+          <p>Провайдер загружает файлы через <code>fetch</code>, и результат теста зависел бы от сети и от содержимого <code>results.json</code>. Компонент обёрнут в <code>MonitoringContext</code> с придуманными данными, ответ на которых известен заранее.</p>
+        </details>
+        <details>
+          <summary>Чем <code>getByText</code> отличается от <code>queryByText</code>?</summary>
+          <p>Если элемента нет, <code>getByText</code> роняет тест, а <code>queryByText</code> возвращает <code>null</code>. Вторая нужна, чтобы проверить, что элемента нет: <code>expect(screen.queryByText(…)).not.toBeInTheDocument()</code>.</p>
+        </details>
+        <details>
+          <summary>Почему ошибку «Все 3 сайтов» легко пропустить при проверке руками?</summary>
+          <p>В группе шесть сайтов, а «Все 6 сайтов» звучит правильно. Ошибка проявляется только при числах, оканчивающихся на 1–4, а такие данные руками никто не готовил.</p>
+        </details>
+        <details>
+          <summary>Когда в тесте нужен <code>findByText</code> с <code>await</code>?</summary>
+          <p>Когда текст появляется после ожидания: загрузки данных в эффекте, ответа <code>fetch</code>. <code>findByText</code> ждёт его появления до одной секунды.</p>
+        </details>
+        <details>
+          <summary>Что произойдёт на GitHub, если в <code>main</code> отправить код с упавшим тестом?</summary>
+          <p>Шаг «Запустить тесты» в <code>deploy.yml</code> завершится ошибкой, сборка и публикация будут пропущены, на сайте останется прежняя версия.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Запуск</b><code>npm test</code> — наблюдение; <kbd>q</kbd> выход, <kbd>a</kbd> все тесты</div>
+          <div><b>Один прогон</b><code>CI=true npm test</code></div>
+          <div><b>Тест</b><code>it('требование', () =&gt; { expect(x).toBe(y) })</code></div>
+          <div><b>Показать компонент</b><code>render(&lt;MemoryRouter&gt;…&lt;/MemoryRouter&gt;)</code></div>
+          <div><b>Найти</b><code>screen.getByText</code>, <code>getByRole('link', { name })</code></div>
+          <div><b>Проверить, что нет</b><code>expect(screen.queryByText(…)).not.toBeInTheDocument()</code></div>
+          <div><b>Дождаться</b><code>await screen.findByText(…)</code></div>
+          <div><b>Щёлкнуть</b><code>const user = userEvent.setup()</code>, <code>await user.click(…)</code></div>
+          <div><b>Подменить fetch</b><code>vi.stubGlobal('fetch', vi.fn(…))</code>, после — <code>vi.unstubAllGlobals()</code></div>
+          <div><b>Таблица тестов</b><code>it.each([[1, 'сайт'], …])('%i — %s', …)</code></div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <ul>
+          <li>Тест готовит данные, запускает код и сравнивает результат с ожидаемым. Vitest находит файлы <code>*.test.ts(x)</code> и запускает их командой <code>npm test</code>; дома он следит за файлами и повторяет тесты после сохранения.</li>
+          <li>Компонент в тесте показывается на странице <code>jsdom</code> в памяти функцией <code>render</code> из Testing Library. Данные приходят через <code>MonitoringContext</code> с придуманными значениями, ссылки работают внутри <code>MemoryRouter</code>. Элементы ищутся так, как их видит пользователь: по тексту и по роли.</li>
+          <li>Щелчки выполняет <code>userEvent</code>, сеть подменяет <code>vi.stubGlobal('fetch', …)</code>, текст, который появится позже, ищется через <code>await findByText</code>.</li>
+          <li>Тесты по требованиям нашли в проекте модуля 3 две ошибки: «Все 3 сайтов» и «Не открываются: 6 из 6» до первой проверки. Тест, ожидание которого списано с результата, их пропускает. Каждый тест должен падать, если нарушить его требование.</li>
+          <li>Шаг <code>npm test</code> в <code>deploy.yml</code> перед сборкой не даёт опубликовать сайт с упавшим тестом.</li>
+        </ul>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://vitest.dev/guide/" target="_blank" rel="noreferrer">Vitest — Getting Started</a></li>
+          <li><a href="https://vitest.dev/config/" target="_blank" rel="noreferrer">Vitest — Configuring Vitest (environment, setupFiles, watch)</a></li>
+          <li><a href="https://vitest.dev/api/vi.html#vi-stubglobal" target="_blank" rel="noreferrer">Vitest — vi.stubGlobal</a></li>
+          <li><a href="https://testing-library.com/docs/react-testing-library/intro/" target="_blank" rel="noreferrer">Testing Library — React Testing Library</a></li>
+          <li><a href="https://testing-library.com/docs/queries/about/" target="_blank" rel="noreferrer">Testing Library — About Queries (порядок выбора запросов)</a></li>
+          <li><a href="https://testing-library.com/docs/user-event/intro" target="_blank" rel="noreferrer">Testing Library — user-event</a></li>
+          <li><a href="https://github.com/testing-library/jest-dom" target="_blank" rel="noreferrer">jest-dom — дополнительные проверки для элементов</a></li>
+          <li><a href="https://docs.github.com/en/actions/reference/workflows-and-actions/variables#default-environment-variables" target="_blank" rel="noreferrer">GitHub Docs — Default environment variables (CI)</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../39-proekt-monitoring/index.html">← Проект модуля 3: мониторинг сайтов группы</a>
+          <a href="../../index.html">К оглавлению →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

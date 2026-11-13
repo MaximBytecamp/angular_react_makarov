@@ -43,9 +43,10 @@ def launch(folder: str, width: int = 1240, height: int = 780) -> None:
     """Поднимает экземпляр на папке проекта и ждёт порт отладки."""
     # Из окружения терминала убирается всё, что относится к рабочему VS Code
     # и к его окружению Python: иначе новый экземпляр пишет «VIRTUAL_ENV is set».
+    # Переменные агента (AI_AGENT, CLAUDE*) Vitest принимает за ИИ-агента и выключает режим наблюдения.
     env = {k: v for k, v in os.environ.items()
-           if k not in ("ELECTRON_RUN_AS_NODE", "VIRTUAL_ENV", "PYTHONPATH")
-           and not k.startswith("VSCODE_")}
+           if k not in ("ELECTRON_RUN_AS_NODE", "VIRTUAL_ENV", "PYTHONPATH", "AI_AGENT")
+           and not k.startswith(("VSCODE_", "CLAUDE"))}
     env["PATH"] = f"{NODE_BIN}:/usr/bin:/bin:/usr/sbin:/sbin"
     # Прежний экземпляр держит порт отладки ещё несколько секунд после сигнала;
     # новый тогда стартует без порта, и соединение уходит к умирающему.

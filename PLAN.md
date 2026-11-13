@@ -165,3 +165,19 @@ upload-pages-artifact@v5, deploy-pages@v5.
   проверка и оповещение без изменений. Пример — `tools/proekt3-monitoring` (только локально), кадры `shots_39.py` с Pages
   (прямая ссылка /site/git — код 404 и приложение из 404.html), `crop_39.py`. Сдача: код в репозитории monitoring,
   в react-kurs — `projects/p3-monitoring` с README (ссылки) и ai-log.md (строка в шаблоне react-kurs-template). Модуль 3 закончен.
+
+## Модуль 4
+
+Решения автора 13.11.2026: 4.1 Тесты компонентов и 4.2 Доступность — на «Мониторинге сайтов группы» (продолжение П3, код примера
+`tools/proekt3-monitoring`; тесты запускаются шагом в deploy.yml). Агент для 4.3 и проекта — локальный: расширение VS Code
+с моделью в Ollama. Хранилище дайджеста — Firebase (Firestore), запасной путь — PocketBase.
+
+- 4.1 `temy/41-testy` (план, прототип проверен 13.11.2026 в scratchpad `proto4/monitoring`): `npm install -D vitest@5.1.0 jsdom@31.0.0
+  @testing-library/react@16.3.3 @testing-library/dom@10.4.2 @testing-library/user-event@14.6.10 @testing-library/jest-dom@7.0.1`,
+  `test` в vite.config (из `vitest/config`: environment jsdom, setupFiles), `setupTests.ts` (jest-dom + cleanup — без globals
+  автоочистки нет), скрипт `"test": "vitest"` (дома — режим наблюдения, при CI=true — один прогон). Порядок: тест функции
+  `statusText` → тест страницы SitesPage (MemoryRouter + MonitoringContext с придуманными данными, getByText/getByRole) →
+  тесты по требованиям находят две настоящие ошибки П3: «Все 3 сайтов открываются» и «Не открываются: 3 из 3» без проверок →
+  исправление (`plural.ts`/`sitesWord`, строка `summary`) → щелчок userEvent по карточке (App.test) → подмена fetch
+  `vi.stubGlobal` (ошибка «Файл sites.json не загрузился: код 404.») → тест, переписанный с текущего поведения, ошибку
+  пропускает → шаг «Запустить тесты» в deploy.yml. Код `tools/code41` (SitesPage-p3.tsx — исходный код П3). 19 тестов, 1 с.
