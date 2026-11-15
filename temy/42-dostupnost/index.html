@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>4.2 Доступность интерфейса · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch .on-dark-soft { fill: #c8d0e0; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; }
+    .sch .ng-text { fill: #C2185B; }
+    .sch .ok-text { fill: #1E7A46; }
+    .sch .dash { stroke-dasharray: 6 4; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 4 · Работа с ИИ-агентом и обзор Angular</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 4 · работа с ИИ-агентом и обзор Angular</p>
+          <p class="running__folio">4.2</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">4.2</span>
+          <h1>Доступность интерфейса</h1>
+          <p class="lead">Доступный интерфейс одинаково работает у всех: у человека с мышью, у человека, который пользуется только клавиатурой, у человека, которому страницу читает вслух программа. В этой главе «Мониторинг сайтов группы» проверяется тремя способами: автоматической проверкой Lighthouse, клавиатурой и деревом доступности в DevTools. Lighthouse находит слабый контраст текста. Две другие проверки находят то, чего Lighthouse не видит: карточку, которую нельзя открыть с клавиатуры, неудобное название ссылки и одинаковые заголовки вкладок. Каждая находка закрепляется тестом или правилом линтера.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>Доступность, Lighthouse, DevTools, тесты по ролям</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>monitoring</code> после главы 4.1, браузер Chrome</dd></div>
+          <div><dt>Результат</dt><dd>Lighthouse 100 на двух страницах, названия карточек и заголовки вкладок, сообщения о загрузке и ошибке, 20 тестов, линтер с правилами доступности в <code>deploy.yml</code></dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Кто пользуется страницей иначе</a></li>
+            <li><a href="#s2">Проверка Lighthouse</a></li>
+            <li><a href="#s3">Контраст текста</a></li>
+            <li><a href="#s4">Что пропускает Lighthouse: карточка на div</a></li>
+            <li><a href="#s5">Дерево доступности: название ссылки и вкладки</a></li>
+            <li><a href="#s6">Сообщения о загрузке и ошибке</a></li>
+            <li><a href="#s7">Линтер перед публикацией</a></li>
+            <li><a href="#s8">Частые ошибки</a></li>
+            <li><a href="#s9">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Кто пользуется страницей иначе</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Четыре способа работать со страницей</p>
+
+        <p>Автор обычно проверяет свою страницу одним способом: смотрит на экран и щёлкает мышью. Другие люди открывают ту же страницу иначе.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Кто</th><th>Как работает со страницей</th><th>Что ему мешает</th></tr></thead>
+            <tbody>
+              <tr><td>Незрячий человек</td><td><span class="term">Программа чтения с экрана</span> читает страницу вслух: NVDA на Windows, VoiceOver на macOS и iPhone, TalkBack на Android</td><td>Элемент без роли и названия: программа не может назвать его ссылкой и сказать, куда он ведёт</td></tr>
+              <tr><td>Человек, которому трудно держать мышь</td><td>Клавиатура: <kbd>Tab</kbd> переходит к следующей ссылке или кнопке, <kbd>Enter</kbd> открывает её</td><td>Элемент, до которого нельзя дойти клавишей <kbd>Tab</kbd></td></tr>
+              <tr><td>Слабовидящий человек</td><td>Увеличение страницы, крупный шрифт</td><td>Бледный текст на светлом фоне</td></tr>
+              <tr><td>Любой человек на солнце, с бликующим экраном</td><td>Обычный экран в плохих условиях</td><td>Тот же бледный текст</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>По данным Всемирной организации здравоохранения, нарушения зрения есть не меньше чем у 2,2 миллиарда человек. Требования к доступным страницам собраны в международном документе WCAG (Web Content Accessibility Guidelines). Российский ГОСТ Р 52872-2019 о доступности сайтов и приложений написан на основе WCAG 2.1. Выполняются эти требования редко. В феврале 2026 года организация WebAIM проверила главные страницы миллиона популярных сайтов. Автоматическая проверка нашла ошибки доступности на 95,9 % из них, слабый контраст текста — на 83,9 %.</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>У входа в здание есть ступени и пандус. Пандус нужен человеку в коляске, но им пользуются и родители с коляской, и курьер с тележкой. Доступная страница устроена так же: правильная ссылка вместо «нажимаемого» блока нужна человеку с программой чтения, а удобна всем, кто пользуется клавиатурой.</p>
+          <p class="miss">Пандус видно издалека. Недоступность страницы снаружи не видна: страница выглядит нормально, пока её не попробуют открыть другим способом.</p>
+        </div></div>
+
+        <p>В модуле 4 код пишет ИИ-агент. Свою работу агент обычно проверяет сборкой и тестами, иногда — снимком страницы. Ни одна из этих проверок не пробует открыть страницу клавиатурой или программой чтения. Поэтому доступность проверяет человек, который принимает работу.</p>
+
+        <p class="bridge">Начнём с проверки, которая уже встроена в Chrome.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Проверка Lighthouse</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что делает Lighthouse</p>
+
+        <p><span class="term">Lighthouse</span> — инструмент Google для проверки страниц, он встроен в DevTools браузера Chrome. Lighthouse открывает страницу, проходит по её элементам и проверяет их по списку правил. Правила для доступности взяты из библиотеки axe-core. Результат — оценка от 0 до 100 и список проверок, которые страница не прошла. Кроме доступности, Lighthouse оценивает скорость загрузки, поисковую оптимизацию и другое; в этой главе нужна только доступность.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Запускаем Lighthouse</p>
+
+        <ol class="steps">
+          <li><b>Запустите проект</b><p>В терминале VS Code выполните <code>npm run dev</code> и откройте в Chrome <code>http://localhost:5173/monitoring/</code>.</p></li>
+          <li><b>Откройте Lighthouse</b><p>Нажмите <kbd>F12</kbd> (на macOS — <kbd>⌥⌘I</kbd>) и выберите вкладку <b>Lighthouse</b>. Если её не видно, нажмите <b>»</b> справа от вкладок. В блоке <b>Categories</b> оставьте галочку только у <b>Accessibility</b>, в блоке <b>Device</b> выберите <b>Desktop</b>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/01-lh-panel.png" width="1100" height="310" alt="DevTools, вкладка Lighthouse: Generate a Lighthouse report; Mode — Navigation (Default); Device — Desktop; Categories — отмечена только Accessibility; кнопка Analyze page load" loading="lazy"><figcaption>Только доступность, настольный компьютер</figcaption></figure></li>
+          <li><b>Запустите проверку</b><p>Нажмите <b>Analyze page load</b>. Lighthouse перезагрузит страницу и через несколько секунд покажет отчёт.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/02-lh-94.png" width="1100" height="700" alt="Отчёт Lighthouse для localhost:5173/monitoring/: Accessibility 94; раздел Contrast — красный треугольник, Background and foreground colors do not have a sufficient contrast ratio; Additional items to manually check (10); Passed audits (14); Not applicable (48)" loading="lazy"><figcaption>94 из 100: не пройдена одна проверка — контраст</figcaption></figure></li>
+          <li><b>Раскройте проверку</b><p>Щёлкните строку с красным треугольником. Под ней появится список элементов, которые её не прошли, с уменьшенными снимками.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/03-lh-kontrast.png" width="1100" height="700" alt="Раскрытая проверка Background and foreground colors do not have a sufficient contrast ratio: Failing Elements — span.site__status со снимком зелёной строки «Работает · 221 мс», под ним a.site; затем span.site__status «Работает · 62 мс» и так далее" loading="lazy"><figcaption>Не прошли зелёные строки «Работает» в карточках</figcaption></figure></li>
+          <li><b>Проверьте страницу сайта</b><p>Щёлкните карточку «Старый проект» и снова запустите Lighthouse: кнопка <b>+</b> слева вверху панели начинает новый отчёт.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/04-lh-91.png" width="1100" height="700" alt="Отчёт для localhost:5173/monitoring/site/staryy, раскрытая проверка контраста: Failing Elements — a.back со снимком ссылки «← Все сайты» и a со снимком ссылки на адрес сайта" loading="lazy"><figcaption>Страница сайта — 91: не прошли две синие ссылки</figcaption></figure></li>
+        </ol>
+
+        <p>Страница «Сайты» получила 94, страница сайта — 91, страница «О проверке» — 100. Обе ошибки одного вида: текст слишком мало отличается по яркости от фона. Под словом <code>a.site</code> в списке Lighthouse показывает карточку, внутри которой стоит бледная строка; исправлять нужно саму строку.</p>
+
+        <p class="bridge">Что значит «недостаточный контраст» и как его посчитать?</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Контраст текста</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Отношение яркостей</p>
+
+        <p><span class="term">Контраст</span> в WCAG — это отношение яркости более светлого цвета к яркости более тёмного. Яркость считается по формуле из красной, зелёной и синей составляющих цвета; зелёная составляющая весит больше всех, потому что глаз к ней чувствительнее. Белый на белом даёт 1:1, чёрный на белом — 21:1. WCAG требует для обычного текста не меньше <b>4,5:1</b>, для крупного (от 24 пикселей или от 18,66 пикселя жирным) — не меньше <b>3:1</b>.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Контраст цветов монитора</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 230" role="img" aria-label="Три строки «Работает · 221 мс» на белом фоне. Прежний зелёный #2e9d5b — контраст 3,44 к 1, меньше нормы. Новый зелёный #1e7a46 — 5,35 к 1. Ссылка #2f6fde на фоне страницы #f5f6f9 — 4,36 к 1, новая ссылка #2563d0 — 5,15 к 1. Шкала: 1 к 1 — белый на белом, 3 к 1 — норма для крупного текста, 4,5 к 1 — норма для обычного, 21 к 1 — чёрный на белом">
+              <rect x="20" y="20" width="340" height="190" fill="#ffffff"/>
+              <text x="36" y="48">Строка статуса, 13 px</text>
+              <text x="36" y="84" style="fill:#2e9d5b;font-size:15px">Работает · 221 мс</text><text class="ng-text" x="230" y="84">3,44 : 1 ✗</text>
+              <text x="36" y="116" style="fill:#1e7a46;font-size:15px">Работает · 221 мс</text><text class="ok-text" x="230" y="116">5,35 : 1 ✓</text>
+              <text class="soft" x="36" y="150">#2e9d5b → #1e7a46</text>
+              <text class="soft" x="36" y="186">фон карточки #ffffff</text>
+              <rect x="390" y="20" width="350" height="190" fill="#f5f6f9"/>
+              <text x="406" y="48">Ссылки, 16 px</text>
+              <text x="406" y="84" style="fill:#2f6fde;font-size:15px;text-decoration:underline">← Все сайты</text><text class="ng-text" x="600" y="84">4,36 : 1 ✗</text>
+              <text x="406" y="116" style="fill:#2563d0;font-size:15px;text-decoration:underline">← Все сайты</text><text class="ok-text" x="600" y="116">5,15 : 1 ✓</text>
+              <text class="soft" x="406" y="150">#2f6fde → #2563d0</text>
+              <text class="soft" x="406" y="186">фон страницы #f5f6f9</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Норма для обычного текста — 4,5:1. Ссылке не хватало 0,14, и на глаз разница почти незаметна.</p>
+        </figure>
+
+        <p>Слева — строка статуса. Прежний зелёный <code>#2e9d5b</code> на белой карточке даёт 3,44:1, меньше нормы почти в полтора раза. Справа — ссылки. Тот же синий <code>#2f6fde</code> на белом дал бы 4,72:1 и прошёл бы проверку. Но ссылки стоят на сером фоне страницы <code>#f5f6f9</code>, и на нём контраст падает до 4,36:1. Контраст зависит от пары цветов, поэтому цвет текста проверяют на том фоне, где он стоит. Новые цвета — того же оттенка, только темнее.</p>
+
+        <div class="margin-note">
+          <b>Где посмотреть контраст самому</b>
+          <p>В DevTools на вкладке <b>Elements</b> выберите элемент и щёлкните цветной квадратик рядом со свойством <code>color</code> на панели <b>Styles</b>. В открывшейся палитре строка <b>Contrast ratio</b> показывает отношение к фону и галочки норм AA (4,5:1) и AAA (7:1).</p>
+        </div>
+
+        <p class="phase phase--do"><span>Делаем</span>Меняем цвета</p>
+
+        <ol class="steps">
+          <li><b>Замените три цвета</b><p>В <code>src/index.css</code> замените синий <code>#2f6fde</code> на <code>#2563d0</code> в правилах <code>a</code> и <code>.site:hover</code>, зелёный <code>#2e9d5b</code> на <code>#1e7a46</code> в правиле <code>.site__status</code>. Зелёную полоску слева у карточки менять не нужно: это не текст, к ней норма 4,5:1 не относится.</p>
+            <!--CODE tools/code42/index.css | monitoring/src/index.css · строки 1–19 | lines=1-19 mark=3,16,18--><figure class="code"><figcaption><span>monitoring/src/index.css · строки 1–19</span></figcaption><pre>* { <span class="a">box-sizing</span>: border-box; }
+body { <span class="a">margin</span>: <span class="n">0</span>; <span class="a">font-family</span>: Inter, system-ui, -apple-system, sans-serif; <span class="a">background</span>: <span class="n">#f5f6f9</span>; <span class="a">color</span>: <span class="n">#1f2430</span>; }
+<span class="hl">a { <span class="a">color</span>: <span class="n">#2563d0</span>; }</span>
+.header { <span class="a">padding</span>: <span class="n">24px</span> <span class="n">32px</span> <span class="n">0</span>; <span class="a">background</span>: <span class="n">#1f2430</span>; <span class="a">color</span>: <span class="n">#ffffff</span>; }
+.header h1 { <span class="a">margin</span>: <span class="n">0</span>; <span class="a">font-size</span>: <span class="n">28px</span>; }
+.header p { <span class="a">margin</span>: <span class="n">6px</span> <span class="n">0</span> <span class="n">16px</span>; <span class="a">color</span>: <span class="n">#c4cad8</span>; }
+.nav { <span class="a">display</span>: flex; <span class="a">gap</span>: <span class="n">4px</span>; }
+.nav a { <span class="a">padding</span>: <span class="n">10px</span> <span class="n">16px</span>; <span class="a">border-radius</span>: <span class="n">8px</span> <span class="n">8px</span> <span class="n">0</span> <span class="n">0</span>; <span class="a">color</span>: <span class="n">#c4cad8</span>; <span class="a">text-decoration</span>: none; }
+.nav a.active { <span class="a">background</span>: <span class="n">#f5f6f9</span>; <span class="a">color</span>: <span class="n">#1f2430</span>; <span class="a">font-weight</span>: <span class="n">600</span>; }
+.main { <span class="a">max-width</span>: <span class="n">1000px</span>; <span class="a">margin</span>: <span class="n">0</span> auto; <span class="a">padding</span>: <span class="n">24px</span> <span class="n">32px</span>; }
+.summary { <span class="a">padding</span>: <span class="n">12px</span> <span class="n">16px</span>; <span class="a">border-radius</span>: <span class="n">8px</span>; <span class="a">background</span>: <span class="n">#e3f4ea</span>; <span class="a">color</span>: <span class="n">#1f6b3f</span>; <span class="a">font-weight</span>: <span class="n">600</span>; }
+.summary--bad { <span class="a">background</span>: <span class="n">#fde8e8</span>; <span class="a">color</span>: <span class="n">#b42318</span>; }
+.sites { <span class="a">display</span>: grid; <span class="a">grid-template-columns</span>: repeat(auto-fill, minmax(<span class="n">280px</span>, <span class="n">1fr</span>)); <span class="a">gap</span>: <span class="n">12px</span>; }
+.site { <span class="a">display</span>: flex; <span class="a">flex-direction</span>: column; <span class="a">gap</span>: <span class="n">6px</span>; <span class="a">padding</span>: <span class="n">16px</span>; <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#dfe3eb</span>; <span class="a">border-left</span>: <span class="n">6px</span> solid <span class="n">#2e9d5b</span>; <span class="a">border-radius</span>: <span class="n">8px</span>; <span class="a">background</span>: <span class="n">#ffffff</span>; <span class="a">color</span>: inherit; <span class="a">text-decoration</span>: none; }
+.site--bad { <span class="a">border-left-color</span>: <span class="n">#d23b3b</span>; }
+<span class="hl">.site:hover { <span class="a">border-color</span>: <span class="n">#2563d0</span>; }</span>
+.site h2 { <span class="a">margin</span>: <span class="n">0</span>; <span class="a">font-size</span>: <span class="n">18px</span>; }
+<span class="hl">.site__status { <span class="a">font-size</span>: <span class="n">13px</span>; <span class="a">font-weight</span>: <span class="n">600</span>; <span class="a">color</span>: <span class="n">#1e7a46</span>; }</span>
+.site--bad .site__status { <span class="a">color</span>: <span class="n">#d23b3b</span>; }</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-index-css.png" width="1240" height="780" alt="VS Code: src/index.css, строка 3 a { color: #2563d0; }, строка 16 .site:hover с #2563d0" loading="lazy"><figcaption>index.css: новые цвета ссылок</figcaption></figure></li>
+          <li><b>Повторите проверку</b><p>Vite обновит страницу сам. Запустите Lighthouse снова на странице «Сайты» и на странице сайта.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/06-lh-100.png" width="1100" height="700" alt="Отчёт Lighthouse для localhost:5173/monitoring/: Accessibility 100; Additional items to manually check (10) раскрыт: Interactive controls are keyboard focusable; Interactive elements indicate their purpose and state; The page has a logical tab order; Visual order on the page follows DOM order; User focus is not accidentally trapped in a region; The user's focus is directed to new content added to the page; HTML5 landmark elements are used to improve navigation" loading="lazy"><figcaption>100 на обеих страницах — и десять пунктов для ручной проверки</figcaption></figure></li>
+        </ol>
+
+        <p>Оценка 100 значит, что страница прошла все проверки, которые Lighthouse выполняет автоматически. Под оценкой Lighthouse прямо пишет, что автоматическая проверка находит только часть проблем, и перечисляет десять пунктов для ручной проверки. Первый из них — «к интерактивным элементам можно перейти с клавиатуры».</p>
+
+        <p class="bridge">Проверим на опыте, что Lighthouse пропускает.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Что пропускает Lighthouse: карточка на div</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Как агент делает «кликабельную» карточку</p>
+
+        <p>Когда ИИ-агента просят сделать карточку, по которой можно щёлкнуть, он часто делает её блоком <code>&lt;div&gt;</code> с обработчиком <code>onClick</code>. Обработчик вызывает переход в коде. Мышью такая карточка работает так же, как ссылка. Повторим это в проекте и проверим её тремя способами.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Опыт: заменяем Link на div</p>
+
+        <ol class="steps">
+          <li><b>Замените карточку</b><p>В <code>src/pages/SitesPage.tsx</code> импортируйте <code>useNavigate</code> вместо <code>Link</code>, получите функцию <code>navigate</code> в начале компонента и замените <code>Link</code> на <code>div</code>.</p>
+            <!--CODE tools/code42/SitesPage-div.tsx | monitoring/src/pages/SitesPage.tsx · опыт | lines=32-45 mark=35-39,43--><figure class="code"><figcaption><span>monitoring/src/pages/SitesPage.tsx · опыт</span></figcaption><pre>        {sites.<span class="f">map</span>((site) =<span class="t">&gt;</span> {
+          <span class="k">const</span> check = last?.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === site.id)
+          <span class="k">return</span> (
+<span class="hl">            <span class="t">&lt;div</span></span>
+<span class="hl">              <span class="a">key</span>={site.id}</span>
+<span class="hl">              <span class="a">className</span>={check?.ok ? <span class="s">'site'</span> : <span class="s">'site site--bad'</span>}</span>
+<span class="hl">              <span class="a">onClick</span>={() =<span class="t">&gt;</span> <span class="f">navigate</span>(<span class="s">`/site/${site.id}`</span>)}</span>
+<span class="hl">            <span class="t">&gt;</span></span>
+              <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"site__status"</span><span class="t">&gt;</span>{<span class="f">statusText</span>(check)}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+              <span class="t">&lt;h2</span><span class="t">&gt;</span>{site.name}<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+              <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"site__url"</span><span class="t">&gt;</span>{site.url}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+<span class="hl">            <span class="t">&lt;/div</span><span class="t">&gt;</span></span>
+          )
+        })}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/07-sitespage-div.png" width="1240" height="780" alt="VS Code: SitesPage.tsx, внутри map — div с key, className и onClick={() => navigate(`/site/${site.id}`)}, внутри span site__status, h2 и span site__url" loading="lazy"><figcaption>Карточка — div с onClick</figcaption></figure>
+            <p>Щёлкните карточку мышью в браузере: открывается страница сайта, как и раньше. Lighthouse на этой странице по-прежнему ставит 100.</p></li>
+          <li><b>Пройдите страницу клавиатурой</b><p>Щёлкните пустое место страницы и нажмите <kbd>Tab</kbd> три раза. Первое нажатие выделяет вкладку «Сайты», второе — «О проверке». Третье должно перейти к первой карточке.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/08-tab-div.png" width="1100" height="572" alt="Страница «Сайты» после трёх нажатий Tab: ни одна карточка не выделена рамкой, фокус ушёл со страницы" loading="lazy"><figcaption>Третье нажатие Tab: карточки пропущены, фокус ушёл со страницы</figcaption></figure>
+            <p>Ни одна карточка не выделена. Клавиша <kbd>Tab</kbd> переходит только по элементам, которые браузер считает интерактивными: ссылкам, кнопкам, полям ввода. Блок <code>div</code> к ним не относится, даже с <code>onClick</code>. С клавиатуры страницы сайтов теперь не открыть. Программа чтения с экрана тоже не назовёт карточку ссылкой.</p></li>
+          <li><b>Запустите тесты из главы 4.1</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm test</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/09-tests-div.png" width="1240" height="776" alt="Терминал: разметка страницы с div class site; строка теста ведёт на страницу сайта — screen.getByRole('link', { name: /Справочник по React/ }); Test Files 2 failed | 3 passed; Tests 2 failed | 17 passed (19); FAIL Tests failed. Watching for file changes" loading="lazy"><figcaption>Два теста из главы 4.1 упали</figcaption></figure>
+            <p>Упали тесты «ведёт на страницу сайта» и «по щелчку на карточке открывает страницу сайта». Оба ищут карточку через <code>getByRole('link', …)</code>, и Testing Library сообщает: <code>Unable to find an accessible element with the role "link"</code>. Ссылок на странице больше нет. Остановите тесты клавишей <kbd>q</kbd>.</p></li>
+          <li><b>Включите правила доступности в линтере</b><p>Линтер oxlint, которым Vite настроил проект, проверяет и доступность разметки JSX. Эти правила собраны в плагине <code>jsx-a11y</code>; его нужно назвать в <code>.oxlintrc.json</code>. Строку про <code>prefer-tag-over-role</code> разберём в §6.</p>
+            <!--CODE tools/code42/oxlintrc.json | monitoring/.oxlintrc.json | mark=3,7--><figure class="code"><figcaption><span>monitoring/.oxlintrc.json</span></figcaption><pre>{
+  <span class="s">"$schema"</span>: <span class="s">"./node_modules/oxlint/configuration_schema.json"</span>,
+<span class="hl">  <span class="s">"plugins"</span>: [<span class="s">"react"</span>, <span class="s">"typescript"</span>, <span class="s">"oxc"</span>, <span class="s">"jsx-a11y"</span>],</span>
+  <span class="s">"rules"</span>: {
+    <span class="s">"react/rules-of-hooks"</span>: <span class="s">"error"</span>,
+    <span class="s">"react/only-export-components"</span>: [<span class="s">"warn"</span>, { <span class="s">"allowConstantExport"</span>: <span class="k">true</span> }],
+<span class="hl">    <span class="s">"jsx-a11y/prefer-tag-over-role"</span>: <span class="s">"off"</span></span>
+  }
+}</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/10-oxlintrc.png" width="1240" height="780" alt="VS Code: .oxlintrc.json, plugins: react, typescript, oxc, jsx-a11y; rules — react/rules-of-hooks error, react/only-export-components warn, jsx-a11y/prefer-tag-over-role off" loading="lazy"><figcaption>Плагин jsx-a11y в настройках линтера</figcaption></figure></li>
+          <li><b>Запустите линтер</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm run lint</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/11-lint-div.png" width="1240" height="617" alt="Терминал: npm run lint; jsx-a11y(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener, src/pages/SitesPage.tsx:35:13; jsx-a11y(no-static-element-interactions): Static HTML elements with event handlers require a role, SitesPage.tsx:35:14; help: Add a role attribute to this element, or use a semantic HTML element instead; Found 2 warnings and 0 errors" loading="lazy"><figcaption>Два предупреждения на строке с div</figcaption></figure></li>
+          <li><b>Верните ссылку</b><p>Верните <code>SitesPage.tsx</code> к версии из главы 4.1 с <code>Link</code>. Снова нажмите <kbd>Tab</kbd> три раза.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/12-tab-link.png" width="1100" height="572" alt="Страница «Сайты» после трёх нажатий Tab: первая карточка «Справочник по Git и GitHub» обведена синей рамкой фокуса" loading="lazy"><figcaption>С Link третье нажатие выделяет первую карточку</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что поймало ошибку</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Проверка</th><th>Карточка на div</th><th>Почему</th></tr></thead>
+            <tbody>
+              <tr><td>Щелчок мышью</td><td>работает</td><td><code>onClick</code> вызывает <code>navigate</code></td></tr>
+              <tr><td>Lighthouse</td><td>100, ошибок нет</td><td>правила Lighthouse проверяют ссылки, кнопки и элементы с ролью; <code>div</code> с <code>onClick</code> к ним не относится</td></tr>
+              <tr><td>Клавиша <kbd>Tab</kbd></td><td>карточки пропущены</td><td><code>div</code> не получает фокус</td></tr>
+              <tr><td>Тесты 4.1 через <code>getByRole('link')</code></td><td>2 упали</td><td>Testing Library ищет элементы по роли, как программа чтения</td></tr>
+              <tr><td>Линтер с <code>jsx-a11y</code></td><td>2 предупреждения</td><td>правила видят обработчик щелчка на элементе без роли</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>В главе 4.1 тесты искали карточки по роли <code>link</code>. Тогда роль была способом найти элемент. Теперь видно, что такой тест заодно проверяет доступность: элемент без роли тест не найдёт. Документация Testing Library по той же причине ставит поиск по роли первым в списке способов.</p>
+
+        <div class="margin-note">
+          <b>Почему не добавить role и onKeyDown</b>
+          <p>Линтер предлагает и такой путь: <code>role="link"</code>, <code>tabIndex={0}</code> и обработчик клавиш. Так можно повторить поведение ссылки, но придётся сделать вручную всё, что <code>&lt;a&gt;</code> делает сам: переход по <kbd>Enter</kbd>, открытие в новой вкладке, адрес в строке состояния. Готовый элемент — <code>Link</code> — надёжнее.</p>
+        </div>
+
+        <p class="bridge">Ссылка на месте. Осталось выяснить, что услышит человек, который до неё дошёл.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Дерево доступности: название ссылки и вкладки</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что получает программа чтения</p>
+
+        <p>Программа чтения с экрана работает не с изображением страницы. Браузер строит для неё <span class="term">дерево доступности</span> — упрощённую копию страницы. У каждого элемента в ней есть <b>роль</b>: ссылка, заголовок, таблица, кнопка. Есть и <b>название</b> — текст, который программа произнесёт. Название ссылки браузер собирает из всего текста внутри неё по порядку.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Карточка на экране и в дереве доступности</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 220" role="img" aria-label="Слева карточка на экране: статус «Не открывается · 404», ниже заголовок «Старый проект», ниже адрес. Стрелка к дереву доступности: роль link, название «Не открывается · 404 Старый проект https://…». Внизу — список ссылок, который программа чтения показывает по клавише: шесть строк, пять начинаются со слова «Работает», по ним не понять, какой это сайт">
+              <rect x="20" y="30" width="220" height="110" fill="#ffffff"/>
+              <text class="ng-text" x="36" y="58" style="font-size:12px">Не открывается · 404</text>
+              <text x="36" y="84" style="font-size:16px">Старый проект</text>
+              <text class="soft" x="36" y="110">https://…/staryy-proekt/</text>
+              <path d="M240 85 H 286"/><path d="M278 79 L 286 85 L 278 91"/>
+              <rect x="294" y="30" width="446" height="110" fill="#161A2E"/>
+              <text class="on-dark" x="310" y="58">Роль: link</text>
+              <text class="soft on-dark-soft" x="310" y="84">Название: «Не открывается · 404</text>
+              <text class="soft on-dark-soft" x="310" y="104">           Старый проект https://…»</text>
+              <rect x="20" y="160" width="720" height="50" fill="#D6F0F9"/>
+              <text class="soft" x="34" y="182">Список ссылок: «Работает · 221 мс Справочник…», «Работает · 62 мс Справочник…»,</text>
+              <text class="soft" x="34" y="200">«Работает · 54 мс Разговорный…» — сначала слышно состояние, название сайта — потом</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Название ссылки — весь её текст по порядку, без оформления.</p>
+        </figure>
+
+        <p>Программы чтения умеют показать все ссылки страницы списком, и человек выбирает нужную по первым словам. В мониторе пять из шести ссылок начинаются одинаково: «Работает · …». Чтобы найти «Справочник по MongoDB», придётся выслушать начало каждой. На экране статус стоит над заголовком и выглядит подписью к нему; в названии ссылки он оказывается первым.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Смотрим дерево доступности в DevTools</p>
+
+        <ol class="steps">
+          <li><b>Выберите карточку</b><p>Щёлкните правой кнопкой по карточке «Старый проект» и выберите <b>Inspect</b> («Просмотреть код»). В DevTools на вкладке <b>Elements</b> выделится строка <code>&lt;a class="site site--bad"…&gt;</code>. Справа выберите вкладку <b>Accessibility</b> (если её не видно — кнопка <b>»</b>).</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/13-a11y-do.png" width="1100" height="700" alt="DevTools, Elements: выделен a class site site--bad href /monitoring/site/staryy; справа вкладка Accessibility, Computed Properties: Name: «Не открывается · 404 Старый проект http…», Contents: то же; Role: link; Focusable: true" loading="lazy"><figcaption>Role: link, Name начинается со статуса</figcaption></figure>
+            <p>В разделе <b>Computed Properties</b> строка <b>Role</b> — роль, строка <b>Name</b> — название, которое услышит человек. <b>Focusable: true</b> значит, что до элемента можно дойти клавишей <kbd>Tab</kbd>; у карточки на <code>div</code> этого бы не было.</p></li>
+          <li><b>Запишите требование тестом</b><p>Запустите <code>npm test</code> и добавьте в <code>src/pages/SitesPage.test.tsx</code> тест после теста о загрузке. Знак <code>^</code> в начале регулярного выражения значит «в самом начале строки».</p>
+            <!--CODE tools/code42/SitesPage-1.test.tsx | monitoring/src/pages/SitesPage.test.tsx · новый тест | lines=57-61--><figure class="code"><figcaption><span>monitoring/src/pages/SitesPage.test.tsx · новый тест</span></figcaption><pre>  <span class="f">it</span>(<span class="s">'название карточки начинается с названия сайта'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">show</span>({})
+    <span class="k">const</span> link = screen.<span class="f">getByRole</span>(<span class="s">'link'</span>, { name: /^Справочник по React/ })
+    <span class="f">expect</span>(link).<span class="f">toBeInTheDocument</span>()
+  })</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/14-test-name-red.png" width="1240" height="776" alt="Терминал: тест название карточки начинается с названия сайта — getByRole('link', { name: /^Справочник по React/ }); Tests 1 failed | 5 passed (6); FAIL Tests failed" loading="lazy"><figcaption>Новый тест падает: название начинается со статуса</figcaption></figure></li>
+          <li><b>Поставьте название сайта первым</b><p>В <code>SitesPage.tsx</code> поменяйте местами строки с <code>&lt;h2&gt;</code> и статусом.</p>
+            <!--CODE tools/code42/SitesPage-2.tsx | monitoring/src/pages/SitesPage.tsx · карточка | lines=33-39 mark=35-36--><figure class="code"><figcaption><span>monitoring/src/pages/SitesPage.tsx · карточка</span></figcaption><pre>          <span class="k">return</span> (
+            <span class="t">&lt;Link</span> <span class="a">key</span>={site.id} <span class="a">to</span>={<span class="s">`/site/${site.id}`</span>} <span class="a">className</span>={check?.ok ? <span class="s">'site'</span> : <span class="s">'site site--bad'</span>}<span class="t">&gt;</span>
+<span class="hl">              <span class="t">&lt;h2</span><span class="t">&gt;</span>{site.name}<span class="t">&lt;/h2</span><span class="t">&gt;</span></span>
+<span class="hl">              <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"site__status"</span><span class="t">&gt;</span>{<span class="f">statusText</span>(check)}<span class="t">&lt;/span</span><span class="t">&gt;</span></span>
+              <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"site__url"</span><span class="t">&gt;</span>{site.url}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+            <span class="t">&lt;/Link</span><span class="t">&gt;</span>
+          )</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/15-sitespage-order.png" width="1240" height="780" alt="VS Code: SitesPage.tsx, внутри Link сначала h2 с site.name, потом span site__status, потом span site__url" loading="lazy"><figcaption>Сначала название, потом статус</figcaption></figure>
+            <p>Тест проходит. Статус теперь стоит под названием и на экране, а в DevTools название ссылки начинается с «Старый проект».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/16-a11y-posle.png" width="1100" height="700" alt="DevTools, вкладка Accessibility для той же карточки: Name: «Старый проект Не открывается · 404 http…», Role: link, Focusable: true" loading="lazy"><figcaption>Name: «Старый проект Не открывается · 404 …»</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Заголовок вкладки</p>
+
+        <p>Первое, что программа чтения произносит после перехода на новую страницу, — её заголовок, текст тега <code>&lt;title&gt;</code>. Тот же текст стоит на вкладке браузера, в истории и в закладках. В мониторе он один на все страницы: <code>index.html</code> задаёт «Мониторинг сайтов группы», а приложение его не меняет.</p>
+
+        <figure class="shot" style="max-width: 1106px"><img src="img/17-title-do.png" width="1100" height="708" alt="Браузер: вкладка «Мониторинг сайтов группы», адрес localhost:5173/monitoring/site/staryy, страница «Старый проект» с историей проверок" loading="lazy"><figcaption>Страница «Старый проект», а на вкладке — общий заголовок</figcaption></figure>
+
+        <p>В React 19 тег <code>&lt;title&gt;</code> можно вывести прямо в компоненте страницы. React перенесёт его в <code>&lt;head&gt;</code> документа, где бы он ни стоял в дереве компонентов, и уберёт, когда страница исчезнет. Заголовок из <code>index.html</code> остаётся и виден, пока загружается JavaScript; заголовок React ставится в <code>&lt;head&gt;</code> перед ним, и браузер берёт первый.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Заголовки страниц</p>
+
+        <ol class="steps">
+          <li><b>Проверьте заголовок в тесте</b><p>В <code>src/App.test.tsx</code> тест уже открывает страницу сайта щелчком. Добавьте в конец одну проверку: <code>document.title</code> — заголовок документа.</p>
+            <!--CODE tools/code42/App.test.tsx | monitoring/src/App.test.tsx · конец теста | lines=43-49 mark=48--><figure class="code"><figcaption><span>monitoring/src/App.test.tsx · конец теста</span></figcaption><pre>    await user.<span class="f">click</span>(screen.<span class="f">getByRole</span>(<span class="s">'link'</span>, { name: /Справочник по React/ }))
+    <span class="k">const</span> heading = screen.<span class="f">getByRole</span>(<span class="s">'heading'</span>, { name: <span class="s">'Справочник по React'</span> })
+    <span class="f">expect</span>(heading).<span class="f">toBeInTheDocument</span>()
+    <span class="k">const</span> text = screen.<span class="f">getByText</span>(<span class="s">'Открывался в 1 из 2 последних проверок.'</span>)
+    <span class="f">expect</span>(text).<span class="f">toBeInTheDocument</span>()
+<span class="hl">    <span class="f">expect</span>(document.title).<span class="f">toBe</span>(<span class="s">'Справочник по React · Мониторинг сайтов группы'</span>)</span>
+  })</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/18-title-red.png" width="1240" height="648" alt="Терминал: RERUN src/App.test.tsx; FAIL src/App.test.tsx > App > по щелчку на карточке открывает страницу сайта; AssertionError: expected '' to be 'Справочник по React · Мониторинг сайт…'; Expected — Справочник по React · Мониторинг сайтов группы" loading="lazy"><figcaption>В тесте заголовок пустой: index.html в jsdom не загружается</figcaption></figure></li>
+          <li><b>Добавьте заголовки</b><p>Первой строкой внутри фрагмента <code>&lt;&gt;</code> каждой страницы поставьте свой <code>&lt;title&gt;</code>. В <code>SitePage.tsx</code> название сайта подставляется в шаблонную строку.</p>
+            <!--CODE tools/code42/SitePage-1.tsx | monitoring/src/pages/SitePage.tsx · строки 24–28 | lines=24-28 mark=26--><figure class="code"><figcaption><span>monitoring/src/pages/SitePage.tsx · строки 24–28</span></figcaption><pre>  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+<span class="hl">      <span class="t">&lt;title</span><span class="t">&gt;</span>{<span class="s">`${site.name} · Мониторинг сайтов группы`</span>}<span class="t">&lt;/title</span><span class="t">&gt;</span></span>
+      <span class="t">&lt;Link</span> <span class="a">to</span>=<span class="s">"/"</span> <span class="a">className</span>=<span class="s">"back"</span><span class="t">&gt;</span>← Все сайты<span class="t">&lt;/Link</span><span class="t">&gt;</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>{site.name}<span class="t">&lt;/h2</span><span class="t">&gt;</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/19-sitepage-title.png" width="1240" height="780" alt="VS Code: SitePage.tsx, строка 26 title с шаблонной строкой `${site.name} · Мониторинг сайтов группы` перед Link «← Все сайты»" loading="lazy"><figcaption>Заголовок страницы сайта</figcaption></figure>
+            <p>В остальных страницах заголовок постоянный: <code>&lt;title&gt;Сайты · Мониторинг сайтов группы&lt;/title&gt;</code> в <code>SitesPage.tsx</code>, «О проверке · …» в <code>AboutPage.tsx</code>, «Страница не найдена · …» в <code>NotFoundPage.tsx</code>. У <code>NotFoundPage</code> сейчас один элемент <code>&lt;p&gt;</code>; оберните его вместе с заголовком во фрагмент <code>&lt;&gt;…&lt;/&gt;</code>.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/20-title-posle.png" width="1100" height="708" alt="Браузер: вкладка «Старый проект · Мониторинг сайтов группы», адрес localhost:5173/monitoring/site/staryy" loading="lazy"><figcaption>На вкладке — название страницы</figcaption></figure></li>
+        </ol>
+
+        <p>Запись <code>&lt;title&gt;{site.name} · Мониторинг сайтов группы&lt;/title&gt;</code> не работает. Внутри <code>&lt;title&gt;</code> React принимает только одну строку. В этой записи два куска — значение и текст, — и заголовок остаётся пустым: тест с ней падает с тем же <code>expected ''</code>. Шаблонная строка в фигурных скобках собирает их в одну.</p>
+
+        <p class="bridge">Ссылки и страницы названы. Остались сообщения, которые появляются на странице без перехода.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Сообщения о загрузке и ошибке</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Роли status и alert</p>
+
+        <p>Пока данные загружаются, на странице стоит «Загрузка результатов…». Если файл не загрузился, на её месте появляется сообщение об ошибке. Зрячий человек замечает перемену. Программа чтения прочитает новый текст, только если человек сам до него дойдёт: адрес страницы не менялся, и сигнала о перемене программа не получает.</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>На вокзале табло показывает поезда, а объявления звучат по громкой связи. «Поезд прибывает на второй путь» говорят спокойно, между другими объявлениями. «Посадка на поезд заканчивается» — сразу, прерывая музыку. Слепой пассажир не видит табло, но слышит объявления. <code>status</code> и <code>alert</code> — два вида объявлений для программы чтения.</p>
+          <p class="miss">На вокзале объявления делает диктор. На странице объявляет программа чтения, и только те элементы, которым задана роль.</p>
+        </div></div>
+
+        <p>Чтобы программа объявила новый текст сама, элементу задают роль-сообщение. Ролей две, они различаются срочностью.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Роль</th><th>Когда программа прочитает новый текст</th><th>Сообщение в мониторе</th></tr></thead>
+            <tbody>
+              <tr><td><code>role="status"</code></td><td>после текущей фразы</td><td>«Загрузка результатов…»</td></tr>
+              <tr><td><code>role="alert"</code></td><td>сразу, прервав текущую фразу</td><td>«Файл sites.json не загрузился: код 404.»</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="phase phase--do"><span>Делаем</span>Тесты по ролям и роли в разметке</p>
+
+        <ol class="steps">
+          <li><b>Ищите сообщения по роли</b><p>В <code>SitesPage.test.tsx</code> перепишите тест о загрузке: сообщение ищется по роли <code>status</code>, текст проверяется у найденного элемента. Название теста меняется на «пока идёт загрузка, сообщает об этом».</p>
+            <!--CODE tools/code42/SitesPage.test.tsx | monitoring/src/pages/SitesPage.test.tsx · тест загрузки | lines=52-55 mark=52,54--><figure class="code"><figcaption><span>monitoring/src/pages/SitesPage.test.tsx · тест загрузки</span></figcaption><pre><span class="hl">  <span class="f">it</span>(<span class="s">'пока идёт загрузка, сообщает об этом'</span>, () =<span class="t">&gt;</span> {</span>
+    <span class="f">show</span>({ loading: <span class="k">true</span> })
+<span class="hl">    <span class="f">expect</span>(screen.<span class="f">getByRole</span>(<span class="s">'status'</span>)).<span class="f">toHaveTextContent</span>(<span class="s">'Загрузка результатов…'</span>)</span>
+  })</pre></figure><!--/CODE-->
+            <p>В <code>src/MonitoringProvider.test.tsx</code> ошибка ищется по роли <code>alert</code>.</p>
+            <!--CODE tools/code42/MonitoringProvider.test.tsx | monitoring/src/MonitoringProvider.test.tsx · проверка | lines=21-22 mark=21-22--><figure class="code"><figcaption><span>monitoring/src/MonitoringProvider.test.tsx · проверка</span></figcaption><pre><span class="hl">    <span class="k">const</span> message = await screen.<span class="f">findByRole</span>(<span class="s">'alert'</span>)</span>
+<span class="hl">    <span class="f">expect</span>(message).<span class="f">toHaveTextContent</span>(<span class="s">'Файл sites.json не загрузился: код 404.'</span>)</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/21-roles-red.png" width="1240" height="776" alt="Терминал: разметка p class load-error «Файл sites.json не загрузился: код 404.»; строка const message = await screen.findByRole('alert'); Test Files 2 failed (2); Tests 2 failed | 5 passed (7)" loading="lazy"><figcaption>Оба теста падают: текст на странице есть, роли нет</figcaption></figure></li>
+          <li><b>Задайте роли</b><p>В <code>SitesPage.tsx</code> добавьте <code>role="status"</code> к сообщению о загрузке и <code>role="alert"</code> к сообщению об ошибке.</p>
+            <!--CODE tools/code42/SitesPage.tsx | monitoring/src/pages/SitesPage.tsx · строки 9–22 | lines=9-22 mark=11,18--><figure class="code"><figcaption><span>monitoring/src/pages/SitesPage.tsx · строки 9–22</span></figcaption><pre>  <span class="k">if</span> (loading) {
+    <span class="k">return</span> (
+<span class="hl">      <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span> <span class="a">role</span>=<span class="s">"status"</span><span class="t">&gt;</span></span>
+        Загрузка результатов…
+      <span class="t">&lt;/p</span><span class="t">&gt;</span>
+    )
+  }
+  <span class="k">if</span> (error !== <span class="s">''</span>) {
+    <span class="k">return</span> (
+<span class="hl">      <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"load-error"</span> <span class="a">role</span>=<span class="s">"alert"</span><span class="t">&gt;</span></span>
+        {error}
+      <span class="t">&lt;/p</span><span class="t">&gt;</span>
+    )
+  }</pre></figure><!--/CODE-->
+            <p>В <code>SitePage.tsx</code> добавьте <code>role="status"</code> к такому же сообщению о загрузке, а у таблицы истории — подпись <code>&lt;caption&gt;</code>. Подпись — название таблицы: программа чтения назовёт его, когда человек дойдёт до таблицы.</p>
+            <!--CODE tools/code42/SitePage.tsx | monitoring/src/pages/SitePage.tsx | mark=11,30,38--><figure class="code"><figcaption><span>monitoring/src/pages/SitePage.tsx</span></figcaption><pre><span class="k">import</span> { Link, useParams } <span class="k">from</span> <span class="s">'react-router'</span>
+<span class="k">import</span> { useMonitoring } <span class="k">from</span> <span class="s">'../monitoring'</span>
+<span class="k">import</span> { statusText } <span class="k">from</span> <span class="s">'../status'</span>
+
+<span class="k">function</span> <span class="f">SitePage</span>() {
+  <span class="k">const</span> { id } = <span class="f">useParams</span>()
+  <span class="k">const</span> { sites, history, loading } = <span class="f">useMonitoring</span>()
+
+  <span class="k">if</span> (loading) {
+    <span class="k">return</span> (
+<span class="hl">      <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span> <span class="a">role</span>=<span class="s">"status"</span><span class="t">&gt;</span></span>
+        Загрузка результатов…
+      <span class="t">&lt;/p</span><span class="t">&gt;</span>
+    )
+  }
+  <span class="k">const</span> site = sites.<span class="f">find</span>((s) =<span class="t">&gt;</span> s.id === id)
+  <span class="k">if</span> (site === <span class="k">undefined</span>) {
+    <span class="k">return</span> (
+      <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>
+        Сайта «{id}» нет в списке. <span class="t">&lt;Link</span> <span class="a">to</span>=<span class="s">"/"</span><span class="t">&gt;</span>К списку сайтов<span class="t">&lt;/Link</span><span class="t">&gt;</span>
+      <span class="t">&lt;/p</span><span class="t">&gt;</span>
+    )
+  }
+
+  <span class="k">const</span> checks = history.<span class="f">map</span>((run) =<span class="t">&gt;</span> ({ time: run.time, check: run.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === site.id) }))
+  <span class="k">const</span> ok = checks.<span class="f">filter</span>((c) =<span class="t">&gt;</span> c.check?.ok).length
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+<span class="hl">      <span class="t">&lt;title</span><span class="t">&gt;</span>{<span class="s">`${site.name} · Мониторинг сайтов группы`</span>}<span class="t">&lt;/title</span><span class="t">&gt;</span></span>
+      <span class="t">&lt;Link</span> <span class="a">to</span>=<span class="s">"/"</span> <span class="a">className</span>=<span class="s">"back"</span><span class="t">&gt;</span>← Все сайты<span class="t">&lt;/Link</span><span class="t">&gt;</span>
+      <span class="t">&lt;h2</span><span class="t">&gt;</span>{site.name}<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>
+        <span class="t">&lt;a</span> <span class="a">href</span>={site.url} <span class="a">target</span>=<span class="s">"_blank"</span> <span class="a">rel</span>=<span class="s">"noreferrer"</span><span class="t">&gt;</span>{site.url}<span class="t">&lt;/a</span><span class="t">&gt;</span>
+      <span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span><span class="t">&gt;</span>Открывался в {ok} из {checks.length} последних проверок.<span class="t">&lt;/p</span><span class="t">&gt;</span>
+      <span class="t">&lt;table</span> <span class="a">className</span>=<span class="s">"history"</span><span class="t">&gt;</span>
+<span class="hl">        <span class="t">&lt;caption</span><span class="t">&gt;</span>История проверок<span class="t">&lt;/caption</span><span class="t">&gt;</span></span>
+        <span class="t">&lt;thead</span><span class="t">&gt;</span>
+          <span class="t">&lt;tr</span><span class="t">&gt;</span><span class="t">&lt;th</span><span class="t">&gt;</span>Проверка<span class="t">&lt;/th</span><span class="t">&gt;</span><span class="t">&lt;th</span><span class="t">&gt;</span>Результат<span class="t">&lt;/th</span><span class="t">&gt;</span><span class="t">&lt;/tr</span><span class="t">&gt;</span>
+        <span class="t">&lt;/thead</span><span class="t">&gt;</span>
+        <span class="t">&lt;tbody</span><span class="t">&gt;</span>
+          {checks.<span class="f">map</span>(({ time, check }) =<span class="t">&gt;</span> (
+            <span class="t">&lt;tr</span> <span class="a">key</span>={time} <span class="a">className</span>={check?.ok ? <span class="s">''</span> : <span class="s">'bad'</span>}<span class="t">&gt;</span>
+              <span class="t">&lt;td</span><span class="t">&gt;</span>{<span class="k">new</span> <span class="f">Date</span>(time).<span class="f">toLocaleString</span>(<span class="s">'ru'</span>)}<span class="t">&lt;/td</span><span class="t">&gt;</span>
+              <span class="t">&lt;td</span><span class="t">&gt;</span>{<span class="f">statusText</span>(check)}<span class="t">&lt;/td</span><span class="t">&gt;</span>
+            <span class="t">&lt;/tr</span><span class="t">&gt;</span>
+          ))}
+        <span class="t">&lt;/tbody</span><span class="t">&gt;</span>
+      <span class="t">&lt;/table</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> SitePage</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/22-sitepage.png" width="1240" height="780" alt="VS Code: SitePage.tsx, строки 9–15 — p className empty role status «Загрузка результатов…», строка 30 — title" loading="lazy"><figcaption>SitePage.tsx: роль сообщения о загрузке</figcaption></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/23-vse-zeleno.png" width="1240" height="488" alt="Терминал: RERUN src/pages/SitePage.tsx; MonitoringProvider — сообщает, какой файл не загрузился; SitesPage (6) — шесть зелёных; App — по щелчку на карточке открывает страницу сайта; Test Files 3 passed; Tests 8 passed; PASS Waiting for file changes" loading="lazy"><figcaption>Затронутые файлы тестов прошли</figcaption></figure></li>
+        </ol>
+
+        <p>Нажмите <kbd>a</kbd>, чтобы Vitest повторил все тесты: их 20, все проходят.</p>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Почему одно правило линтера выключено</p>
+
+        <p>С ролью <code>status</code> линтер выдаёт предупреждение <code>jsx-a11y(prefer-tag-over-role)</code>: <code>Prefer `output` over `role` attribute `status`</code>. У тега <code>&lt;output&gt;</code> роль <code>status</code> уже есть, и правило советует взять его. Но <code>&lt;output&gt;</code> по стандарту HTML показывает результат вычисления или действия пользователя, например сумму в калькуляторе. Надпись о загрузке сообщает о состоянии страницы, поэтому в <code>.oxlintrc.json</code> из §4 это правило выключено строкой <code>"jsx-a11y/prefer-tag-over-role": "off"</code>.</p>
+
+        <p>Выключать правило линтера можно, когда понятно, почему его совет не подходит. Такое решение записывают в <code>.oxlintrc.json</code>: там его видит каждый, кто читает проект. Если агент выключает правило, чтобы убрать предупреждение, спросите у него причину.</p>
+
+        <p class="bridge">Осталось сделать так, чтобы правила доступности проверялись перед каждой публикацией.</p>
+
+        <h2 id="s7"><span class="sec">§7</span>Линтер перед публикацией</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Шаг линтера в deploy.yml</p>
+
+        <p>Предупреждения линтера не останавливают работу: <code>npm run lint</code> с двумя предупреждениями завершается успешно, с кодом 0. В конвейере это значит, что сайт опубликуется. Ключ <code>--deny-warnings</code> превращает предупреждения в ошибку.</p>
+
+        <ol class="steps">
+          <li><b>Добавьте шаг</b><p>В <code>.github/workflows/deploy.yml</code> перед шагом «Запустить тесты» добавьте шаг линтера. Два минуса <code>--</code> отделяют ключи npm от ключей, которые получит сам oxlint.</p>
+            <!--CODE tools/code42/deploy.yml | monitoring/.github/workflows/deploy.yml · шаги | lines=34-41 mark=36-37--><figure class="code"><figcaption><span>monitoring/.github/workflows/deploy.yml · шаги</span></figcaption><pre><span class="a">      - name</span>: Установить зависимости
+<span class="a">        run</span>: npm ci
+<span class="hl"><span class="a">      - name</span>: Проверить код линтером</span>
+<span class="hl"><span class="a">        run</span>: npm run lint -- --deny-warnings</span>
+<span class="a">      - name</span>: Запустить тесты
+<span class="a">        run</span>: npm test
+<span class="a">      - name</span>: Собрать сайт
+<span class="a">        run</span>: npm run build</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/24-deploy-yml.png" width="1240" height="780" alt="VS Code: deploy.yml, шаги: Установить зависимости — npm ci; Проверить код линтером — npm run lint -- --deny-warnings; Запустить тесты — npm test; Собрать сайт — npm run build" loading="lazy"><figcaption>Линтер, тесты, сборка</figcaption></figure></li>
+          <li><b>Проверьте команду у себя</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm run lint -- --deny-warnings</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/25-lint-ok.png" width="1240" height="280" alt="Терминал: npm run lint -- --deny-warnings; > oxlint --deny-warnings; Found 0 warnings and 0 errors" loading="lazy"><figcaption>Ни одного предупреждения</figcaption></figure></li>
+          <li><b>Отправьте изменения</b><p>Сделайте коммит и <code>git push</code>. На вкладке Actions в журнале запуска «Публикация на GitHub Pages» появится шаг «Проверить код линтером» перед тестами.</p></li>
+        </ol>
+
+        <figure class="scheme">
+          <p class="scheme__head">Три проверки доступности и что каждая ловит</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 200" role="img" aria-label="Три колонки. Линтер jsx-a11y: читает код, ловит обработчик щелчка на div. Тесты по ролям: показывают компонент в jsdom, ловят пропавшую ссылку, название ссылки, заголовок вкладки, роли status и alert. Lighthouse: смотрит готовую страницу в браузере, ловит контраст. Под всеми: клавиатура и дерево доступности проверяются руками">
+              <rect x="20" y="20" width="230" height="120" fill="#ffffff"/><text x="34" y="46">Линтер jsx-a11y</text><text class="soft" x="34" y="72">читает код</text><text class="soft" x="34" y="96">onClick на div</text><text class="soft" x="34" y="116">img без alt</text>
+              <rect x="265" y="20" width="230" height="120" fill="#161A2E"/><text class="on-dark" x="279" y="46">Тесты по ролям</text><text class="soft on-dark-soft" x="279" y="72">страница в jsdom</text><text class="soft on-dark-soft" x="279" y="96">роль и название ссылки</text><text class="soft on-dark-soft" x="279" y="116">title, status, alert</text>
+              <rect x="510" y="20" width="230" height="120" fill="#D6F0F9"/><text x="524" y="46">Lighthouse</text><text class="soft" x="524" y="72">страница в браузере</text><text class="soft" x="524" y="96">контраст цветов</text><text class="soft" x="524" y="116">только размеченное</text>
+              <path class="dash" d="M20 165 H 740"/><text class="soft" x="20" y="190">руками: Tab по странице и вкладка Accessibility в DevTools — то, что не проверяет ни одна программа</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Линтер и тесты запускаются в deploy.yml, Lighthouse и клавиатура — руками перед сдачей.</p>
+        </figure>
+
+        <p>Каждая проверка находит свой вид ошибок. Линтер проверяет код и страницу не открывает. Тесты показывают компонент на странице <code>jsdom</code>, где нет цветов, поэтому контраст не проверить. Lighthouse проверяет готовую страницу, но только размеченные элементы. Порядок клавиши <kbd>Tab</kbd> и то, что услышит человек, по-прежнему проверяются руками.</p>
+
+        <h2 id="s8"><span class="sec">§8</span>Частые ошибки</h2>
+
+        <p>Сообщения получены на проекте <code>monitoring</code>.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>Lighthouse 100, а карточку не открыть с клавиатуры</td><td>Карточка сделана из <code>div</code> с <code>onClick</code>; правила Lighthouse такие элементы пропускают</td><td>Взять <code>Link</code> или <code>&lt;button&gt;</code>; включить плагин <code>jsx-a11y</code></td></tr>
+              <tr><td><code>Unable to find an accessible element with the role "link"</code></td><td>Элемента с такой ролью на странице нет</td><td>Посмотреть разметку под сообщением: ссылка заменена на <code>div</code> или <code>span</code></td></tr>
+              <tr><td><code>Unable to find an accessible element with the role "status"</code></td><td>У сообщения нет атрибута <code>role</code></td><td>Добавить <code>role="status"</code> или <code>role="alert"</code></td></tr>
+              <tr><td><code>expected '' to be '… · Мониторинг сайтов группы'</code></td><td>В <code>&lt;title&gt;</code> текст и значение записаны отдельно: <code>{site.name} · …</code></td><td>Собрать одну строку: <code>{`${site.name} · …`}</code></td></tr>
+              <tr><td>Цвет прошёл проверку на белом, а Lighthouse его не принимает</td><td>Текст стоит на другом фоне, например сером <code>#f5f6f9</code></td><td>Проверять пару «текст — фон», на котором он стоит</td></tr>
+              <tr><td>Предупреждения линтера есть, а публикация прошла</td><td>Без ключа oxlint с предупреждениями завершается с кодом 0</td><td>Запускать в конвейере <code>npm run lint -- --deny-warnings</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s9"><span class="sec">§9</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Lighthouse поставил странице 100. Значит ли это, что она доступна?</summary>
+          <p>Нет. Lighthouse проверяет только то, что можно найти автоматически, и сам перечисляет десять пунктов для ручной проверки. Карточка на <code>div</code> в этой главе получила 100, но не открывалась с клавиатуры.</p>
+        </details>
+        <details>
+          <summary>Почему тесты из главы 4.1 упали, когда карточка стала <code>div</code>, хотя мышью она работала?</summary>
+          <p>Тесты ищут карточку через <code>getByRole('link', …)</code>. У <code>div</code> нет роли ссылки, поэтому Testing Library его не находит — так же, как программа чтения с экрана.</p>
+        </details>
+        <details>
+          <summary>Из чего браузер собирает название ссылки-карточки?</summary>
+          <p>Из всего текста внутри ссылки по порядку: статус, заголовок, адрес. Поэтому порядок элементов внутри ссылки важен: первыми должны идти слова, по которым ссылку узнают.</p>
+        </details>
+        <details>
+          <summary>Чем <code>role="status"</code> отличается от <code>role="alert"</code>?</summary>
+          <p>Обе роли заставляют программу чтения объявить новый текст. С <code>status</code> программа сначала дочитывает текущую фразу. С <code>alert</code> она прерывает фразу и читает сообщение сразу. Загрузка — <code>status</code>, ошибка — <code>alert</code>.</p>
+        </details>
+        <details>
+          <summary>Почему тест не может проверить контраст?</summary>
+          <p>Тесты работают на странице <code>jsdom</code>, которая ничего не рисует: стилей и цветов на ней не считают. Контраст проверяют Lighthouse и палитра в DevTools на настоящей странице.</p>
+        </details>
+        <details>
+          <summary>Что произойдёт на GitHub, если в <code>main</code> отправить карточку на <code>div</code>?</summary>
+          <p>Шаг «Проверить код линтером» с <code>--deny-warnings</code> завершится ошибкой из-за двух предупреждений <code>jsx-a11y</code>, тесты, сборка и публикация будут пропущены.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Lighthouse</b>DevTools → Lighthouse → Accessibility, Desktop → Analyze page load</div>
+          <div><b>Контраст</b>обычный текст ≥ 4,5:1, крупный ≥ 3:1; Styles → квадратик цвета → Contrast ratio</div>
+          <div><b>Дерево доступности</b>Inspect → вкладка Accessibility: Role, Name, Focusable</div>
+          <div><b>Клавиатура</b><kbd>Tab</kbd> — дальше, <kbd>Shift+Tab</kbd> — назад, <kbd>Enter</kbd> — открыть</div>
+          <div><b>Заголовок вкладки</b><code>&lt;title&gt;{`${name} · Сайт`}&lt;/title&gt;</code> в компоненте страницы</div>
+          <div><b>Сообщения</b><code>role="status"</code> — спокойно, <code>role="alert"</code> — сразу</div>
+          <div><b>Таблица</b><code>&lt;caption&gt;</code> — название таблицы</div>
+          <div><b>Тесты</b><code>getByRole('link', { name: /^Название/ })</code>, <code>findByRole('alert')</code>, <code>document.title</code></div>
+          <div><b>Линтер</b><code>"plugins": [..., "jsx-a11y"]</code>, в конвейере <code>npm run lint -- --deny-warnings</code></div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <ul>
+          <li>Страницей пользуются не только мышью и глазами: клавиатурой, программой чтения с экрана, с увеличением. Требования к доступности собраны в WCAG, российский ГОСТ Р 52872-2019 основан на WCAG 2.1.</li>
+          <li>Lighthouse в DevTools нашёл в мониторе только слабый контраст: зелёный статус 3,44:1 и синие ссылки 4,36:1 при норме 4,5:1. Новые цвета дали 100 на обеих страницах.</li>
+          <li>Карточка на <code>div</code> с <code>onClick</code> работает мышью и получает 100 в Lighthouse, но не открывается с клавиатуры. Её поймали тесты по роли <code>link</code> из главы 4.1 и линтер с плагином <code>jsx-a11y</code>.</li>
+          <li>Дерево доступности в DevTools показывает роль и название элемента. Название карточки начиналось со статуса; тест закрепил требование, и заголовок сайта стал первым. Каждая страница получила свой <code>&lt;title&gt;</code>.</li>
+          <li>Сообщения о загрузке и ошибке получили роли <code>status</code> и <code>alert</code>, таблица — подпись <code>&lt;caption&gt;</code>; тесты ищут их по ролям. Линтер с <code>--deny-warnings</code> стоит в <code>deploy.yml</code> перед тестами.</li>
+        </ul>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://www.w3.org/TR/WCAG22/#contrast-minimum" target="_blank" rel="noreferrer">W3C — WCAG 2.2, 1.4.3 Contrast (Minimum)</a></li>
+          <li><a href="https://tiflocentre.ru/documents/gost-r-52872-2019.php" target="_blank" rel="noreferrer">ГОСТ Р 52872-2019 «Интернет-ресурсы и другая информация, представленная в электронно-цифровой форме…»</a></li>
+          <li><a href="https://www.who.int/news-room/fact-sheets/detail/blindness-and-visual-impairment" target="_blank" rel="noreferrer">ВОЗ — Blindness and vision impairment (10.02.2026)</a></li>
+          <li><a href="https://webaim.org/projects/million/" target="_blank" rel="noreferrer">WebAIM — The WebAIM Million (февраль 2026)</a></li>
+          <li><a href="https://developer.chrome.com/docs/lighthouse/accessibility/scoring" target="_blank" rel="noreferrer">Chrome for Developers — Lighthouse accessibility score</a></li>
+          <li><a href="https://developer.chrome.com/docs/devtools/accessibility/reference" target="_blank" rel="noreferrer">Chrome for Developers — Accessibility features reference (вкладка Accessibility)</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/title" target="_blank" rel="noreferrer">React — &lt;title&gt;</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/status_role" target="_blank" rel="noreferrer">MDN — ARIA: status role</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/alert_role" target="_blank" rel="noreferrer">MDN — ARIA: alert role</a></li>
+          <li><a href="https://testing-library.com/docs/queries/about/#priority" target="_blank" rel="noreferrer">Testing Library — About Queries, Priority</a></li>
+          <li><a href="https://oxc.rs/docs/guide/usage/linter/rules.html" target="_blank" rel="noreferrer">Oxc — правила линтера (jsx-a11y)</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../41-testy-komponentov/index.html">← 4.1 Тесты компонентов</a>
+          <a href="../../index.html">К оглавлению →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

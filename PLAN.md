@@ -181,3 +181,16 @@ upload-pages-artifact@v5, deploy-pages@v5.
   исправление (`plural.ts`/`sitesWord`, строка `summary`) → щелчок userEvent по карточке (App.test) → подмена fetch
   `vi.stubGlobal` (ошибка «Файл sites.json не загрузился: код 404.») → тест, переписанный с текущего поведения, ошибку
   пропускает → шаг «Запустить тесты» в deploy.yml. Код `tools/code41` (SitesPage-p3.tsx — исходный код П3). 19 тестов, 1 с.
+  Готова 13.11.2026 (b94c3ad), `temy/41-testy-komponentov`, съёмка `shots_41.py` (порт 9362), обрезка `crop_41.py`.
+- 4.2 `temy/42-dostupnost` (прототип 13–15.11.2026, код `tools/code42`, этапы `verify_42.sh` — 8 этапов сходятся).
+  Lighthouse 13.6.0 (DevTools, только Accessibility): «Сайты» 94, страница сайта 91, «О проверке» 100 — всё color-contrast
+  (зелёный статус #2e9d5b 3,44:1, ссылки #2f6fde 4,36:1 на #f5f6f9) → #1e7a46 (5,35) и #2563d0 (5,15) → 100 и 100.
+  Опыт: карточка `div onClick` + useNavigate (как пишет агент) — Lighthouse всё равно 100, Tab карточки пропускает,
+  2 теста 4.1 по роли link падают, oxlint с плагином jsx-a11y: click-events-have-key-events, no-static-element-interactions.
+  Дерево доступности (DevTools → Accessibility): имя ссылки-карточки начиналось со статуса → тест `name: /^Справочник/`
+  красный → h2 первым. Заголовки вкладок: React 19 `<title>` в каждой странице (ставится в head перед статическим из
+  index.html, document.title берёт его) + проверка document.title в App.test. role="status" (загрузка), role="alert"
+  (ошибка), caption в таблице истории; тесты getByRole('status')/findByRole('alert'). Правило jsx-a11y/prefer-tag-over-role
+  (советует <output>) выключено в .oxlintrc.json с объяснением. Шаг «Проверить код линтером» (`npm run lint -- --deny-warnings`)
+  в deploy.yml перед тестами. Итог 20 тестов. Факты: WebAIM Million 2026 (95,9 %, контраст 83,9 %), ВОЗ 2,2 млрд (10.02.2026),
+  ГОСТ Р 52872-2019 на основе WCAG 2.1, WCAG 1.4.3 — 4,5:1 и 3:1.
