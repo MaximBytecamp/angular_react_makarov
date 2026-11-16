@@ -222,3 +222,26 @@ upload-pages-artifact@v5, deploy-pages@v5.
   SitePage — `input.required` + withComponentInputBinding. Тест TestBed + Vitest, служба подменена useValue: 4 теста.
   Числа: данные 72 строки React против 27; страница 74 против 75 (46 + 29 шаблон); сборка 262 КБ против 254 КБ (в React больше страниц);
   node_modules 124 МБ / 87 пакетов против 287 МБ / 200.
+- Проект П4 «Дайджест новостей» (Р2). Решение автора 16.11.2026: агент на выбор студента (облачный или Continue + Ollama из 4.3),
+  оценивается процесс — задания, AGENTS.md, проверки, чтение изменений, журнал ai-log.md. Хранилище — Firebase (запасной путь — PocketBase).
+  16.11.2026: хранилище — Google Таблицы (решение автора вместо Firebase: бесплатно, без карты). Таблица «Дайджест новостей»
+  (аккаунт автора, лист `news`: id, date, source, title, summary, tags, link) + Apps Script «Дайджест», код `tools/code45/Code.gs`:
+  `/** @OnlyCurrentDoc */` (без неё Google просит доступ ко ВСЕМ таблицам аккаунта; с ней — только к этой), doGet → {news},
+  doPost с ключом из свойств скрипта KEY → добавляет новые по id, повтор не дублирует. Веб-приложение: от моего имени, доступ «Все».
+  Адрес — `~/digest-url.txt`, ключ — `~/digest-key.txt` (секрет, вне Git). Проверено: GET {"news":[]}; POST без ключа → {"error":"Неверный ключ"};
+  POST отвечает 302 → googleusercontent, ответ забирается GET (curl без -X POST); CORS `*` на обоих шагах; fetch со страницы github.io — ok, 5,1 с
+  (холодный старт). Дата 2026-11-16 вернулась как 2026-11-15T21:00:00.000Z (таблица переводит в дату по Москве) — слать ISO со временем;
+  теги возвращаются строкой «a, b». Окно Chrome для съёмки: профиль `~/firebase-shots-chrome`, порт 9391, вход в Google выполнен.
+  n8n (16.11.2026): стенд `tools/code45/stand/compose.yaml` — только n8n 2.45.4, переменные DIGEST_URL, DIGEST_KEY, TELEGRAM_TOKEN,
+  TELEGRAM_CHAT_ID из `.env`; модель — Ollama на компьютере (из 4.3) `qwen3:4b-instruct` по http://host.docker.internal:11434
+  (qwen2.5:3b в Docker: 124–196 с на новость и выдумки; qwen3:4b-instruct: 5–10 с; схема format с массивом enum вешает Ollama
+  0.40.12 — теги массивом строк, лишние отсекает Code). Процесс `n8n/sbor.json`: Каждое утро 8:00 / Запустить вручную → Ленты
+  (Хабр, 3DNews, iXBT) → RSS → Свежие новости (сутки, ≤5 с сайта, id = ссылка без ?utm; в Code нет объекта URL) → Модель →
+  Проверка ответа (теги из списка) → Запись в таблицу (executeOnce). Прогон: 15 новостей за 67 с, {"added": 15}.
+  `n8n/vecher.json`: 19:00 → GET таблицы → текст за сутки (≤4000 знаков) → sendMessage. Запуск из CLI:
+  `docker exec -e N8N_RUNNERS_BROKER_PORT=5690 digest-n8n-1 n8n execute --id=…` (нужен узел ручного запуска).
+  Страница-эталон `tools/proekt4-digest` (Vite 8, React 19.3; прототип `/private/tmp/proto45/digest`): VITE_DIGEST_URL в `.env.local`,
+  digest.ts (fetch, теги строкой → список, сортировка по дате), read.ts (localStorage «digest-read»), App: поиск по заголовку и пересказу,
+  тег (select), «Только непрочитанные», карточки со ссылкой, источником, датой, тегами и кнопкой «Отметить прочитанным» (aria-pressed),
+  role=status/alert. Проверено на настоящих данных: 15 новостей, «windows» → 2, «наука» → 3, прочитано переживает перезагрузку, 13 из 15.
+  Ждёт: токен бота в `~/digest-telegram.txt` для проверки вечернего процесса. Дальше — главы: автоматизация А4 и проект П4.
