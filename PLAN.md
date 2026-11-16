@@ -214,3 +214,11 @@ upload-pages-artifact@v5, deploy-pages@v5.
   шаг 1 — правка +16 строк, агент сам запустил lint и test, но: нет import useState (tsc TS2304, 13 тестов падают), useState после
   return (oxlint rules-of-hooks error), поле под карточками, лишний пробел в чужой строке; шаг 2 — код в чат, без правки; шаг 3 — 3 теста
   в SitesPage.test.tsx без import userEvent (TS2552). Итог 16 из 30 тестов падают. Итоги прогонов — scratchpad runs/{r7,r8,r9,s1,s2,s3}.
+- 4.4 `temy/44-angular` (прототип 16.11.2026 в `/private/tmp/proto44/monitoring-ng`, код `tools/code44`). Angular 22.2.6 (CLI 22.2.7):
+  `ng new` по умолчанию — компоненты без NgModule, без zone.js, тесты Vitest 5 + jsdom, OnPush по умолчанию; `--ai-config=open-ai-codex`
+  создаёт AGENTS.md с правилами Angular (мост к 4.3). Страница «Сайты» монитора на Angular: status.ts, plural.ts, types.ts — без изменений;
+  служба `@Service()` (новое в 22) с двумя `httpResource` (стабилен с 22.0) и `computed` вместо провайдера с useEffect и контекста;
+  SitesPage — signal + computed, шаблон @if/@for/track, [routerLink], [class.x]; заголовки вкладок — `title` в маршрутах;
+  SitePage — `input.required` + withComponentInputBinding. Тест TestBed + Vitest, служба подменена useValue: 4 теста.
+  Числа: данные 72 строки React против 27; страница 74 против 75 (46 + 29 шаблон); сборка 262 КБ против 254 КБ (в React больше страниц);
+  node_modules 124 МБ / 87 пакетов против 287 МБ / 200.

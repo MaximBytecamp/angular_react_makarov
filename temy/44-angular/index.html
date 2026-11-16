@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>4.4 Angular: тот же компонент · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch .on-dark-soft { fill: #c8d0e0; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; }
+    .sch .ng-text { fill: #C2185B; }
+    .sch .re-text { fill: #0A7EA4; }
+    .sch .dash { stroke-dasharray: 6 4; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 4 · Работа с ИИ-агентом и обзор Angular</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 4 · работа с ИИ-агентом и обзор Angular</p>
+          <p class="running__folio">4.4</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">4.4</span>
+          <h1>Angular: тот же компонент</h1>
+          <p class="lead">В этой главе страница «Сайты» из «Мониторинга сайтов группы» переписывается на Angular 22. Новый проект создаётся командой <code>ng new</code>, данные загружает служба, страница строится на сигналах, заголовки вкладок задаются в маршрутах, а тест запускается тем же Vitest, что в главе 4.1. Каждая часть ставится рядом со своей версией на React. В конце — что получилось по числам: строки кода, размер сборки и папки <code>node_modules</code>.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>Angular, сигналы, службы, сравнение с React</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>monitoring</code> после главы 4.3, Node.js 24, 300 МБ на диске</dd></div>
+          <div><dt>Результат</dt><dd>Проект <code>monitoring-ng</code>: страница «Сайты» с поиском и флажком, страница сайта, 4 теста, сборка 254 КБ</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Что переносим</a></li>
+            <li><a href="#s2">Новый проект</a></li>
+            <li><a href="#s3">Что переносится без изменений</a></li>
+            <li><a href="#s4">Данные: служба вместо провайдера</a></li>
+            <li><a href="#s5">Страница «Сайты»</a></li>
+            <li><a href="#s6">Маршруты и запуск</a></li>
+            <li><a href="#s7">Тест страницы</a></li>
+            <li><a href="#s8">Сборка и сравнение по числам</a></li>
+            <li><a href="#s9">Частые ошибки</a></li>
+            <li><a href="#s10">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Что переносим</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Одна задача на двух фреймворках</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Один и тот же рецепт борща можно приготовить на газовой плите и на индукционной. Продукты, порядок и вкус те же. Меняются посуда, ручки и привычки: индукция не греет алюминиевую кастрюлю, а газ не выключается сам.</p>
+          <p class="miss">Рецепт интерфейса — данные, правила подсчёта и разметка. Фреймворк — плита. Часть посуды переносится без изменений, часть приходится заменить.</p>
+        </div></div>
+
+        <p>В главе 0.2 React и Angular сравнивались на маленьком поиске по городам. Здесь сравнение идёт на настоящей странице: со сводкой, карточками-ссылками, поиском и флажком из главы 4.3, загрузкой данных из файлов, заголовком вкладки и тестом. В таблице — что есть в React-версии и чем это станет в Angular.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Часть</th><th>React (<code>monitoring</code>)</th><th>Angular (<code>monitoring-ng</code>)</th></tr></thead>
+            <tbody>
+              <tr><td>Типы, <code>statusText</code>, <code>sitesWord</code></td><td><code>types.ts</code>, <code>status.ts</code>, <code>plural.ts</code></td><td>те же файлы без изменений</td></tr>
+              <tr><td>Загрузка данных</td><td><code>MonitoringProvider</code>: <code>useEffect</code>, четыре состояния, контекст</td><td>служба <code>Monitoring</code> с двумя <code>httpResource</code></td></tr>
+              <tr><td>Состояние страницы</td><td><code>useState</code></td><td><code>signal</code></td></tr>
+              <tr><td>Сводка, список показанных</td><td>переменные, которые считаются при каждой отрисовке</td><td><code>computed</code></td></tr>
+              <tr><td>Разметка</td><td>JSX, <code>map</code>, <code>&amp;&amp;</code>, ранний <code>return</code></td><td>шаблон: <code>@if</code>, <code>@for</code>, <code>@else</code></td></tr>
+              <tr><td>Ссылка-карточка</td><td><code>&lt;Link to&gt;</code></td><td><code>&lt;a [routerLink]&gt;</code></td></tr>
+              <tr><td>Заголовок вкладки</td><td><code>&lt;title&gt;</code> в компоненте</td><td><code>title</code> в маршруте</td></tr>
+              <tr><td>Тест</td><td>Vitest, Testing Library, <code>MonitoringContext</code></td><td>Vitest, <code>TestBed</code>, подмена службы</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Верхняя строка таблицы — самая короткая. Функции, которые не обращаются к React, переносятся копированием файла. Остальные строки — то, ради чего глава: у каждой части React есть своя часть в Angular, но устроена она иначе.</p>
+
+        <p class="bridge">Начнём с проекта: в Angular его создаёт собственная программа.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Новый проект</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Angular CLI</p>
+
+        <p>Проект на React создавался командой Vite, и набор библиотек — маршрутизатор, тесты, линтер — добавлялся по мере надобности. Проект на Angular создаёт <span class="term">Angular CLI</span> — программа командной строки от команды Angular, команда <code>ng</code>. Она сразу ставит маршрутизатор, модуль работы с сетью, формы и тесты и задаёт структуру папок. Версия CLI совпадает с версией Angular: в ноябре 2026 года это 22.2.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Создаём monitoring-ng</p>
+
+        <ol class="steps">
+          <li><b>Создайте проект</b><p>Откройте в терминале папку, где лежит <code>monitoring</code>, и выполните команду. Новый проект появится рядом, в папке <code>monitoring-ng</code>.</p>
+            <figure class="code"><figcaption><span>Терминал · папка с проектами</span></figcaption><pre>npx @angular/cli@22.2.7 new monitoring-ng --defaults --style=css --ssr=false --ai-config=open-ai-codex</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-ng-new.png" width="1240" height="450" alt="Терминал VS Code в папке student: npx @angular/cli@22.2.7 new monitoring-ng --defaults --style=css --ssr=false --ai-config=open-ai-codex; список CREATE: angular.json, package.json, AGENTS.md, src/main.ts, src/app/app.ts, app.config.ts, app.routes.ts, .codex/config.toml; Packages installed successfully; Successfully initialized git" loading="lazy"><figcaption>ng new создал проект и репозиторий</figcaption></figure>
+            <p><code>--defaults</code> принимает ответы по умолчанию на вопросы CLI. <code>--style=css</code> — стили на обычном CSS. <code>--ssr=false</code> отказывается от отрисовки на сервере: монитор — статический сайт для GitHub Pages. <code>--ai-config=open-ai-codex</code> добавляет в проект файл <code>AGENTS.md</code>, о нём ниже. Установка пакетов занимает около минуты, в конце CLI сам создаёт репозиторий Git с первым коммитом.</p>
+            <p>При первом запуске CLI может спросить, разрешаете ли вы отправлять анонимную статистику (<i>Would you like to share pseudonymous usage data</i>). Ответьте <kbd>N</kbd>: на работу это не влияет.</p></li>
+          <li><b>Откройте проект</b><p>Откройте папку <code>monitoring-ng</code> в VS Code и файл <code>src/app/app.ts</code>.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-app-ts.png" width="1240" height="780" alt="VS Code: проект monitoring-ng, src/app/app.ts — @Component с imports RouterOutlet, selector app-root, styleUrl, templateUrl; class App с title = signal('monitoring-ng'); в проводнике app.config.ts, app.css, app.html, app.routes.ts, app.spec.ts, AGENTS.md, angular.json" loading="lazy"><figcaption>Корневой компонент, созданный CLI</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что создал CLI</p>
+
+        <p><code>app.ts</code> — корневой компонент. Компонент Angular — это класс с декоратором <code>@Component</code>, функцией-пометкой перед классом. В декораторе записаны имя тега (<code>selector</code>), шаблон и стили, а в <code>imports</code> — чем пользуется шаблон. Рядом лежат <code>app.config.ts</code> (настройки приложения), <code>app.routes.ts</code> (маршруты), <code>app.spec.ts</code> (тест) и <code>main.ts</code>, который запускает приложение — как <code>main.tsx</code> в проекте Vite.</p>
+
+        <p>Много лет обязательной частью Angular была библиотека <code>zone.js</code>. В <code>package.json</code> нового проекта её нет: Angular следит за изменениями через сигналы и обходится без неё. Тесты по умолчанию идут на Vitest с <code>jsdom</code>, как в главе 4.1.</p>
+
+        <ol class="steps">
+          <li><b>Откройте AGENTS.md</b>
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-agents-md.png" width="1240" height="780" alt="VS Code: AGENTS.md — You are an expert in TypeScript, Angular…; TypeScript Best Practices; Angular Best Practices: standalone по умолчанию с v20, OnPush по умолчанию с v22, signals" loading="lazy"><figcaption>AGENTS.md от команды Angular</figcaption></figure>
+            <p>Это файл правил для ИИ-агента, как <code>AGENTS.md</code> из главы 4.3, только написан он командой Angular. В нём лучшие приёмы для текущей версии: сигналы и <code>computed</code> для состояния, <code>@if</code> и <code>@for</code> в шаблонах, <code>inject()</code> вместо параметров конструктора, требования доступности WCAG AA. Агент, который работает в этом проекте, получит правила до первого запроса. Код ниже написан по ним.</p></li>
+        </ol>
+
+        <p class="bridge">Проект готов. Первое, что переносится, — то, что от фреймворка не зависит.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Что переносится без изменений</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Копируем общие файлы</p>
+
+        <ol class="steps">
+          <li><b>Функции и типы</b><p>Скопируйте <code>types.ts</code>, <code>status.ts</code> и <code>plural.ts</code> из <code>monitoring/src</code> в <code>monitoring-ng/src/app</code>.</p></li>
+          <li><b>Данные</b><p>Скопируйте папку <code>monitoring/public/data</code> в <code>monitoring-ng/public</code>: файлы из <code>public</code> CLI отдаёт как есть, как и Vite.</p></li>
+          <li><b>Стили</b><p>Замените содержимое <code>src/styles.css</code> содержимым <code>monitoring/src/index.css</code>. Классы в шаблонах будут те же, и страница будет выглядеть так же.</p></li>
+          <li><b>Уберите заготовку</b><p>Удалите <code>src/app/app.html</code>, <code>app.css</code> и <code>app.spec.ts</code>: в них приветственная страница CLI.</p></li>
+        </ol>
+
+        <p><code>statusText</code> и <code>sitesWord</code> — обычные функции TypeScript: получают значения и возвращают строку. Функций React или Angular они не вызывают. Поэтому они переносятся копированием, вместе с тестами к ним. Чем больше логики в таких функциях, тем меньше работы при переходе на другой фреймворк.</p>
+
+        <p class="bridge">Дальше — данные. В React их загружал провайдер с контекстом.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Данные: служба вместо провайдера</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Служба и внедрение зависимостей</p>
+
+        <p>В главе 3.2 данные монитора загружал <code>MonitoringProvider</code>: компонент с четырьмя состояниями, эффектом и контекстом, через который страницы получали результат. В Angular для общих данных есть <span class="term">служба</span> — класс, единственный экземпляр которого Angular создаёт сам и отдаёт каждому, кто его попросит. Просьба записывается функцией <code>inject(Monitoring)</code>, а сам механизм называется <span class="term">внедрением зависимостей</span>.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Откуда страница берёт данные</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 230" role="img" aria-label="Слева React: MonitoringProvider с useEffect и четырьмя useState оборачивает приложение; страницы читают данные через useMonitoring, то есть useContext. Справа Angular: служба Monitoring с двумя httpResource создаётся Angular один раз; страницы получают её через inject(Monitoring). В React данные идут сверху вниз по дереву компонентов, в Angular страница запрашивает службу напрямую">
+              <text class="re-text" x="20" y="24">React</text>
+              <rect x="20" y="36" width="330" height="80" fill="#ffffff"/><text x="34" y="62">MonitoringProvider</text><text class="soft" x="34" y="84">useEffect + 4 × useState</text><text class="soft" x="34" y="102">&lt;MonitoringContext value&gt;</text>
+              <path d="M185 116 V 146"/><path d="M179 138 L 185 146 L 191 138"/>
+              <rect x="20" y="154" width="330" height="56" fill="#D6F0F9"/><text x="34" y="178">SitesPage</text><text class="soft" x="34" y="198">useMonitoring() → useContext</text>
+              <text class="ng-text" x="410" y="24">Angular</text>
+              <rect x="410" y="36" width="330" height="80" fill="#161A2E"/><text class="on-dark" x="424" y="62">служба Monitoring</text><text class="soft on-dark-soft" x="424" y="84">2 × httpResource + computed</text><text class="soft on-dark-soft" x="424" y="102">один экземпляр на приложение</text>
+              <path d="M575 154 V 124"/><path d="M569 132 L 575 124 L 581 132"/>
+              <rect x="410" y="154" width="330" height="56" fill="#D6F0F9"/><text x="424" y="178">SitesPage</text><text class="soft" x="424" y="198">inject(Monitoring)</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Слева провайдер оборачивает дерево компонентов. Справа страница сама запрашивает службу, и обёртка не нужна.</p>
+        </figure>
+
+        <p>Схема показывает, чем различаются два способа. В React провайдер стоит в дереве компонентов выше страниц, и страница получает данные, только если находится внутри него. Поэтому в тестах 4.1 страницу оборачивали в <code>MonitoringContext</code>. В Angular служба живёт отдельно от дерева. Страница, где бы она ни стояла, запрашивает её через <code>inject</code>, а Angular отдаёт один и тот же экземпляр.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Служба Monitoring</p>
+
+        <ol class="steps">
+          <li><b>Создайте службу</b><p>Создайте <code>src/app/monitoring.ts</code>.</p>
+            <!--CODE tools/code44/monitoring.ts | monitoring-ng/src/app/monitoring.ts | pins=10:1,12:2,15:3,17:4,18:5--><figure class="code" data-read><figcaption><span>monitoring-ng/src/app/monitoring.ts</span></figcaption><pre><span class="k">import</span> { httpResource, HttpErrorResponse } <span class="k">from</span> <span class="s">'@angular/common/http'</span>;
+<span class="k">import</span> { Service, computed } <span class="k">from</span> <span class="s">'@angular/core'</span>;
+<span class="k">import</span> { Run, Site } <span class="k">from</span> <span class="s">'./types'</span>;
+
+<span class="k">function</span> <span class="f">loadError</span>(name: string, error: unknown): string {
+  <span class="k">const</span> status = error instanceof HttpErrorResponse ? error.status : <span class="n">0</span>;
+  <span class="k">return</span> <span class="s">`Файл ${name} не загрузился: код ${status}.`</span>;
+}
+
+@<span class="f">Service</span>()  <span class="pin">1</span>
+<span class="k">export</span> class Monitoring {
+  private readonly sitesFile = httpResource<span class="t">&lt;Site</span>[]<span class="t">&gt;</span>(() =<span class="t">&gt;</span> <span class="s">'data/sites.json'</span>);  <span class="pin">2</span>
+  private readonly resultsFile = httpResource&lt;{ history: Run[] }<span class="t">&gt;</span>(() =<span class="t">&gt;</span> <span class="s">'data/results.json'</span>);
+
+  readonly sites = <span class="f">computed</span>(() =<span class="t">&gt;</span> this.sitesFile.<span class="f">value</span>() ?? []);  <span class="pin">3</span>
+  readonly history = <span class="f">computed</span>(() =<span class="t">&gt;</span> this.resultsFile.<span class="f">value</span>()?.history ?? []);
+  readonly loading = <span class="f">computed</span>(() =<span class="t">&gt;</span> this.sitesFile.<span class="f">isLoading</span>() || this.resultsFile.<span class="f">isLoading</span>());  <span class="pin">4</span>
+  readonly error = <span class="f">computed</span>(() =<span class="t">&gt;</span> {  <span class="pin">5</span>
+    <span class="k">if</span> (this.sitesFile.<span class="f">error</span>()) {
+      <span class="k">return</span> <span class="f">loadError</span>(<span class="s">'sites.json'</span>, this.sitesFile.<span class="f">error</span>());
+    }
+    <span class="k">if</span> (this.resultsFile.<span class="f">error</span>()) {
+      <span class="k">return</span> <span class="f">loadError</span>(<span class="s">'results.json'</span>, this.resultsFile.<span class="f">error</span>());
+    }
+    <span class="k">return</span> <span class="s">''</span>;
+  });
+}</pre></figure><!--/CODE-->
+            <ol class="anno">
+              <li><span class="pin">1</span><div><p><code>@Service()</code> — декоратор службы, появился в Angular 22. Он делает то же, что прежняя запись <code>@Injectable({ providedIn: 'root' })</code>: один экземпляр на всё приложение.</p></div></li>
+              <li><span class="pin">2</span><div><p><code>httpResource</code> загружает файл и хранит результат в сигналах: <code>value()</code> — данные, <code>isLoading()</code> — идёт ли загрузка, <code>error()</code> — ошибка. Это всё, что в React делали <code>useEffect</code>, <code>fetch</code>, три <code>useState</code> и флаг <code>ignore</code>.</p></div></li>
+              <li><span class="pin">3</span><div><p><code>computed</code> — сигнал, вычисляемый из других. Пока файл не загружен, <code>value()</code> равно <code>undefined</code>, и страницы получают пустой список.</p></div></li>
+              <li><span class="pin">4</span><div><p>Загрузка идёт, пока не закончился хотя бы один из двух файлов.</p></div></li>
+              <li><span class="pin">5</span><div><p>Текст ошибки тот же, что в React-версии: «Файл sites.json не загрузился: код 404.» Его собирает функция <code>loadError</code> выше.</p></div></li>
+            </ol>
+            <figure class="shot" style="max-width: 1246px"><img src="img/04-monitoring-ts.png" width="1240" height="780" alt="VS Code: src/app/monitoring.ts — функция loadError, @Service(), class Monitoring с sitesFile и resultsFile на httpResource, computed sites, history, loading" loading="lazy"><figcaption>Служба Monitoring</figcaption></figure></li>
+        </ol>
+
+        <p>В React-версии загрузка данных занимала 72 строки в двух файлах, здесь — 27 строк в одном. Разница не в краткости записи: состояние загрузки и ошибки Angular хранит сам, внутри <code>httpResource</code>.</p>
+
+        <p class="bridge">Служба готова. Страница возьмёт из неё данные и посчитает сводку.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Страница «Сайты»</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Класс компонента</p>
+
+        <ol class="steps">
+          <li><b>Создайте компонент</b><p>Создайте папку <code>src/app/pages</code> и в ней <code>sites-page.ts</code>.</p>
+            <!--CODE tools/code44/sites-page.ts | monitoring-ng/src/app/pages/sites-page.ts | pins=13:1,14:2,17:3,21:4,31:5,39:6--><figure class="code" data-read><figcaption><span>monitoring-ng/src/app/pages/sites-page.ts</span></figcaption><pre><span class="k">import</span> { Component, computed, inject, signal } <span class="k">from</span> <span class="s">'@angular/core'</span>;
+<span class="k">import</span> { RouterLink } <span class="k">from</span> <span class="s">'@angular/router'</span>;
+<span class="k">import</span> { Monitoring } <span class="k">from</span> <span class="s">'../monitoring'</span>;
+<span class="k">import</span> { sitesWord } <span class="k">from</span> <span class="s">'../plural'</span>;
+<span class="k">import</span> { statusText } <span class="k">from</span> <span class="s">'../status'</span>;
+
+@<span class="f">Component</span>({
+  selector: <span class="s">'app-sites-page'</span>,
+  imports: [RouterLink],
+  templateUrl: <span class="s">'./sites-page.html'</span>,
+})
+<span class="k">export</span> class SitesPage {
+  protected readonly monitoring = <span class="f">inject</span>(Monitoring);  <span class="pin">1</span>
+  protected readonly query = <span class="f">signal</span>(<span class="s">''</span>);  <span class="pin">2</span>
+  protected readonly onlyDown = <span class="f">signal</span>(<span class="k">false</span>);
+
+  private readonly last = <span class="f">computed</span>(() =<span class="t">&gt;</span> this.monitoring.<span class="f">history</span>()[<span class="n">0</span>]);  <span class="pin">3</span>
+  protected readonly down = <span class="f">computed</span>(
+    () =<span class="t">&gt;</span> this.monitoring.<span class="f">sites</span>().<span class="f">filter</span>((site) =<span class="t">&gt;</span> !this.<span class="f">check</span>(site.id)?.ok).length,
+  );
+  protected readonly summary = <span class="f">computed</span>(() =<span class="t">&gt;</span> {  <span class="pin">4</span>
+    <span class="k">const</span> count = this.monitoring.<span class="f">sites</span>().length;
+    <span class="k">if</span> (this.<span class="f">last</span>() === <span class="k">undefined</span>) {
+      <span class="k">return</span> <span class="s">'Проверок ещё не было'</span>;
+    }
+    <span class="k">if</span> (this.<span class="f">down</span>() <span class="t">&gt;</span> <span class="n">0</span>) {
+      <span class="k">return</span> <span class="s">`Не открываются: ${this.down()} из ${count}`</span>;
+    }
+    <span class="k">return</span> <span class="s">`Все ${count} ${sitesWord(count)} открываются`</span>;
+  });
+  protected readonly shown = <span class="f">computed</span>(() =<span class="t">&gt;</span> {  <span class="pin">5</span>
+    <span class="k">const</span> text = this.<span class="f">query</span>().<span class="f">trim</span>().<span class="f">toLowerCase</span>();
+    <span class="k">return</span> this.monitoring
+      .<span class="f">sites</span>()
+      .<span class="f">filter</span>((site) =<span class="t">&gt;</span> site.name.<span class="f">toLowerCase</span>().<span class="f">includes</span>(text))
+      .<span class="f">filter</span>((site) =<span class="t">&gt;</span> !this.<span class="f">onlyDown</span>() || !this.<span class="f">check</span>(site.id)?.ok);
+  });
+
+  protected <span class="f">check</span>(id: string) {  <span class="pin">6</span>
+    <span class="k">return</span> this.<span class="f">last</span>()?.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === id);
+  }
+
+  protected <span class="f">status</span>(id: string) {
+    <span class="k">return</span> <span class="f">statusText</span>(this.<span class="f">check</span>(id));
+  }
+}</pre></figure><!--/CODE-->
+            <ol class="anno">
+              <li><span class="pin">1</span><div><p>Страница получает службу. <code>protected</code> значит: доступно классу и его шаблону, но не другим компонентам.</p></div></li>
+              <li><span class="pin">2</span><div><p>Текст поиска и флажок — сигналы, как <code>useState</code> в React. Значение читают вызовом <code>query()</code>, меняют — <code>query.set(…)</code>.</p></div></li>
+              <li><span class="pin">3</span><div><p>Последняя проверка вычисляется из истории.</p></div></li>
+              <li><span class="pin">4</span><div><p>Сводка — тот же текст и те же три случая, что в React-версии, со <code>sitesWord</code> из перенесённого <code>plural.ts</code>.</p></div></li>
+              <li><span class="pin">5</span><div><p>Показанные сайты: поиск без учёта регистра и флажок. Сводка по-прежнему считает все сайты.</p></div></li>
+              <li><span class="pin">6</span><div><p>Обычный метод класса: шаблон вызывает его для каждой карточки.</p></div></li>
+            </ol>
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-sites-page-ts.png" width="1240" height="780" alt="VS Code: src/app/pages/sites-page.ts — @Component с selector app-sites-page, imports RouterLink, templateUrl; inject(Monitoring), query и onlyDown на signal, last на computed" loading="lazy"><figcaption>Класс страницы: сигналы и computed</figcaption></figure></li>
+        </ol>
+
+        <p>В React-версии <code>shown</code> и <code>summary</code> — обычные переменные: функция компонента вызывается при каждой отрисовке и считает их заново. В Angular класс создаётся один раз, поэтому вычисляемые значения записаны через <code>computed</code>. Angular помнит, какие сигналы прочитаны внутри <code>computed</code>, и пересчитывает значение, только когда они меняются. Правило из главы 0.2 соблюдено в обоих фреймворках: то, что вычисляется, в состояние не записывают.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Шаблон</p>
+
+        <ol class="steps">
+          <li><b>Создайте шаблон</b><p>Создайте рядом <code>sites-page.html</code>.</p>
+            <!--CODE tools/code44/sites-page.html | monitoring-ng/src/app/pages/sites-page.html | pins=1:1,6:2,10:3,17:4,21:5,22:6--><figure class="code" data-read><figcaption><span>monitoring-ng/src/app/pages/sites-page.html</span></figcaption><pre>@<span class="k">if</span> (monitoring.<span class="f">loading</span>()) {  <span class="pin">1</span>
+  <span class="t">&lt;p</span> <span class="a">class</span>=<span class="s">"empty"</span> <span class="a">role</span>=<span class="s">"status"</span><span class="t">&gt;</span>Загрузка результатов…<span class="t">&lt;/p</span><span class="t">&gt;</span>
+} @<span class="k">else</span> <span class="k">if</span> (monitoring.<span class="f">error</span>()) {
+  <span class="t">&lt;p</span> <span class="a">class</span>=<span class="s">"load-error"</span> <span class="a">role</span>=<span class="s">"alert"</span><span class="t">&gt;</span>{{ monitoring.<span class="f">error</span>() }}<span class="t">&lt;/p</span><span class="t">&gt;</span>
+} @<span class="k">else</span> {
+  <span class="t">&lt;p</span> <span class="a">class</span>=<span class="s">"summary"</span> [class.summary--bad]=<span class="s">"down() &gt; 0"</span><span class="t">&gt;</span>{{ <span class="f">summary</span>() }}<span class="t">&lt;/p</span><span class="t">&gt;</span>  <span class="pin">2</span>
+  <span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"filters"</span><span class="t">&gt;</span>
+    <span class="t">&lt;label</span><span class="t">&gt;</span>
+      Поиск по названию
+      <span class="t">&lt;input</span> <span class="a">type</span>=<span class="s">"search"</span> [value]=<span class="s">"query()"</span> (input)=<span class="s">"query.set($any($event.target).value)"</span> <span class="t">/&gt;</span>  <span class="pin">3</span>
+    <span class="t">&lt;/label</span><span class="t">&gt;</span>
+    <span class="t">&lt;label</span><span class="t">&gt;</span>
+      <span class="t">&lt;input</span> <span class="a">type</span>=<span class="s">"checkbox"</span> [checked]=<span class="s">"onlyDown()"</span> (change)=<span class="s">"onlyDown.set($any($event.target).checked)"</span> <span class="t">/&gt;</span>
+      Только неработающие
+    <span class="t">&lt;/label</span><span class="t">&gt;</span>
+  <span class="t">&lt;/div</span><span class="t">&gt;</span>
+  @<span class="k">if</span> (<span class="f">shown</span>().length === <span class="n">0</span>) {  <span class="pin">4</span>
+    <span class="t">&lt;p</span> <span class="a">class</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Сайтов не найдено<span class="t">&lt;/p</span><span class="t">&gt;</span>
+  }
+  <span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"sites"</span><span class="t">&gt;</span>
+    @for (site of <span class="f">shown</span>(); track site.id) {  <span class="pin">5</span>
+      <span class="t">&lt;a</span> <span class="a">class</span>=<span class="s">"site"</span> [class.site--bad]=<span class="s">"!check(site.id)?.ok"</span> [routerLink]=<span class="s">"['/site', site.id]"</span><span class="t">&gt;</span>  <span class="pin">6</span>
+        <span class="t">&lt;h2</span><span class="t">&gt;</span>{{ site.name }}<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"site__status"</span><span class="t">&gt;</span>{{ <span class="f">status</span>(site.id) }}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"site__url"</span><span class="t">&gt;</span>{{ site.url }}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+      <span class="t">&lt;/a</span><span class="t">&gt;</span>
+    }
+  <span class="t">&lt;/div</span><span class="t">&gt;</span>
+}</pre></figure><!--/CODE-->
+            <ol class="anno">
+              <li><span class="pin">1</span><div><p><code>@if</code>, <code>@else if</code>, <code>@else</code> — три состояния страницы. В React то же делали два ранних <code>return</code>.</p></div></li>
+              <li><span class="pin">2</span><div><p><code>[class.summary--bad]</code> добавляет класс, когда выражение истинно. В React для этого собиралась строка <code>className</code>.</p></div></li>
+              <li><span class="pin">3</span><div><p><code>[value]</code> передаёт значение в поле, <code>(input)</code> подписывается на ввод. <code>$any(…)</code> говорит проверке типов, что у цели события есть <code>value</code>.</p></div></li>
+              <li><span class="pin">4</span><div><p>Строка «Сайтов не найдено» — тот же <code>@if</code>.</p></div></li>
+              <li><span class="pin">5</span><div><p><code>@for</code> повторяет карточку для каждого сайта; <code>track site.id</code> — ключ, как <code>key={site.id}</code>.</p></div></li>
+              <li><span class="pin">6</span><div><p><code>[routerLink]</code> превращает обычную ссылку <code>&lt;a&gt;</code> в переход внутри приложения, как <code>Link</code>. Массив <code>['/site', site.id]</code> собирает адрес <code>/site/git</code>. Для этого <code>RouterLink</code> указан в <code>imports</code> компонента.</p></div></li>
+            </ol>
+            <figure class="shot" style="max-width: 1246px"><img src="img/06-sites-page-html.png" width="1240" height="780" alt="VS Code: sites-page.html — @if monitoring.loading(), @else if monitoring.error(), @else; p summary с [class.summary--bad]; label «Поиск по названию» с input [value] и (input); флажок «Только неработающие»; @if shown().length === 0" loading="lazy"><figcaption>Шаблон страницы</figcaption></figure></li>
+        </ol>
+
+        <figure class="scheme">
+          <p class="scheme__head">Одна карточка в двух записях</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 200" role="img" aria-label="Слева JSX React: sites.map, Link key, to, className с тернарным выражением, фигурные скобки для значений. Справа шаблон Angular: @for с track, a с routerLink в квадратных скобках, class.site--bad в квадратных скобках, двойные фигурные скобки для значений. Стрелки соединяют соответствующие части">
+              <text class="re-text" x="20" y="24">React · JSX</text>
+              <text class="mono" x="20" y="54">{shown.map((site) =&gt;</text>
+              <text class="mono" x="20" y="80">&lt;Link key={site.id}</text>
+              <text class="mono" x="20" y="106">  to={`/site/${site.id}`}</text>
+              <text class="mono" x="20" y="132">  className={ok ? 'site' : '…'}&gt;</text>
+              <text class="mono" x="20" y="158">  &lt;h2&gt;{site.name}&lt;/h2&gt;</text>
+              <text class="ng-text" x="400" y="24">Angular · шаблон</text>
+              <text class="mono" x="400" y="54">@for (site of shown(); track site.id) {</text>
+              <text class="mono" x="400" y="80">&lt;a class="site"</text>
+              <text class="mono" x="400" y="106">  [routerLink]="['/site', site.id]"</text>
+              <text class="mono" x="400" y="132">  [class.site--bad]="!check(site.id)?.ok"&gt;</text>
+              <text class="mono" x="400" y="158">  &lt;h2&gt;{{ site.name }}&lt;/h2&gt;</text>
+              <path class="dash" d="M372 40 V 170"/>
+            </svg>
+          </div>
+          <p class="scheme__note">Строки стоят напротив: каждая строка слева делает то же, что строка справа.</p>
+        </figure>
+
+        <p>На схеме карточка записана дважды, строки стоят одна напротив другой. В JSX всё — выражения JavaScript в фигурных скобках: <code>map</code>, тернарный оператор, шаблонная строка адреса. В шаблоне Angular у каждого действия свой знак. Квадратные скобки передают значение, круглые подписываются на событие, двойные фигурные выводят текст; <code>@for</code> и <code>@if</code> — встроенные блоки. Логика в шаблоне короче, но её приходится знать отдельно от TypeScript.</p>
+
+        <p class="bridge">Страница готова, но её ещё не видно: её нужно поставить на маршрут.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Маршруты и запуск</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Маршруты, настройки, корневой компонент</p>
+
+        <ol class="steps">
+          <li><b>Страница сайта</b><p>Создайте <code>src/app/pages/site-page.ts</code> — короткую страницу с названием и адресом сайта. Шаблон записан прямо в декораторе: для маленьких компонентов так советует <code>AGENTS.md</code>.</p>
+            <!--CODE tools/code44/site-page.ts | monitoring-ng/src/app/pages/site-page.ts | mark=20--><figure class="code"><figcaption><span>monitoring-ng/src/app/pages/site-page.ts</span></figcaption><pre><span class="k">import</span> { Component, computed, inject, input } <span class="k">from</span> <span class="s">'@angular/core'</span>;
+<span class="k">import</span> { RouterLink } <span class="k">from</span> <span class="s">'@angular/router'</span>;
+<span class="k">import</span> { Monitoring } <span class="k">from</span> <span class="s">'../monitoring'</span>;
+
+@<span class="f">Component</span>({
+  selector: <span class="s">'app-site-page'</span>,
+  imports: [RouterLink],
+  template: <span class="s">`
+    &lt;a routerLink="/" class="back"&gt;← Все сайты&lt;/a&gt;
+    @if (site(); as site) {
+      &lt;h2&gt;{{ site.name }}&lt;/h2&gt;
+      &lt;p&gt;&lt;a [href]="site.url" target="_blank" rel="noreferrer"&gt;{{ site.url }}&lt;/a&gt;&lt;/p&gt;
+    } @else if (!monitoring.loading()) {
+      &lt;p class="empty"&gt;Сайта «{{ id() }}» нет в списке.&lt;/p&gt;
+    }
+  `</span>,
+})
+<span class="k">export</span> class SitePage {
+  protected readonly monitoring = <span class="f">inject</span>(Monitoring);
+<span class="hl">  readonly id = input.required<span class="t">&lt;string</span><span class="t">&gt;</span>();</span>
+  protected readonly site = <span class="f">computed</span>(() =<span class="t">&gt;</span> this.monitoring.<span class="f">sites</span>().<span class="f">find</span>((s) =<span class="t">&gt;</span> s.id === this.<span class="f">id</span>()));
+}</pre></figure><!--/CODE-->
+            <p><code>input.required&lt;string&gt;()</code> — входное значение компонента, как свойство в React. Маршрутизатор передаёт в него часть адреса <code>:id</code>, если это включено в настройках.</p></li>
+          <li><b>Маршруты</b><p>Замените <code>src/app/app.routes.ts</code>.</p>
+            <!--CODE tools/code44/app.routes.ts | monitoring-ng/src/app/app.routes.ts | mark=6-7--><figure class="code"><figcaption><span>monitoring-ng/src/app/app.routes.ts</span></figcaption><pre><span class="k">import</span> { Routes } <span class="k">from</span> <span class="s">'@angular/router'</span>;
+<span class="k">import</span> { SitePage } <span class="k">from</span> <span class="s">'./pages/site-page'</span>;
+<span class="k">import</span> { SitesPage } <span class="k">from</span> <span class="s">'./pages/sites-page'</span>;
+
+<span class="k">export</span> <span class="k">const</span> routes: Routes = [
+<span class="hl">  { path: <span class="s">''</span>, component: SitesPage, title: <span class="s">'Сайты · Мониторинг сайтов группы'</span> },</span>
+<span class="hl">  { path: <span class="s">'site/:id'</span>, component: SitePage, title: <span class="s">'Сайт · Мониторинг сайтов группы'</span> },</span>
+];</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/07-app-routes.png" width="1240" height="780" alt="VS Code: app.routes.ts — path '' SitesPage, title «Сайты · Мониторинг сайтов группы»; path site/:id SitePage, title «Сайт · Мониторинг сайтов группы»" loading="lazy"><figcaption>Маршруты с заголовками вкладок</figcaption></figure>
+            <p>Заголовок вкладки — свойство <code>title</code> маршрута. Маршрутизатор Angular сам ставит его при переходе; в React 19 для этого служил тег <code>&lt;title&gt;</code> в каждом компоненте страницы.</p></li>
+          <li><b>Настройки</b><p>Замените <code>src/app/app.config.ts</code>.</p>
+            <!--CODE tools/code44/app.config.ts | monitoring-ng/src/app/app.config.ts | mark=2-3,9-10--><figure class="code"><figcaption><span>monitoring-ng/src/app/app.config.ts</span></figcaption><pre><span class="k">import</span> { ApplicationConfig, provideBrowserGlobalErrorListeners } <span class="k">from</span> <span class="s">'@angular/core'</span>;
+<span class="hl"><span class="k">import</span> { provideHttpClient } <span class="k">from</span> <span class="s">'@angular/common/http'</span>;</span>
+<span class="hl"><span class="k">import</span> { provideRouter, withComponentInputBinding } <span class="k">from</span> <span class="s">'@angular/router'</span>;</span>
+<span class="k">import</span> { routes } <span class="k">from</span> <span class="s">'./app.routes'</span>;
+
+<span class="k">export</span> <span class="k">const</span> appConfig: ApplicationConfig = {
+  providers: [
+    <span class="f">provideBrowserGlobalErrorListeners</span>(),
+<span class="hl">    <span class="f">provideHttpClient</span>(),</span>
+<span class="hl">    <span class="f">provideRouter</span>(routes, <span class="f">withComponentInputBinding</span>()),</span>
+  ],
+};</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/08-app-config.png" width="1240" height="780" alt="VS Code: app.config.ts — providers: provideBrowserGlobalErrorListeners(), provideHttpClient(), provideRouter(routes, withComponentInputBinding())" loading="lazy"><figcaption>Настройки приложения</figcaption></figure>
+            <p><code>provideHttpClient()</code> подключает модуль работы с сетью, которым пользуется <code>httpResource</code>. <code>withComponentInputBinding()</code> разрешает передавать части адреса во входные значения страниц.</p></li>
+          <li><b>Корневой компонент</b><p>Замените <code>src/app/app.ts</code>: шапка со строкой о последней проверке и место для страницы — <code>&lt;router-outlet /&gt;</code>, как <code>&lt;Routes&gt;</code> в <code>App.tsx</code>.</p>
+            <!--CODE tools/code44/app.ts | monitoring-ng/src/app/app.ts--><figure class="code"><figcaption><span>monitoring-ng/src/app/app.ts</span></figcaption><pre><span class="k">import</span> { Component, computed, inject } <span class="k">from</span> <span class="s">'@angular/core'</span>;
+<span class="k">import</span> { RouterOutlet } <span class="k">from</span> <span class="s">'@angular/router'</span>;
+<span class="k">import</span> { Monitoring } <span class="k">from</span> <span class="s">'./monitoring'</span>;
+
+@<span class="f">Component</span>({
+  selector: <span class="s">'app-root'</span>,
+  imports: [RouterOutlet],
+  template: <span class="s">`
+    &lt;header class="header"&gt;
+      &lt;h1&gt;Мониторинг сайтов группы&lt;/h1&gt;
+      &lt;p&gt;{{ lastCheck() }}&lt;/p&gt;
+    &lt;/header&gt;
+    &lt;main class="main"&gt;
+      &lt;router-outlet /&gt;
+    &lt;/main&gt;
+  `</span>,
+})
+<span class="k">export</span> class App {
+  private readonly monitoring = <span class="f">inject</span>(Monitoring);
+  protected readonly lastCheck = <span class="f">computed</span>(() =<span class="t">&gt;</span> {
+    <span class="k">const</span> last = this.monitoring.<span class="f">history</span>()[<span class="n">0</span>];
+    <span class="k">return</span> last === <span class="k">undefined</span>
+      ? <span class="s">'Проверок ещё не было'</span>
+      : <span class="s">`Последняя проверка: ${new Date(last.time).toLocaleString('ru')}`</span>;
+  });
+}</pre></figure><!--/CODE--></li>
+          <li><b>Запустите</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring-ng</span></figcaption><pre>npm start</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/09-ng-serve.png" width="1240" height="393" alt="Терминал: npm start, ng serve; main.js 21.17 kB, styles.css 2.47 kB; Application bundle generation complete; Watch mode enabled; Local: http://localhost:4200/" loading="lazy"><figcaption>Сервер разработки на порту 4200</figcaption></figure>
+            <p><code>npm start</code> вызывает <code>ng serve</code> — сервер разработки, как <code>npm run dev</code> у Vite. Адрес — <code>http://localhost:4200/</code>.</p></li>
+          <li><b>Проверьте в браузере</b>
+            <figure class="shot" style="max-width: 1106px"><img src="img/10-sajty.png" width="1100" height="622" alt="Браузер: вкладка «Сайты · Мониторинг сайтов группы», localhost:4200; шапка с последней проверкой 03.11.2026, сводка «Не открываются: 1 из 6», поле поиска и флажок, шесть карточек" loading="lazy"><figcaption>Страница «Сайты» на Angular</figcaption></figure>
+            <p>Введите в поиск «справ».</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/11-poisk.png" width="1100" height="474" alt="Браузер: в поле поиска «справ», остались две карточки — Справочник по Git и GitHub, Справочник по MongoDB" loading="lazy"><figcaption>Поиск «справ»</figcaption></figure>
+            <p>Щёлкните карточку: адрес и заголовок вкладки меняются.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/12-sajt.png" width="1100" height="357" alt="Браузер: вкладка «Сайт · Мониторинг сайтов группы», адрес localhost:4200/site/mongodb; ссылка «← Все сайты», заголовок «Справочник по MongoDB», адрес сайта" loading="lazy"><figcaption>Страница сайта: адрес и заголовок вкладки сменились</figcaption></figure></li>
+        </ol>
+
+        <p>Страница выглядит так же, как React-версия: те же классы и тот же <code>styles.css</code>. Сводка «Не открываются: 1 из 6» совпадает: её считает та же логика на тех же данных.</p>
+
+        <p class="bridge">Поведение совпадает на глаз. Закрепим его тестом.</p>
+
+        <h2 id="s7"><span class="sec">§7</span>Тест страницы</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>TestBed и подмена службы</p>
+
+        <p>В главе 4.1 тест показывал компонент функцией <code>render</code> из Testing Library и передавал придуманные данные через <code>MonitoringContext</code>. В Angular компонент для теста создаёт <span class="term">TestBed</span> — тестовая сборка приложения. В ней службу можно подменить: вместо настоящей <code>Monitoring</code>, которая загружает файлы, страница получит объект с теми же сигналами и придуманными данными.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Пишем тест</p>
+
+        <ol class="steps">
+          <li><b>Создайте тест</b><p>Создайте <code>src/app/pages/sites-page.spec.ts</code>. В Angular файлы тестов оканчиваются на <code>.spec.ts</code>.</p>
+            <!--CODE tools/code44/sites-page.spec.ts | monitoring-ng/src/app/pages/sites-page.spec.ts | pins=24:1,31:2,33:3,34:4,61:5--><figure class="code" data-read><figcaption><span>monitoring-ng/src/app/pages/sites-page.spec.ts</span></figcaption><pre><span class="k">import</span> { signal } <span class="k">from</span> <span class="s">'@angular/core'</span>;
+<span class="k">import</span> { TestBed } <span class="k">from</span> <span class="s">'@angular/core/testing'</span>;
+<span class="k">import</span> { provideRouter } <span class="k">from</span> <span class="s">'@angular/router'</span>;
+<span class="k">import</span> { Monitoring } <span class="k">from</span> <span class="s">'../monitoring'</span>;
+<span class="k">import</span> { Run, Site } <span class="k">from</span> <span class="s">'../types'</span>;
+<span class="k">import</span> { SitesPage } <span class="k">from</span> <span class="s">'./sites-page'</span>;
+
+<span class="k">const</span> sites: Site[] = [
+  { id: <span class="s">'git'</span>, name: <span class="s">'Справочник по Git'</span>, url: <span class="s">'https://example.org/git/'</span> },
+  { id: <span class="s">'react'</span>, name: <span class="s">'Справочник по React'</span>, url: <span class="s">'https://example.org/react/'</span> },
+  { id: <span class="s">'sql'</span>, name: <span class="s">'Задачник по SQL'</span>, url: <span class="s">'https://example.org/sql/'</span> },
+];
+
+<span class="k">const</span> run: Run = {
+  time: <span class="s">'2026-11-12T21:00:00Z'</span>,
+  checks: [
+    { id: <span class="s">'git'</span>, ok: <span class="k">true</span>, status: <span class="n">200</span>, ms: <span class="n">340</span>, error: <span class="s">''</span> },
+    { id: <span class="s">'react'</span>, ok: <span class="k">false</span>, status: <span class="n">404</span>, ms: <span class="n">120</span>, error: <span class="s">''</span> },
+    { id: <span class="s">'sql'</span>, ok: <span class="k">true</span>, status: <span class="n">200</span>, ms: <span class="n">510</span>, error: <span class="s">''</span> },
+  ],
+};
+
+async <span class="k">function</span> <span class="f">show</span>() {
+  <span class="k">const</span> fake = {  <span class="pin">1</span>
+    sites: <span class="f">signal</span>(sites),
+    history: <span class="f">signal</span>([run]),
+    loading: <span class="f">signal</span>(<span class="k">false</span>),
+    error: <span class="f">signal</span>(<span class="s">''</span>),
+  };
+  TestBed.<span class="f">configureTestingModule</span>({
+    providers: [<span class="f">provideRouter</span>([]), { provide: Monitoring, useValue: fake }],  <span class="pin">2</span>
+  });
+  <span class="k">const</span> fixture = TestBed.<span class="f">createComponent</span>(SitesPage);  <span class="pin">3</span>
+  await fixture.<span class="f">whenStable</span>();  <span class="pin">4</span>
+  <span class="k">return</span> fixture;
+}
+
+<span class="k">function</span> <span class="f">names</span>(page: HTMLElement) {
+  <span class="k">return</span> [...page.<span class="f">querySelectorAll</span>(<span class="s">'h2'</span>)].<span class="f">map</span>((h) =<span class="t">&gt;</span> h.textContent);
+}
+
+<span class="f">describe</span>(<span class="s">'SitesPage'</span>, () =<span class="t">&gt;</span> {
+  <span class="f">it</span>(<span class="s">'считает сайты, которые не открываются'</span>, async () =<span class="t">&gt;</span> {
+    <span class="k">const</span> fixture = await <span class="f">show</span>();
+    <span class="k">const</span> page: HTMLElement = fixture.nativeElement;
+    <span class="f">expect</span>(page.<span class="f">querySelector</span>(<span class="s">'.summary'</span>)?.textContent).<span class="f">toBe</span>(<span class="s">'Не открываются: 1 из 3'</span>);
+  });
+
+  <span class="f">it</span>(<span class="s">'карточка ведёт на страницу сайта'</span>, async () =<span class="t">&gt;</span> {
+    <span class="k">const</span> fixture = await <span class="f">show</span>();
+    <span class="k">const</span> page: HTMLElement = fixture.nativeElement;
+    <span class="k">const</span> link = page.<span class="f">querySelectorAll</span>(<span class="s">'a.site'</span>)[<span class="n">1</span>];
+    <span class="f">expect</span>(link.<span class="f">getAttribute</span>(<span class="s">'href'</span>)).<span class="f">toBe</span>(<span class="s">'/site/react'</span>);
+  });
+
+  <span class="f">it</span>(<span class="s">'поиск оставляет одну карточку'</span>, async () =<span class="t">&gt;</span> {
+    <span class="k">const</span> fixture = await <span class="f">show</span>();
+    <span class="k">const</span> page: HTMLElement = fixture.nativeElement;
+    <span class="k">const</span> input = page.querySelector&lt;HTMLInputElement&gt;(<span class="s">'input[type=search]'</span>)!;
+    input.value = <span class="s">'react'</span>;
+    input.<span class="f">dispatchEvent</span>(<span class="k">new</span> <span class="f">Event</span>(<span class="s">'input'</span>));  <span class="pin">5</span>
+    await fixture.<span class="f">whenStable</span>();
+    <span class="f">expect</span>(<span class="f">names</span>(page)).<span class="f">toEqual</span>([<span class="s">'Справочник по React'</span>]);
+  });
+
+  <span class="f">it</span>(<span class="s">'поиск git с флажком: сайтов не найдено'</span>, async () =<span class="t">&gt;</span> {
+    <span class="k">const</span> fixture = await <span class="f">show</span>();
+    <span class="k">const</span> page: HTMLElement = fixture.nativeElement;
+    <span class="k">const</span> input = page.querySelector&lt;HTMLInputElement&gt;(<span class="s">'input[type=search]'</span>)!;
+    input.value = <span class="s">'git'</span>;
+    input.<span class="f">dispatchEvent</span>(<span class="k">new</span> <span class="f">Event</span>(<span class="s">'input'</span>));
+    page.querySelector&lt;HTMLInputElement&gt;(<span class="s">'input[type=checkbox]'</span>)!.<span class="f">click</span>();
+    await fixture.<span class="f">whenStable</span>();
+    <span class="f">expect</span>(<span class="f">names</span>(page)).<span class="f">toEqual</span>([]);
+    <span class="f">expect</span>(page.textContent).<span class="f">toContain</span>(<span class="s">'Сайтов не найдено'</span>);
+  });
+});</pre></figure><!--/CODE-->
+            <ol class="anno">
+              <li><span class="pin">1</span><div><p>Подменная служба: те же четыре сигнала, что у настоящей, с данными из теста 4.1 — три сайта и одна проверка.</p></div></li>
+              <li><span class="pin">2</span><div><p><code>{ provide: Monitoring, useValue: fake }</code> — когда страница попросит <code>Monitoring</code>, отдать <code>fake</code>. <code>provideRouter([])</code> нужен ссылкам <code>[routerLink]</code>, как <code>MemoryRouter</code> в React.</p></div></li>
+              <li><span class="pin">3</span><div><p>TestBed создаёт страницу.</p></div></li>
+              <li><span class="pin">4</span><div><p><code>whenStable()</code> ждёт, пока Angular обновит разметку.</p></div></li>
+              <li><span class="pin">5</span><div><p>Ввод текста: значение поля и событие <code>input</code>, на которое подписан шаблон. После него снова <code>whenStable()</code>.</p></div></li>
+            </ol>
+            <figure class="shot" style="max-width: 1246px"><img src="img/13-spec.png" width="1240" height="780" alt="VS Code: sites-page.spec.ts — данные run, функция show: fake с сигналами sites, history, loading, error; TestBed.configureTestingModule с provideRouter и provide Monitoring useValue fake; createComponent, whenStable" loading="lazy"><figcaption>Тест: подменная служба</figcaption></figure></li>
+          <li><b>Запустите</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring-ng</span></figcaption><pre>CI=true npm test</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/14-ng-test.png" width="1240" height="553" alt="Терминал: CI=true npm test, ng test; сборка тестов; RUN v5.1.0; src/app/pages/sites-page.spec.ts (4 tests); Test Files 1 passed, Tests 4 passed" loading="lazy"><figcaption>Четыре теста прошли</figcaption></figure>
+            <p><code>ng test</code> сначала собирает тесты своей сборкой, затем запускает их в Vitest 5.1 — той же версии, что в главе 4.1. Без <code>CI=true</code> Vitest остаётся в режиме наблюдения.</p></li>
+        </ol>
+
+        <p>Тесты проверяют те же требования, что тесты страницы в главе 4.1: сводку, адрес ссылки, поиск и пустой результат. Элементы здесь ищутся через <code>querySelector</code> по классам и тегам. Testing Library есть и для Angular, и с ней тесты двух версий были бы ещё ближе, но в проект её нужно ставить отдельно.</p>
+
+        <p class="bridge">Последнее — собрать проект и сравнить две версии.</p>
+
+        <h2 id="s8"><span class="sec">§8</span>Сборка и сравнение по числам</h2>
+
+        <ol class="steps">
+          <li><b>Соберите проект</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring-ng</span></figcaption><pre>npm run build</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/15-ng-build.png" width="1240" height="361" alt="Терминал: npm run build, ng build; main 254.20 kB, styles 1.88 kB, Initial total 256.08 kB, estimated transfer 70.18 kB; Output location dist/monitoring-ng" loading="lazy"><figcaption>Сборка: 256 КБ, 70 КБ при передаче</figcaption></figure>
+            <p>Готовый сайт лежит в <code>dist/monitoring-ng/browser</code>. Его, как и <code>dist</code> у Vite, можно опубликовать на GitHub Pages.</p></li>
+        </ol>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что сравниваем</th><th>React (<code>monitoring</code>)</th><th>Angular (<code>monitoring-ng</code>)</th></tr></thead>
+            <tbody>
+              <tr><td>Загрузка данных</td><td>72 строки: <code>MonitoringProvider.tsx</code> и <code>monitoring.ts</code></td><td>27 строк: <code>monitoring.ts</code></td></tr>
+              <tr><td>Страница «Сайты»</td><td>74 строки: <code>SitesPage.tsx</code></td><td>75 строк: 46 в классе и 29 в шаблоне</td></tr>
+              <tr><td>Файл сборки</td><td>262 КБ, 83 КБ при передаче</td><td>254 КБ, 70 КБ при передаче</td></tr>
+              <tr><td>Папка <code>node_modules</code></td><td>124 МБ, 87 папок верхнего уровня</td><td>287 МБ, 200 папок верхнего уровня</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Цифры получены на двух проектах этого справочника. Сборки сравнимы только по порядку величины: в React-версии больше страниц — история проверок, «О проверке», страница 404, — а в Angular-версии только две. Строки страницы почти равны: Angular разносит её на класс и шаблон, React держит всё в одной функции. Короче всего в Angular вышла загрузка данных — за счёт <code>httpResource</code>. Больше всего места Angular занимает на диске: CLI сразу ставит сборщик, тесты и инструменты, которые в проекте Vite добавлялись по одному.</p>
+
+        <p>Из сравнения не следует, что один фреймворк лучше. Таблица в главе 0.2 называет, где каждый встречается чаще. На этой странице видно другое: задача, данные и логика переносятся, а меняется способ записи — хуки и JSX против сигналов, служб и шаблона.</p>
+
+        <h2 id="s9"><span class="sec">§9</span>Частые ошибки</h2>
+
+        <p>Сообщения получены на проекте <code>monitoring-ng</code>.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td><code>NG8002: Can't bind to 'routerLink' since it isn't a known property of 'a'</code></td><td><code>RouterLink</code> не указан в <code>imports</code> компонента</td><td>Добавить <code>imports: [RouterLink]</code> и импорт из <code>@angular/router</code></td></tr>
+              <tr><td><code>NG8109: summary is a function and should be invoked: summary()</code> при сборке</td><td>Сигнал в шаблоне записан без скобок</td><td>Читать сигнал вызовом: <code>{{ summary() }}</code></td></tr>
+              <tr><td>CLI ждёт ответа: <i>Would you like to share pseudonymous usage data</i></td><td>Первый запуск <code>ng</code> на компьютере</td><td>Ответить <kbd>N</kbd> и <kbd>Enter</kbd></td></tr>
+              <tr><td>Тест не видит изменений после ввода</td><td>Не дождались обновления разметки</td><td><code>await fixture.whenStable()</code> после события</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s10"><span class="sec">§10</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Какие файлы React-проекта перешли в Angular без изменений и почему?</summary>
+          <p><code>types.ts</code>, <code>status.ts</code>, <code>plural.ts</code>, данные и стили. Функции в них получают значения и возвращают результат, не обращаясь к фреймворку.</p>
+        </details>
+        <details>
+          <summary>Чем служба в Angular отличается от провайдера с контекстом в React?</summary>
+          <p>Провайдер стоит в дереве компонентов, и данные получают только компоненты внутри него. Службу Angular создаёт один раз отдельно от дерева и отдаёт её каждому, кто вызвал <code>inject</code>.</p>
+        </details>
+        <details>
+          <summary>Почему в Angular сводка записана через <code>computed</code>, а в React — обычной переменной?</summary>
+          <p>Функция компонента React вызывается при каждой отрисовке и считает переменную заново. Класс Angular создаётся один раз, и пересчёт при изменении данных обеспечивает <code>computed</code>.</p>
+        </details>
+        <details>
+          <summary>Что делает <code>track site.id</code> в <code>@for</code>?</summary>
+          <p>Задаёт ключ элемента списка, как <code>key</code> в React. По нему Angular понимает, какая карточка какая, когда список меняется.</p>
+        </details>
+        <details>
+          <summary>Как тест Angular подменяет загрузку данных?</summary>
+          <p>В <code>TestBed</code> для <code>Monitoring</code> указан <code>useValue</code> — объект с теми же сигналами и придуманными данными. Страница получает его вместо настоящей службы.</p>
+        </details>
+        <details>
+          <summary>Что в проекте Angular делает файл AGENTS.md и откуда он взялся?</summary>
+          <p>Его создал CLI по ключу <code>--ai-config</code>. В нём правила Angular для ИИ-агента: сигналы, встроенные блоки шаблонов, <code>inject</code>, доступность. Continue из главы 4.3 добавит их к каждому запросу.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Новый проект</b><code>npx @angular/cli@22.2.7 new имя --defaults --style=css --ssr=false</code></div>
+          <div><b>Запуск, тесты, сборка</b><code>npm start</code>, <code>CI=true npm test</code>, <code>npm run build</code></div>
+          <div><b>Компонент</b><code>@Component({ selector, imports, templateUrl })</code></div>
+          <div><b>Состояние</b><code>signal('')</code>, чтение <code>query()</code>, запись <code>query.set(…)</code></div>
+          <div><b>Вычисляемое</b><code>computed(() =&gt; …)</code></div>
+          <div><b>Служба</b><code>@Service() export class …</code>, получить — <code>inject(…)</code></div>
+          <div><b>Загрузка</b><code>httpResource&lt;T&gt;(() =&gt; 'data/file.json')</code>: <code>value()</code>, <code>isLoading()</code>, <code>error()</code></div>
+          <div><b>Шаблон</b><code>@if</code>, <code>@for (x of list(); track x.id)</code>, <code>[свойство]</code>, <code>(событие)</code>, <code>{{ значение }}</code></div>
+          <div><b>Ссылка, заголовок</b><code>[routerLink]="['/site', id]"</code>; <code>title</code> в маршруте</div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <ul>
+          <li>Проект Angular создаёт CLI командой <code>ng new</code>: маршрутизатор, сеть, формы и тесты на Vitest ставятся сразу, ключ <code>--ai-config</code> добавляет <code>AGENTS.md</code> с правилами Angular.</li>
+          <li>Функции без обращений к фреймворку, данные и стили перенесены копированием.</li>
+          <li>Провайдер с эффектом и контекстом заменила служба <code>@Service()</code> с <code>httpResource</code>; страница получает её через <code>inject</code>.</li>
+          <li>Состояние страницы — сигналы, сводка и список — <code>computed</code>, разметка — шаблон с <code>@if</code>, <code>@for</code> и <code>[routerLink]</code>; заголовки вкладок — <code>title</code> в маршрутах.</li>
+          <li>Тест создаёт страницу через <code>TestBed</code> с подменённой службой и запускается в Vitest. По числам: загрузка данных короче, страница той же длины, сборка того же размера, <code>node_modules</code> вдвое больше.</li>
+        </ul>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://angular.dev/tools/cli" target="_blank" rel="noreferrer">Angular — CLI Overview and Command Reference</a></li>
+          <li><a href="https://angular.dev/guide/signals" target="_blank" rel="noreferrer">Angular — Signals</a></li>
+          <li><a href="https://angular.dev/guide/http/http-resource" target="_blank" rel="noreferrer">Angular — httpResource</a></li>
+          <li><a href="https://angular.dev/guide/di" target="_blank" rel="noreferrer">Angular — Dependency injection</a></li>
+          <li><a href="https://angular.dev/guide/templates/control-flow" target="_blank" rel="noreferrer">Angular — Control flow (@if, @for)</a></li>
+          <li><a href="https://angular.dev/guide/routing" target="_blank" rel="noreferrer">Angular — Routing (title)</a></li>
+          <li><a href="https://angular.dev/guide/testing" target="_blank" rel="noreferrer">Angular — Testing</a></li>
+          <li><a href="https://angular.dev/ai/develop-with-ai" target="_blank" rel="noreferrer">Angular — Develop with AI (правила для агентов)</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../43-zadacha-agentu/index.html">← 4.3 Задача для ИИ-агента и проверка результата</a>
+          <a href="../../index.html">К оглавлению →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>
