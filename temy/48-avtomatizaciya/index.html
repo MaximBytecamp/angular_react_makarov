@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>Автоматизация: сбор новостей и вечерний дайджест · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch .on-dark-soft { fill: #c8d0e0; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng-text { fill: #C2185B; }
+    .sch .ok-text { fill: #1E7A46; }
+    .sch .dash { stroke-dasharray: 6 4; }
+    pre.template { max-height: 260px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 4 · Работа с ИИ-агентом и обзор Angular</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 4 · работа с ИИ-агентом и обзор Angular</p>
+          <p class="running__folio">А4</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">А4</span>
+          <h1>Сбор новостей<br>и вечерний дайджест</h1>
+          <p class="lead">На этой странице собирается автоматизация для проекта модуля 4. Каждое утро n8n берёт свежие новости из трёх лент RSS, модель в Ollama пересказывает каждую в двух предложениях и ставит теги, а новости записываются в Google Таблицу. Таблицу читает страница дайджеста, вечером n8n отправляет список новостей в Telegram. Между n8n и таблицей стоит маленькая программа на Google Apps Script: она работает на серверах Google, бесплатно и без своего сервера.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>Автоматизация, n8n, Google Apps Script, RSS</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Аккаунт Google, Docker и n8n из модуля 1, Ollama с моделью <code>qwen3:4b-instruct</code> из главы 4.3, бот Telegram из модуля 1</dd></div>
+          <div><dt>Результат</dt><dd>Таблица «Дайджест новостей» и веб-приложение Apps Script; процессы n8n «Дайджест: сбор новостей» и «Дайджест: вечером в Telegram»</dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>На этой странице</b>
+          <ol>
+            <li><a href="#s1">Как устроена автоматизация</a></li>
+            <li><a href="#s2">Таблица и Apps Script</a></li>
+            <li><a href="#s3">Публикация веб-приложения</a></li>
+            <li><a href="#s4">Модель для пересказа</a></li>
+            <li><a href="#s5">Процесс «Сбор новостей»</a></li>
+            <li><a href="#s6">Процесс «Вечером в Telegram»</a></li>
+            <li><a href="#s7">Частые ошибки</a></li>
+            <li><a href="#s8">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Как устроена автоматизация</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Где живут данные и кто их пишет</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>В редакции утром корреспонденты приносят заметки, редактор сокращает каждую до абзаца, а выпускающий вешает готовые абзацы на стенд в холле. Читатели подходят к стенду в любое время. Вечером секретарь рассылает подписчикам список того, что появилось за день.</p>
+          <p class="miss">У стенда в редакции стоит вахтёр: повесить заметку может только выпускающий. В нашей схеме вахтёр — секретный ключ, без которого запись в таблицу не принимается.</p>
+        </div></div>
+
+        <p>В модуле 3 данные монитора хранились файлом в репозитории, а в модуле 2 — в PocketBase на вашем компьютере. Дайджесту нужно хранилище, которое доступно из интернета: страница опубликована на GitHub Pages и должна читать новости из интернета. Здесь таким хранилищем будет Google Таблица. Сама таблица страницам в интернете ничего не отдаёт, поэтому рядом с ней работает <span class="term">Google Apps Script</span>. Это среда Google для маленьких программ на JavaScript: они выполняются на серверах Google и работают с таблицами, документами и почтой.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Путь новости</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 270" role="img" aria-label="Утром n8n читает три ленты RSS: Хабр, 3DNews, iXBT. Каждую свежую новость отправляет в Ollama, модель qwen3:4b-instruct возвращает пересказ и теги. n8n проверяет ответ и одним запросом POST с ключом отправляет новости в Apps Script, скрипт дописывает их в Google Таблицу. Страница дайджеста на GitHub Pages читает новости запросом GET к тому же скрипту. Вечером n8n запрашивает новости за сутки и отправляет список в Telegram">
+              <rect x="20" y="20" width="150" height="90" fill="#ffffff"/><text x="34" y="46">Ленты RSS</text><text class="soft" x="34" y="70">Хабр, 3DNews,</text><text class="soft" x="34" y="88">iXBT</text>
+              <path d="M170 65 H 206"/><path d="M198 59 L 206 65 L 198 71"/>
+              <rect x="214" y="20" width="190" height="90" fill="#161A2E"/><text class="on-dark" x="228" y="46">n8n · утром</text><text class="soft on-dark-soft" x="228" y="70">свежие за сутки,</text><text class="soft on-dark-soft" x="228" y="88">проверка ответа</text>
+              <path d="M309 110 V 146"/><path d="M303 138 L 309 146 L 315 138"/><path d="M290 146 V 112"/><path d="M284 120 L 290 112 L 296 120"/>
+              <rect x="214" y="150" width="190" height="56" fill="#ffffff"/><text x="228" y="174">Ollama</text><text class="soft" x="228" y="194">пересказ и теги</text>
+              <path d="M404 65 H 450"/><path d="M442 59 L 450 65 L 442 71"/><text class="soft" x="406" y="56">POST + ключ</text>
+              <rect x="458" y="20" width="140" height="90" fill="#D6F0F9"/><text x="472" y="46">Apps Script</text><text class="soft" x="472" y="70">doPost — запись</text><text class="soft" x="472" y="88">doGet — чтение</text>
+              <path d="M598 65 H 626"/><path d="M618 59 L 626 65 L 618 71"/>
+              <rect x="634" y="20" width="106" height="90" fill="#ffffff"/><text x="648" y="46">Таблица</text><text class="soft" x="648" y="70">лист news</text>
+              <path d="M528 110 V 160"/><path d="M522 118 L 528 110 L 534 118"/><text class="soft" x="536" y="140">GET</text>
+              <rect x="458" y="164" width="140" height="56" fill="#ffffff"/><text x="472" y="188">Страница</text><text class="soft" x="472" y="208">GitHub Pages</text>
+              <path class="dash" d="M309 206 V 240 H 120"/><path d="M128 234 L 120 240 L 128 246"/>
+              <text class="soft" x="140" y="232">вечером: GET → Telegram</text>
+              <rect x="20" y="222" width="96" height="36" fill="#ffffff"/><text x="34" y="245">Telegram</text>
+            </svg>
+          </div>
+          <p class="scheme__note">Сплошные стрелки — утренний процесс и чтение страницей, пунктир — вечерний процесс.</p>
+        </figure>
+
+        <p>На схеме слева направо идёт утренний путь новости. n8n читает ленты, отбирает свежие и для каждой спрашивает модель. Затем n8n отправляет все новости одним запросом <code>POST</code> скрипту Apps Script, и тот дописывает новые строки в таблицу. Скрипт отвечает и на запрос <code>GET</code>: возвращает все строки в JSON. Этим пользуются страница дайджеста и вечерний процесс n8n. У таблицы один вход для записи — с ключом — и один выход для чтения, открытый всем.</p>
+
+        <p class="bridge">Начнём с таблицы и скрипта: без них n8n некуда писать.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Таблица и Apps Script</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Таблица</p>
+
+        <ol class="steps">
+          <li><b>Создайте таблицу</b><p>Откройте <a href="https://sheets.new" target="_blank" rel="noreferrer">sheets.new</a> — создастся пустая таблица. Назовите её «Дайджест новостей» (щелчок по названию слева вверху), а лист внизу — <code>news</code> (двойной щелчок по «Лист1»).</p></li>
+          <li><b>Впишите заголовки</b><p>В первую строку, по одному в ячейку от A1 до G1: <code>id</code>, <code>date</code>, <code>source</code>, <code>title</code>, <code>summary</code>, <code>tags</code>, <code>link</code>.</p>
+            <p>Скрипт будет искать колонки по этим именам, а страница получит их как поля новости. <code>id</code> — уникальный номер новости; им будет ссылка на неё.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Веб-приложение из двух функций</p>
+
+        <p>Скрипт Apps Script привязан к таблице и открывается из её меню. Если в скрипте есть функции <code>doGet</code> и <code>doPost</code>, его можно опубликовать как <span class="term">веб-приложение</span>. Google даст адрес: на запрос <code>GET</code> по нему ответит <code>doGet</code>, на <code>POST</code> — <code>doPost</code>. Это бессерверная функция: код есть, а сервера, который нужно запускать и обновлять, у вас нет.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Скрипт</p>
+
+        <ol class="steps">
+          <li><b>Откройте редактор</b><p>В таблице: Расширения → Apps Script. Откроется редактор с файлом <code>Код.gs</code> и пустой функцией <code>myFunction</code>. Назовите проект «Дайджест» (щелчок по «Проект без названия»).</p></li>
+          <li><b>Вставьте код</b><p>Замените содержимое <code>Код.gs</code> кодом ниже и сохраните: <kbd>Ctrl+S</kbd>.</p>
+            <!--CODE tools/code45/Code.gs | Apps Script · Код.gs | pins=1:1,5:2,7:3,13:4,17:5,26:6--><figure class="code" data-read><figcaption><span>Apps Script · Код.gs</span></figcaption><pre><span class="c">/** @OnlyCurrentDoc */</span>  <span class="pin">1</span>
+
+<span class="k">const</span> SHEET = <span class="s">'news'</span>
+
+<span class="k">function</span> <span class="f">doGet</span>() {  <span class="pin">2</span>
+  <span class="k">const</span> [head, ...rows] = SpreadsheetApp.<span class="f">getActive</span>().<span class="f">getSheetByName</span>(SHEET).<span class="f">getDataRange</span>().<span class="f">getValues</span>()
+  <span class="k">const</span> news = rows.<span class="f">map</span>((row) =<span class="t">&gt;</span> Object.<span class="f">fromEntries</span>(head.<span class="f">map</span>((name, i) =<span class="t">&gt;</span> [name, row[i]])))  <span class="pin">3</span>
+  <span class="k">return</span> <span class="f">json</span>({ news })
+}
+
+<span class="k">function</span> <span class="f">doPost</span>(e) {
+  <span class="k">const</span> body = JSON.<span class="f">parse</span>(e.postData.contents)
+  <span class="k">if</span> (body.key !== PropertiesService.<span class="f">getScriptProperties</span>().<span class="f">getProperty</span>(<span class="s">'KEY'</span>)) {  <span class="pin">4</span>
+    <span class="k">return</span> <span class="f">json</span>({ error: <span class="s">'Неверный ключ'</span> })
+  }
+  <span class="k">const</span> sheet = SpreadsheetApp.<span class="f">getActive</span>().<span class="f">getSheetByName</span>(SHEET)
+  <span class="k">const</span> known = <span class="k">new</span> <span class="f">Set</span>(sheet.<span class="f">getRange</span>(<span class="s">'A:A'</span>).<span class="f">getValues</span>().<span class="f">flat</span>())  <span class="pin">5</span>
+  <span class="k">const</span> fresh = body.news.<span class="f">filter</span>((item) =<span class="t">&gt;</span> !known.<span class="f">has</span>(item.id))
+  for (<span class="k">const</span> item of fresh) {
+    sheet.<span class="f">appendRow</span>([item.id, item.date, item.source, item.title, item.summary, item.tags.<span class="f">join</span>(<span class="s">', '</span>), item.link])
+  }
+  <span class="k">return</span> <span class="f">json</span>({ added: fresh.length })
+}
+
+<span class="k">function</span> <span class="f">json</span>(value) {
+  <span class="k">return</span> ContentService.<span class="f">createTextOutput</span>(JSON.<span class="f">stringify</span>(value)).<span class="f">setMimeType</span>(ContentService.MimeType.JSON)  <span class="pin">6</span>
+}</pre></figure><!--/CODE-->
+            <ol class="anno">
+              <li><span class="pin">1</span><div><p>Пометка: скрипт работает только с той таблицей, к которой привязан. Без неё Google при публикации попросит доступ ко всем таблицам вашего аккаунта.</p></div></li>
+              <li><span class="pin">2</span><div><p><code>doGet</code> читает весь лист: первая строка — заголовки, остальные — новости.</p></div></li>
+              <li><span class="pin">3</span><div><p>Каждая строка превращается в объект: <code>{ id: …, date: …, title: … }</code> — имена полей берутся из заголовков.</p></div></li>
+              <li><span class="pin">4</span><div><p>Запись только с ключом. Сам ключ хранится в свойствах скрипта — их задаём ниже.</p></div></li>
+              <li><span class="pin">5</span><div><p>Все уже записанные <code>id</code> из колонки A. Новость, которая уже есть, второй раз не добавляется: утренний процесс можно запускать повторно.</p></div></li>
+              <li><span class="pin">6</span><div><p>Ответ в формате JSON, как у обычного сервера.</p></div></li>
+            </ol>
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-apps-script.png" width="1240" height="760" alt="Редактор Apps Script, проект «Дайджест»: файл Код.gs — /** @OnlyCurrentDoc */, const SHEET = 'news', функции doGet, doPost с проверкой ключа KEY и json" loading="lazy"><figcaption>Код.gs в редакторе Apps Script</figcaption></figure></li>
+          <li><b>Задайте ключ</b><p>Придумайте ключ — длинную случайную строку, например из 32 цифр и латинских букв. Слева в редакторе откройте «Настройки проекта» (шестерёнка), внизу страницы — «Добавить свойство скрипта». Свойство — <code>KEY</code>, значение — ваш ключ. Нажмите «Сохранить свойства скрипта». Сохраните ключ у себя: он понадобится n8n.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-klyuch.png" width="1240" height="760" alt="Настройки проекта Apps Script, раздел «Свойства скрипта»: свойство KEY, значение скрыто" loading="lazy"><figcaption>Свойство KEY; значение на кадре скрыто</figcaption></figure></li>
+        </ol>
+
+        <p>Ключ хранится в свойствах скрипта по той же причине, по которой токен бота в модуле 3 хранился в секретах репозитория. Код можно показать, переслать, опубликовать; ключ должен оставаться у вас.</p>
+
+        <p class="bridge">Скрипт написан. Чтобы его можно было вызвать по адресу, его нужно опубликовать.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Публикация веб-приложения</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Новое развертывание</p>
+
+        <ol class="steps">
+          <li><b>Откройте окно развертывания</b><p>В редакторе кода нажмите «Начать развертывание» → «Новое развертывание». В окне нажмите шестерёнку рядом с «Выберите тип» и выберите «Веб-приложение».</p></li>
+          <li><b>Заполните настройки</b><p>Описание — «Первая версия». «Запуск от имени» — от вашего имени: скрипт будет работать с таблицей с вашими правами. «У кого есть доступ» — «Все»: и страница, и n8n обращаются к скрипту без входа в Google.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/04-razvertyvanie.png" width="1240" height="760" alt="Окно «Новое развертывание»: тип Веб-приложение, описание «Первая версия», запуск от имени владельца (адрес скрыт), у кого есть доступ — Все, кнопка «Начать развертывание»" loading="lazy"><figcaption>Настройки веб-приложения</figcaption></figure>
+            <p>Нажмите «Начать развертывание».</p></li>
+          <li><b>Разрешите доступ</b><p>Google попросит разрешить скрипту доступ к данным: «Предоставить доступ» → выберите аккаунт. Появится предупреждение «Google hasn't verified this app»: так Google предупреждает о любом скрипте, который не прошёл его проверку, в том числе о вашем собственном. Нажмите Advanced → «Go to Дайджест (unsafe)».</p>
+            <p>На последнем экране прочитайте, к чему просят доступ. Должно быть «View and manage spreadsheets that this application has been installed in» — только таблица, к которой привязан скрипт. Нажмите Continue.</p>
+</li>
+          <li><b>Скопируйте адрес</b><p>В окне «Развертывание обновлено» скопируйте URL веб-приложения — он оканчивается на <code>/exec</code>.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/06-url.png" width="1240" height="760" alt="Окно «Управление развертываниями»: активное «Первая версия», идентификатор развертывания, раздел Веб-приложение с URL https://script.google.com/macros/s/…" loading="lazy"><figcaption>Адрес веб-приложения — URL в разделе «Веб-приложение»</figcaption></figure></li>
+        </ol>
+
+        <div class="margin-note">
+          <b>Если доступ просят ко всем таблицам</b>
+          <p>На экране согласия — «See, edit, create, and delete all your Google Sheets spreadsheets». Значит, в коде нет пометки <code>/** @OnlyCurrentDoc */</code> в первой строке. Нажмите Cancel, добавьте пометку, сохраните и разверните заново. Давать скрипту больше прав, чем ему нужно, не стоит: ключ может утечь, и тогда пострадают все таблицы аккаунта.</p>
+        </div>
+
+        <p class="phase phase--do"><span>Делаем</span>Проверяем адрес</p>
+
+        <ol class="steps">
+          <li><b>Проверьте в терминале</b><p>Подставьте свой адрес в первую строку.</p>
+            <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>URL=https://script.google.com/macros/s/…/exec
+curl -sL "$URL" | head -c 400; echo
+curl -sL -H "Content-Type: application/json" -d '{"key":"неверный","news":[]}' "$URL"; echo</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/07-curl.png" width="1240" height="260" alt="Терминал: URL=…/exec; curl -sL &quot;$URL&quot; | head -c 400 — ответ {&quot;news&quot;:[{&quot;id&quot;:&quot;https://habr.com/ru/articles/1108166/&quot;,…; curl с ключом «неверный» — {&quot;error&quot;:&quot;Неверный ключ&quot;}" loading="lazy"><figcaption>Чтение работает, запись без ключа отклонена</figcaption></figure>
+            <p><code>-s</code> убирает индикатор загрузки, <code>-L</code> следует перенаправлению, <code>head -c 400</code> оставляет первые 400 знаков ответа, <code>echo</code> переводит строку. Первый запрос — чтение: пока таблица пустая, ответ <code>{"news":[]}</code>; на кадре он снят после первого сбора, поэтому в нём уже новость. Второй — запись с неверным ключом: <code>{"error":"Неверный ключ"}</code>. Запись с настоящим ключом проверит процесс n8n в §5.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Три особенности веб-приложения</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что из этого следует</th></tr></thead>
+            <tbody>
+              <tr><td>Адрес отвечает перенаправлением 302 на <code>script.googleusercontent.com</code></td><td>Google выполняет скрипт и кладёт ответ на отдельный адрес</td><td>Запрос должен следовать перенаправлению: у curl ключ <code>-L</code>. Если добавить <code>-X POST</code>, curl повторит <code>POST</code> по новому адресу и получит страницу ошибки — сам скрипт при этом уже выполнится</td></tr>
+              <tr><td>Первый ответ приходит через несколько секунд — в проверке 5,1 с</td><td>Скрипт, к которому давно не обращались, запускается заново</td><td>На странице обязательно состояние «Загрузка…»</td></tr>
+              <tr><td>Дата <code>2026-11-16</code> возвращается как <code>2026-11-15T21:00:00.000Z</code></td><td>Таблица распознала дату и хранит её как полночь по часовому поясу таблицы — московскому, а скрипт отдаёт её во всемирном времени</td><td>Записывать дату с временем в формате ISO, например <code>2026-11-16T09:00:00Z</code>: тогда она вернётся без сдвига</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>У ответа скрипта есть заголовок <code>Access-Control-Allow-Origin: *</code>, поэтому страница на GitHub Pages может читать его через <code>fetch</code> — это разрешение CORS из главы 2.3. Запрос со страницы <code>maximbytecamp.github.io</code> вернул новости за 5,1 секунды.</p>
+
+        <p class="bridge">Хранилище готово. Перед процессом n8n — модель, которая будет пересказывать новости.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Модель для пересказа</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Какую модель взять</p>
+
+        <p>В автоматизации модуля 2 модель <code>qwen2.5:3b</code> работала в Docker вместе с n8n. Для пересказа новостей её проверили на пяти настоящих новостях и сравнили с <code>qwen3:4b-instruct</code> — моделью агента из главы 4.3, которая установлена прямо в систему.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th></th><th><code>qwen2.5:3b</code> в Docker</th><th><code>qwen3:4b-instruct</code> в Ollama на компьютере</th></tr></thead>
+            <tbody>
+              <tr><td>Время на одну новость</td><td>124–198 секунд</td><td>5–10 секунд</td></tr>
+              <tr><td>Новость о телескопе «Джеймс Уэбб» и планете с океанами магмы</td><td>«Это первый случай обнаружения атмосферы вокруг планеты с жидкими водными океанами» — в новости этого нет</td><td>«…обнаружил признаки атмосферы на экзопланете, которая может иметь океаны магмы»</td></tr>
+              <tr><td>Теги</td><td>«ИИ» почти у каждой новости, в том числе у новости про GTA V</td><td>точнее, но иногда слово не из списка: «языки», «экзопланеты»</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Модель в Docker на этом компьютере работала только на процессоре, а Ollama в системе — на видеоядре; отсюда разница в скорости. Разница есть и в качестве: меньшая модель приписала новости факт, которого в ней нет. Поэтому дальше используется <code>qwen3:4b-instruct</code> из главы 4.3. n8n по-прежнему работает в Docker. К Ollama на компьютере он обращается по адресу <code>http://host.docker.internal:11434</code>: так из контейнера называется ваш компьютер.</p>
+
+        <p>Ошибки остаются и у этой модели: теги не из списка, неточные формулировки. Поэтому в процессе после модели стоит узел, который проверяет её ответ, — это пункт «Ответы модели» из списка проверки главы 0.5.</p>
+
+        <p class="bridge">Модель выбрана. Собираем утренний процесс.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Процесс «Сбор новостей»</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Переменные и шаблон</p>
+
+        <ol class="steps">
+          <li><b>Передайте n8n адрес и ключ</b><p>Процесс берёт адрес скрипта и ключ из переменных окружения, как токен бота в модуле 2. Добавьте их в <code>compose.yaml</code> n8n в раздел <code>environment</code> и в файл <code>.env</code> рядом с ним.</p>
+            <!--CODE tools/code45/stand/compose.yaml | compose.yaml | mark=10-14--><figure class="code"><figcaption><span>compose.yaml</span></figcaption><pre><span class="a">services</span>:
+<span class="a">  n8n</span>:
+<span class="a">    image</span>: n8nio/n8n:2.45.4
+<span class="a">    ports</span>:
+      - <span class="s">"5678:5678"</span>
+<span class="a">    environment</span>:
+      - GENERIC_TIMEZONE=Europe/Moscow
+      - TZ=Europe/Moscow
+      - N8N_DEFAULT_LOCALE=en
+<span class="hl">      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false</span>
+<span class="hl">      - DIGEST_URL=${DIGEST_URL}</span>
+<span class="hl">      - DIGEST_KEY=${DIGEST_KEY}</span>
+<span class="hl">      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}</span>
+<span class="hl">      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}</span>
+<span class="a">    volumes</span>:
+<span class="a">      - n8n_data</span>:/home/node/.n8n
+
+<span class="a">volumes</span>:
+<span class="a">  n8n_data</span>:</pre></figure><!--/CODE-->
+            <figure class="code"><figcaption><span>.env (не попадает в Git)</span></figcaption><pre>DIGEST_URL=https://script.google.com/macros/s/…/exec
+DIGEST_KEY=ваш ключ
+TELEGRAM_TOKEN=токен бота
+TELEGRAM_CHAT_ID=номер вашего чата</pre></figure>
+            <p>Перезапустите n8n: <code>docker compose up -d</code>. Переменная <code>N8N_BLOCK_ENV_ACCESS_IN_NODE=false</code> разрешает узлам читать их через <code>$env</code>.</p></li>
+          <li><b>Вставьте шаблон</b><p>В n8n создайте новый процесс, скопируйте шаблон целиком, щёлкните по холсту и нажмите <kbd>Ctrl+V</kbd>. Сохраните: <kbd>Ctrl+S</kbd>.</p>
+            <figure class="code"><figcaption><span>Шаблон процесса «Дайджест: сбор новостей»</span></figcaption><pre class="template">{
+  "name": "Дайджест: сбор новостей",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "name": "Каждое утро",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a1"
+    },
+    {
+      "parameters": {},
+      "name": "Запустить вручную",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ],
+      "id": "a0"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { url: 'https://habr.com/ru/rss/news/?fl=ru' } },\n  { json: { url: 'https://3dnews.ru/news/rss/' } },\n  { json: { url: 'https://www.ixbt.com/export/news.rss' } },\n]"
+      },
+      "name": "Ленты",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "a2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "name": "RSS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "a3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Источник — по адресу сайта; свежие — за последние сутки, не больше пяти с каждого сайта.\nconst names = { 'habr.com': 'Хабр', '3dnews.ru': '3DNews', 'www.ixbt.com': 'iXBT' }\nconst dayAgo = Date.now() - 24 * 60 * 60 * 1000\nconst perSource = {}\nconst result = []\nfor (const item of $input.all()) {\n  const news = item.json\n  const link = news.link.split('?')[0]\n  const site = link.split('/')[2]\n  const source = names[site] ?? site\n  const time = new Date(news.isoDate ?? news.pubDate).getTime()\n  perSource[source] = (perSource[source] ?? 0)\n  if (time &lt; dayAgo || perSource[source] &gt;= 5) continue\n  perSource[source]++\n  result.push({ json: {\n    id: link,\n    date: new Date(time).toISOString(),\n    source,\n    title: news.title,\n    text: (news.contentSnippet ?? '').replace(/\\s+/g, ' ').slice(0, 1500),\n    link,\n  } })\n}\nreturn result"
+      },
+      "name": "Свежие новости",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "a4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11434/api/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  model: 'qwen3:4b-instruct',\n  stream: false,\n  options: { temperature: 0.2 },\n  format: {\n    type: 'object',\n    properties: {\n      summary: { type: 'string' },\n      tags: { type: 'array', items: { type: 'string' } }\n    },\n    required: ['summary', 'tags']\n  },\n  messages: [\n    { role: 'system', content: 'Ты редактор дайджеста новостей для студентов колледжа. Перескажи новость по-русски ровно в двух коротких предложениях. Пиши только то, что есть в тексте новости, ничего не добавляй от себя. Выбери от одного до трёх тегов из списка: ИИ, программирование, безопасность, железо, смартфоны, наука, игры, бизнес, интернет. Тег ИИ ставь, только если новость про нейросети или искусственный интеллект. Отвечай только JSON.' },\n    { role: 'user', content: 'Заголовок: ' + $json.title + '\\nТекст: ' + $json.text }\n  ]\n} }}",
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "name": "Модель",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "a5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ответ модели проверяется: теги только из списка, пустой пересказ — новость пропускается.\nconst allowed = [\"ИИ\", \"программирование\", \"безопасность\", \"железо\", \"смартфоны\", \"наука\", \"игры\", \"бизнес\", \"интернет\"]\nconst fresh = $('Свежие новости').all()\nconst result = []\n$input.all().forEach((item, i) =&gt; {\n  const news = fresh[i].json\n  let answer\n  try {\n    answer = JSON.parse(item.json.message.content)\n  } catch {\n    return\n  }\n  const summary = String(answer.summary ?? '').trim()\n  const tags = (answer.tags ?? []).filter((tag) =&gt; allowed.includes(tag)).slice(0, 3)\n  if (summary === '') return\n  result.push({ json: { id: news.id, date: news.date, source: news.source, title: news.title, summary, tags, link: news.link } })\n})\nreturn result"
+      },
+      "name": "Проверка ответа",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "a6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DIGEST_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { key: $env.DIGEST_KEY, news: $input.all().map((item) =&gt; item.json) } }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "name": "Запись в таблицу",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        0
+      ],
+      "id": "a7",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "Каждое утро": {
+      "main": [
+        [
+          {
+            "node": "Ленты",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ленты": {
+      "main": [
+        [
+          {
+            "node": "RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS": {
+      "main": [
+        [
+          {
+            "node": "Свежие новости",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Свежие новости": {
+      "main": [
+        [
+          {
+            "node": "Модель",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Модель": {
+      "main": [
+        [
+          {
+            "node": "Проверка ответа",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Проверка ответа": {
+      "main": [
+        [
+          {
+            "node": "Запись в таблицу",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Запустить вручную": {
+      "main": [
+        [
+          {
+            "node": "Ленты",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/08-n8n-sbor.png" width="1240" height="760" alt="n8n, процесс «Дайджест: сбор новостей»: Каждое утро и Запустить вручную → Ленты → RSS → Свежие новости → Модель (POST http://host.docker.internal…) → Проверка ответа → Запись в таблицу" loading="lazy"><figcaption>Процесс после вставки шаблона</figcaption></figure></li>
+          <li><b>Запустите вручную</b><p>Нажмите Execute внизу холста. Процесс пройдёт за одну-две минуты: модель пересказывает новости по одной.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/09-n8n-zapusk.png" width="1240" height="760" alt="n8n после запуска: все узлы зелёные; на связях 1 item, 3 items, 141 items, 15 items, 15 items, 15 items, 1 item" loading="lazy"><figcaption>141 запись в лентах, 15 свежих новостей прошли до таблицы</figcaption></figure>
+            <p>На узлах появляются числа: сколько новостей прошло через каждый. В прогоне для этой главы ленты дали 141 новость, свежих за сутки по пять с каждого сайта — 15, все 15 прошли проверку, а скрипт ответил <code>{"added": 15}</code>.</p>
+            <p>У узла «Запись в таблицу» включён повтор: в его настройках (Settings) — Retry On Fail, три попытки с паузой 5 секунд. При подготовке главы один запуск упал на этом узле с ошибкой «The connection to the server was closed unexpectedly»: соединение с Google оборвалось. После того как повтор включили, процесс прошёл целиком — это запуск на кадре. Повтор безопасен, потому что скрипт не добавляет новости, которые уже есть.</p></li>
+          <li><b>Откройте таблицу</b>
+            <figure class="shot" style="max-width: 1246px"><img src="img/10-tablica-novosti.png" width="1240" height="760" alt="Google Таблица «Дайджест новостей», лист news: колонки id, date, source, title, summary, tags, link; строки новостей Хабра, 3DNews и iXBT" loading="lazy"><figcaption>Новости в таблице</figcaption></figure></li>
+          <li><b>Опубликуйте</b><p>Нажмите Publish. С этого момента процесс будет запускаться каждый день в 8:00 по Москве, пока работает Docker с n8n.</p></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что делает каждый узел</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Узел</th><th>Что делает</th><th>Что передаёт дальше</th></tr></thead>
+            <tbody>
+              <tr><td>Каждое утро · Запустить вручную</td><td>Запускают процесс в 8:00 или по кнопке</td><td>пустой элемент</td></tr>
+              <tr><td>Ленты</td><td>Код со списком адресов трёх лент</td><td>три элемента с <code>url</code></td></tr>
+              <tr><td>RSS</td><td>Читает каждую ленту. <span class="term">RSS</span> — файл XML, в котором сайт публикует последние материалы: заголовок, ссылку, время, начало текста</td><td>все записи всех лент: <code>title</code>, <code>link</code>, <code>isoDate</code>, <code>contentSnippet</code></td></tr>
+              <tr><td>Свежие новости</td><td>Оставляет новости за последние сутки, не больше пяти с сайта; определяет источник по адресу; отрезает от ссылки метки <code>?utm_…</code></td><td><code>id</code>, <code>date</code>, <code>source</code>, <code>title</code>, <code>text</code>, <code>link</code></td></tr>
+              <tr><td>Модель</td><td>Запрос к Ollama для каждой новости: пересказ и теги, ответ по схеме</td><td><code>message.content</code> — ответ строкой JSON</td></tr>
+              <tr><td>Проверка ответа</td><td>Разбирает ответ, оставляет только теги из списка, отбрасывает новость с пустым пересказом</td><td>новость целиком: <code>summary</code> и <code>tags</code> добавлены</td></tr>
+              <tr><td>Запись в таблицу</td><td>Один запрос <code>POST</code> со всеми новостями и ключом (Execute Once)</td><td>ответ скрипта <code>{"added": …}</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Тело запроса к модели устроено как в автоматизации модуля 2: инструкция в сообщении <code>system</code>, новость — в <code>user</code>, схема ответа — в <code>format</code>. Отличие одно: теги в схеме описаны массивом строк без списка допустимых значений. Со списком (<code>enum</code> внутри массива) Ollama 0.40.12 не ответила за три минуты; без него ответ приходит сразу. Список тегов передаётся в инструкции, а узел «Проверка ответа» отбрасывает всё, чего в списке нет.</p>
+
+        <p class="bridge">Утром новости копятся в таблице. Вечером их получают подписчики.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Процесс «Вечером в Telegram»</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Второй шаблон</p>
+
+        <ol class="steps">
+          <li><b>Вставьте шаблон</b><p>Создайте ещё один процесс и вставьте шаблон.</p>
+            <figure class="code"><figcaption><span>Шаблон процесса «Дайджест: вечером в Telegram»</span></figcaption><pre class="template">{
+  "name": "Дайджест: вечером в Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 19
+            }
+          ]
+        }
+      },
+      "name": "Каждый вечер",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b1"
+    },
+    {
+      "parameters": {},
+      "name": "Запустить вручную",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ],
+      "id": "b0"
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.DIGEST_URL }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "name": "Дайджест",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "b2",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Новости за сутки — одним сообщением: заголовок, источник и ссылка. У Telegram предел 4096 знаков.\nconst dayAgo = Date.now() - 24 * 60 * 60 * 1000\nconst news = $input.first().json.news.filter((item) =&gt; new Date(item.date).getTime() &gt;= dayAgo)\nif (news.length === 0) return []\nlet lines = ''\nlet shown = 0\nfor (const item of news) {\n  const line = `\\n• ${item.title} (${item.source})\\n${item.link}\\n`\n  if (lines.length + line.length &gt; 3800) break\n  lines += line\n  shown++\n}\nlet text = `Дайджест за ${new Date().toLocaleDateString('ru')}: ${news.length} новостей\\n` + lines\nif (shown &lt; news.length) text += `\\n…и ещё ${news.length - shown} — на странице дайджеста`\nreturn [{ json: { text } }]"
+      },
+      "name": "Текст сообщения",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "b3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { chat_id: $env.TELEGRAM_CHAT_ID, text: $json.text, link_preview_options: { is_disabled: true } } }}",
+        "options": {}
+      },
+      "name": "Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "b4",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "Каждый вечер": {
+      "main": [
+        [
+          {
+            "node": "Дайджест",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Запустить вручную": {
+      "main": [
+        [
+          {
+            "node": "Дайджест",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Дайджест": {
+      "main": [
+        [
+          {
+            "node": "Текст сообщения",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Текст сообщения": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}</pre></figure>
+            <p>Процесс в 19:00 запрашивает таблицу через тот же адрес скрипта, собирает новости за сутки в одно сообщение — заголовок, источник и ссылку — и отправляет его методом <code>sendMessage</code> бота из модуля 1. У Telegram предел сообщения 4096 знаков, поэтому процесс собирает не больше 3800 знаков списка и, если новостей больше, дописывает «…и ещё N — на странице дайджеста». В проверке за сутки набралось 26 новостей: в сообщение вошли 23, длина — 3717 знаков.</p></li>
+          <li><b>Проверьте</b><p>Нажмите Execute. В Telegram придёт сообщение «Дайджест за …».</p>
+            <!-- КАДР 11-telegram --></li>
+          <li><b>Опубликуйте</b><p>Нажмите Publish.</p></li>
+        </ol>
+
+        <h2 id="s7"><span class="sec">§7</span>Частые ошибки</h2>
+
+        <p>Сообщения получены при подготовке этой страницы.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>На экране согласия: доступ ко всем таблицам аккаунта</td><td>Нет пометки <code>/** @OnlyCurrentDoc */</code></td><td>Отменить, добавить пометку в первую строку, развернуть заново</td></tr>
+              <tr><td>Ответ скрипта — страница HTML вместо JSON</td><td>Повторный <code>POST</code> после перенаправления, например <code>curl -X POST -L</code></td><td>Убрать <code>-X POST</code>: с <code>-d</code> curl сам отправит <code>POST</code>, а после перенаправления перейдёт на <code>GET</code></td></tr>
+              <tr><td><code>{"error":"Неверный ключ"}</code></td><td>Ключ в <code>.env</code> не совпадает со свойством <code>KEY</code> или n8n не перезапущен</td><td>Сверить ключ, выполнить <code>docker compose up -d</code></td></tr>
+              <tr><td>В узле «Свежие новости»: <code>URL is not defined</code></td><td>В узле Code n8n нет объекта <code>URL</code> браузера</td><td>Разбирать адрес строкой: <code>link.split('/')[2]</code></td></tr>
+              <tr><td><code>The connection to the server was closed unexpectedly</code> в узле «Запись в таблицу»</td><td>Оборвалось соединение с серверами Google</td><td>Включить у узла Retry On Fail (в шаблоне включено) или запустить процесс ещё раз</td></tr>
+              <tr><td>Узел «Модель» ждёт несколько минут без ответа</td><td>В схеме ответа массив со списком <code>enum</code></td><td>Описать теги массивом строк, лишние отсекать в коде</td></tr>
+              <tr><td>Страница не загружает новости: <code>violates the following Content Security Policy</code></td><td>Запрос сделан со страницы с запретом внешних запросов, например со страницы 404 GitHub</td><td>Проверять с опубликованной страницы проекта</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s8"><span class="sec">§8</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Зачем между n8n и таблицей скрипт Apps Script?</summary>
+          <p>Таблица сама не отвечает на запросы из интернета. Скрипт, опубликованный как веб-приложение, отдаёт её строки в JSON по <code>GET</code> и принимает новые по <code>POST</code> с ключом.</p>
+        </details>
+        <details>
+          <summary>Что даёт пометка <code>@OnlyCurrentDoc</code>?</summary>
+          <p>Скрипт получает доступ только к своей таблице. Без неё Google просит доступ ко всем таблицам аккаунта.</p>
+        </details>
+        <details>
+          <summary>Почему повторный запуск утреннего процесса не дублирует новости?</summary>
+          <p>Скрипт сравнивает <code>id</code> новых новостей с колонкой A и дописывает только те, которых там нет. <code>id</code> — ссылка на новость без меток <code>utm</code>.</p>
+        </details>
+        <details>
+          <summary>Почему теги проверяются в n8n, если в инструкции модели уже есть их список?</summary>
+          <p>Модель иногда отвечает словом не из списка: «языки», «экзопланеты». Инструкция для модели ничего не гарантирует. Проверка в коде гарантирует, что в таблицу попадут только допустимые теги.</p>
+        </details>
+        <details>
+          <summary>Почему n8n обращается к Ollama по адресу <code>host.docker.internal</code>?</summary>
+          <p>n8n работает в контейнере Docker, а Ollama — прямо на компьютере. Адрес <code>localhost</code> внутри контейнера означает сам контейнер, а <code>host.docker.internal</code> — компьютер, на котором он запущен.</p>
+        </details>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://developers.google.com/apps-script/guides/web" target="_blank" rel="noreferrer">Google Apps Script — Web Apps</a></li>
+          <li><a href="https://developers.google.com/apps-script/guides/content" target="_blank" rel="noreferrer">Google Apps Script — Content Service</a></li>
+          <li><a href="https://developers.google.com/apps-script/guides/properties" target="_blank" rel="noreferrer">Google Apps Script — Properties Service</a></li>
+          <li><a href="https://developers.google.com/apps-script/guides/services/authorization" target="_blank" rel="noreferrer">Google Apps Script — Authorization scopes (@OnlyCurrentDoc)</a></li>
+          <li><a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.rssfeedread/" target="_blank" rel="noreferrer">n8n — RSS Read</a></li>
+          <li><a href="https://github.com/ollama/ollama/blob/main/docs/api.md" target="_blank" rel="noreferrer">Ollama — API, structured outputs</a></li>
+          <li><a href="https://core.telegram.org/bots/api#sendmessage" target="_blank" rel="noreferrer">Telegram Bot API — sendMessage</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../44-angular/index.html">← 4.4 Angular: тот же компонент</a>
+          <a href="../../index.html">К оглавлению →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>
