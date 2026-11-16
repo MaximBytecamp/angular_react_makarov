@@ -60,7 +60,7 @@ const QUIZ = {
         "NavLink меняет адрес без полной перезагрузки приложения",
         "При NavLink список в памяти не загружается с нуля",
         "Обычная ссылка перезапускает приложение",
-        "NavLink всегда отправляет новый HTTP-запрос за index.html",
+        "NavLink при переходе отправляет новый HTTP-запрос за index.html",
         "Обычная ссылка сохраняет всё состояние компонентов"
       ]
     },
@@ -85,9 +85,9 @@ const QUIZ = {
       "image": { "svg": QUIZ_VIS.timeline(["Фильтр: Новые", "Переход в статистику", "BoardPage удалён", "Возврат: Все"], [2]), "caption": "Локальное состояние исчезает вместе с экземпляром страницы" },
       "options": [
         "BoardPage удалился, а при возврате создался с начальным состоянием",
-        "BrowserRouter очищает localStorage при каждом переходе",
-        "NavLink вручную вызывает setFilter('Все')",
-        "Контекст запрещает хранить фильтр"
+        "BrowserRouter восстанавливает начальное состояние страницы при каждом изменении адреса",
+        "NavLink перед переходом вручную вызывает <code>setFilter('Все')</code>",
+        "Контекст сбрасывает локальное состояние всех страниц при смене маршрута"
       ]
     },
     {
@@ -117,9 +117,9 @@ const QUIZ = {
       "image": { "src": "../../temy/32-kontekst/img/04-bez-providera.png", "alt": "Ошибка useBoard вне BoardProvider в браузере", "caption": "Проверка защищает хук от вызова вне провайдера" },
       "options": [
         "Контекст даст null, а useBoard выбросит понятную ошибку",
-        "React автоматически создаст BoardProvider",
-        "Хук загрузит отдельный список без контекста",
-        "Компонент получит пустой массив без ошибки"
+        "React создаст BoardProvider со значением по умолчанию для этого компонента",
+        "useBoard создаст локальное значение контекста для этого компонента",
+        "useContext вернёт null, и компонент продолжит работу с пустым списком"
       ]
     },
     {
@@ -148,9 +148,9 @@ const QUIZ = {
       "image": { "svg": QUIZ_VIS.tree("useRequests внутри BoardProvider", ["Header", "Карточки", "Статистика"]), "caption": "Три компонента читают один список из контекста" },
       "options": [
         "Хук вызывается один раз, и все потребители читают один список",
-        "Контекст копирует список отдельно в каждый компонент",
-        "Header больше не перерисовывается",
-        "React Router синхронизирует состояния компонентов"
+        "BoardProvider создаёт отдельную копию списка для каждого потребителя",
+        "React объединяет состояния всех хуков с одинаковым именем useRequests",
+        "React Router передаёт состояние между всеми страницами приложения"
       ]
     },
     {
@@ -162,9 +162,9 @@ const QUIZ = {
       "image": { "svg": QUIZ_VIS.compare("КОМПЬЮТЕР АВТОРА", ["React в браузере", "PocketBase :8090"], "КОМПЬЮТЕР ГОСТЯ", ["React в браузере", "порт 8090 пуст"]), "caption": "localhost у каждого посетителя указывает на его устройство" },
       "options": [
         "У посетителя localhost указывает на его компьютер, где PocketBase нет",
-        "GitHub Pages не поддерживает JavaScript",
-        "React Router запрещён на Pages",
-        "PocketBase работает только внутри VS Code"
+        "При сборке Vite заменяет localhost на адрес опубликованного сайта GitHub Pages",
+        "GitHub Pages перенаправляет обращения к localhost на сервер репозитория",
+        "Браузер посетителя обращается к PocketBase на компьютере, где собирали проект"
       ]
     },
     {
@@ -235,14 +235,14 @@ const QUIZ = {
       "id": "q14",
       "topic": "3.4 · зависимости заданий",
       "type": "multi",
-      "text": "Какие утверждения о конвейере проверки и публикации верны? Отметьте все верные варианты.",
+      "text": "Проверку нужно запускать вручную, а публикацию — после успешного задания check. Какие настройки решают эти задачи?",
       "image": { "src": "../../temy/34-github-actions/img/20-check-publish.png", "alt": "Workflow GitHub Actions с проверкой и публикацией", "caption": "Проверка вызывает публикацию после успешного завершения" },
       "options": [
         "<code>workflow_dispatch</code> добавляет ручной запуск",
-        "Для <code>git push</code> боту нужно право записи",
-        "<code>needs: check</code> заставляет публикацию ждать успешную проверку",
-        "Коммит через GITHUB_TOKEN всегда запускает все остальные workflows",
-        "Без needs задания гарантированно выполняются одно за другим"
+        "<code>needs: check</code> запускает публикацию после успешной проверки",
+        "Одного <code>schedule</code> достаточно для кнопки Run workflow",
+        "<code>contents: write</code> задаёт порядок выполнения заданий",
+        "<code>uses</code> внутри шага заставляет предыдущее задание завершиться"
       ]
     },
     {
@@ -257,7 +257,7 @@ const QUIZ = {
   ]
 };
 
-const SECRET = "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";
+const SECRET = "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";
 let SECRET_CACHE = null;
 async function secretData() {
   if (SECRET_CACHE) return SECRET_CACHE;

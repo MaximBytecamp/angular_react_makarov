@@ -41,8 +41,8 @@ const QUIZ = {
         "Эффект выполняется после того, как React обновил экран",
         "<code>useEffect(f, [])</code> запускают при появлении компонента",
         "<code>useEffect(f, [x])</code> перезапускают при изменении x",
-        "<code>useEffect(f)</code> выполняется только один раз",
-        "Любое вычисляемое значение нужно хранить через эффект"
+        "<code>useEffect(f)</code> выполняется при первом рендере компонента",
+        "Вычисляемое значение нужно сохранять в state и синхронизировать эффектом"
       ]
     },
     {
@@ -132,9 +132,9 @@ const QUIZ = {
       "text": "PocketBase ответил кодом 404. Почему <code>callApi</code> отдельно проверяет <code>response.ok</code>?",
       "options": [
         "fetch получил ответ и не отклоняет обещание из-за HTTP 404",
-        "fetch всегда возвращает пустой массив при 404",
-        "response.ok нужен только для преобразования JSON",
-        "Без response.ok браузер повторит запрос бесконечно"
+        "При ответе 404 fetch возвращает пустой массив",
+        "<code>response.ok</code> отвечает за преобразование тела ответа из текста в объект JSON",
+        "После ответа с ошибочным кодом fetch повторяет запрос"
       ]
     },
     {
@@ -146,9 +146,9 @@ const QUIZ = {
       "image": { "svg": QUIZ_VIS.timeline(["A начался", "Очистка A", "B вернулся", "A вернулся поздно"], [1, 3]), "caption": "Старый запрос завершается после актуального" },
       "options": [
         "Флажок <code>ignore</code>, поднятый функцией очистки",
-        "Поле <code>attempt</code> в PocketBase",
-        "Компонент Header",
-        "Метод <code>JSON.stringify</code>"
+        "Проверка <code>response.ok</code> перед чтением ответа второго запроса",
+        "Сравнение текущего значения <code>loading</code> перед вызовом setState",
+        "Повторный вызов эффекта после завершения обоих запросов"
       ]
     },
     {
@@ -158,9 +158,9 @@ const QUIZ = {
       "text": "В эффекте загрузки зависимость <code>attempt</code> напрямую не читается. Зачем она указана в массиве зависимостей?",
       "options": [
         "Её изменение после «Повторить» запускает эффект заново",
-        "Она автоматически считает HTTP-запросы на сервере",
-        "Она запрещает повторный запрос при ошибке",
-        "Она хранит текст последней ошибки"
+        "Она хранит количество HTTP-запросов, уже отправленных на сервер",
+        "Она запрещает эффекту повторять запрос после ошибки сервера",
+        "Она заменяет состояние с текстом последней ошибки загрузки"
       ]
     },
     {
@@ -171,7 +171,7 @@ const QUIZ = {
       "situation": { "title": "Пока выполнялся запрос", "facts": ["Пользователь нажал «Взять».", "PocketBase обрабатывал изменение статуса.", "За это время подписка добавила в список новую заявку."] },
       "options": [
         "<code>setRequests((list) =&gt; list.map(...))</code>",
-        "<code>setRequests(requests.map(...))</code>",
+        "<code>setRequests(requests.map((item) =&gt; item.id === id ? { ...item, status: next } : item))</code>",
         "<code>requests[0].status = next</code>",
         "<code>setRequests(requests)</code>"
       ]
@@ -185,7 +185,7 @@ const QUIZ = {
         "Имя собственного хука начинается с use",
         "Внутри собственного хука можно вызывать useState и useEffect",
         "Каждый компонент, вызвавший хук, получает своё состояние",
-        "Один вызов хука автоматически делает состояние общим для всего приложения",
+        "Состояние одного вызова хука становится общим для всего приложения",
         "Хук можно вызывать после условного return"
       ]
     },
@@ -206,9 +206,9 @@ const QUIZ = {
       "image": { "svg": QUIZ_VIS.tree("Два независимых вызова", ["App → useRequests", "Header → useRequests"]), "caption": "Каждый вызов собственного хука создаёт своё состояние" },
       "options": [
         "У каждого вызова хука свой список состояния",
-        "Header не умеет читать props",
-        "useRequests разрешено вызывать только в App",
-        "PocketBase не поддерживает несколько запросов"
+        "React объединяет одинаковые вызовы хука при следующем рендере",
+        "Состояние хука хранится в PocketBase и обновляется новым запросом",
+        "Header получает копию состояния App, потому что тоже вызывает useRequests"
       ]
     },
     {
@@ -230,23 +230,22 @@ const QUIZ = {
     },
     {
       "id": "q15",
-      "topic": "2.5 и А2 · без дублей и ИИ-диспетчер",
-      "type": "multi",
-      "text": "Какие утверждения соответствуют доске модуля 2 и ИИ-диспетчеру? Отметьте все верные варианты.",
-      "situation": { "title": "Автоматизация", "facts": ["PocketBase создаёт запись заявки.", "n8n передаёт текст локальной модели Ollama.", "Категория и кнопка «Взять» попадают в Telegram."] },
-      "image": { "src": "../../temy/28-ii-dispetcher/img/b07-canvas-dispetcher.png", "alt": "Процесс n8n для ИИ-диспетчера заявок", "caption": "Процесс ИИ-диспетчера из второго модуля" },
+      "topic": "2.5 · событие create без дубля",
+      "type": "single",
+      "text": "Созданная заявка пришла в ответе POST, а затем в событии <code>create</code>. Как оставить в списке одну карточку?",
+      "situation": { "title": "Одна запись пришла дважды", "facts": ["Ответ POST содержит созданную запись и её id.", "Подписка получает событие create с тем же id.", "В списке должна остаться одна карточка этой заявки."] },
+      "image": { "svg": QUIZ_VIS.flow(["Ответ POST", "Запись с id", "Событие create", "Одна карточка"], ["", "blue", "warn", "mint"]), "caption": "Два сообщения относятся к одной записи PocketBase" },
       "options": [
-        "<code>upsertRequest</code> не даёт задвоить заявку, пришедшую ответом POST и событием create",
-        "Поле <code>format</code> задаёт JSON-схему ответа модели",
-        "Нажатия кнопки Telegram опрашиваются через getUpdates, потому что локальный n8n не имеет публичного HTTPS-адреса",
-        "Токен бота записывают прямо в шаблон процесса и передают этот файл вместе с проектом",
-        "Исправленная в PocketBase категория останется только в окне с панелью администратора"
+        "Через <code>upsertRequest</code> заменить запись с тем же id или добавить новую",
+        "Добавлять запись после каждого ответа, а дубликаты удалять при следующей загрузке",
+        "Сравнивать название и аудиторию заявки, не используя id записи PocketBase",
+        "Отключать подписку перед каждым POST и включать её после обновления страницы"
       ]
     }
   ]
 };
 
-const SECRET = "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";
+const SECRET = "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";
 let SECRET_CACHE = null;
 async function secretData() {
   if (SECRET_CACHE) return SECRET_CACHE;
