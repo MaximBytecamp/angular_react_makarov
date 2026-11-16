@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0EEE8">
+  <title>4.3 Задача для ИИ-агента и проверка результата · Справочник по Angular и React</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,600;0,7..72,700;1,7..72,400&family=Pixelify+Sans:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .sch text { font: 600 13px var(--body); fill: var(--ink); }
+    .sch .mono { font: 600 12.5px var(--mono); }
+    .sch .soft { font: 400 12px var(--mono); fill: var(--ink-soft); }
+    .sch rect { stroke: var(--ink); stroke-width: 2.5; }
+    .sch .on-dark { fill: #58D3F7; }
+    .sch .on-dark-soft { fill: #c8d0e0; }
+    .sch path { stroke: var(--ink); stroke-width: 2; fill: none; }
+    .sch .ng { stroke: #C2185B; }
+    .sch .ng-text { fill: #C2185B; }
+    .sch .ok-text { fill: #1E7A46; }
+    .sch .dash { stroke-dasharray: 6 4; }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <div class="book__body">
+      <div class="spine"><span>Модуль 4 · Работа с ИИ-агентом и обзор Angular</span></div>
+
+      <main class="leaf">
+        <div class="running">
+          <p class="eyebrow"><a href="../../index.html" style="text-decoration:none;color:inherit">Справочник по Angular и React</a> · модуль 4 · работа с ИИ-агентом и обзор Angular</p>
+          <p class="running__folio">4.3</p>
+        </div>
+
+        <header class="chapter-head">
+          <span class="chapter-num">4.3</span>
+          <h1>Задача для ИИ-агента и проверка результата</h1>
+          <p class="lead">В этой главе цикл работы с агентом из главы 0.5 проходится целиком на «Мониторинге сайтов группы». Агент — расширение Continue для VS Code с моделью Qwen3, которая работает на вашем компьютере через Ollama. Задача — поиск и флажок «Только неработающие» на странице «Сайты». Агент получает задание с правилами проекта и критериями готовности, пишет код, а проверки из глав 4.1 и 4.2 и чтение изменений решают, принять его работу или нет. Все результаты в главе получены настоящими запусками; маленькая модель ошибается часто, и каждая её ошибка разобрана.</p>
+        </header>
+
+        <dl class="passport">
+          <div><dt>Категория</dt><dd>ИИ-агент, постановка задачи, проверка кода</dd></div>
+          <div><dt>Уровень</dt><dd>Начальный</dd></div>
+          <div><dt>Что понадобится</dt><dd>Проект <code>monitoring</code> после главы 4.2, 8 ГБ памяти, 3 ГБ на диске</dd></div>
+          <div><dt>Результат</dt><dd>Continue и Ollama с моделью <code>qwen3:4b-instruct</code>, файл <code>AGENTS.md</code>, поиск и флажок на странице «Сайты», 23 теста, журнал <code>ai-log.md</code></dd></div>
+        </dl>
+
+        <nav class="contents">
+          <b>В этой главе</b>
+          <ol>
+            <li><a href="#s1">Агент и цикл работы с ним</a></li>
+            <li><a href="#s2">Модель на своём компьютере</a></li>
+            <li><a href="#s3">Continue в VS Code</a></li>
+            <li><a href="#s4">Задание и правила проекта</a></li>
+            <li><a href="#s5">Первый запуск: задача целиком</a></li>
+            <li><a href="#s6">Задача по шагам и проверка кода</a></li>
+            <li><a href="#s7">Возврат с замечаниями и решение</a></li>
+            <li><a href="#s8">Журнал работы с ИИ</a></li>
+            <li><a href="#s9">Другие варианты и их недостатки</a></li>
+            <li><a href="#s10">Частые ошибки</a></li>
+            <li><a href="#s11">Проверьте себя</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="s1"><span class="sec">§1</span>Агент и цикл работы с ним</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Чем агент отличается от чата</p>
+
+        <div class="analogy"><div>
+          <b>Сравнение из жизни</b>
+          <p>Справочное бюро отвечает на вопрос, а дальше человек действует сам. Мастер по вызову приходит в квартиру, осматривает, меняет кран, открывает воду и проверяет, что не течёт. Чат с моделью похож на справочное бюро. Агент похож на мастера: он сам открывает файлы, меняет их и запускает команды.</p>
+          <p class="miss">Мастера по вызову проверяет заказчик. Агента проверяет тот, кто поставил ему задачу, и только по тем признакам, которые сам заранее записал.</p>
+        </div></div>
+
+        <p><span class="term">ИИ-агент</span> — программа, в которой языковая модель получает задачу и набор инструментов: прочитать файл, найти файлы по имени, изменить файл, выполнить команду в терминале. Модель сама выбирает, какой инструмент вызвать, получает результат и решает, что делать дальше. Так повторяется, пока модель не сочтёт задачу решённой. В чате модель только пишет текст; копировать код в файлы и запускать проверки приходится человеку.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Шаг агента</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 220" role="img" aria-label="Задание и правила проекта попадают в модель. Модель выбирает инструмент: read_file, edit_existing_file, run_terminal_command. Continue выполняет инструмент в проекте, правки и команды — после подтверждения человека. Результат возвращается модели. Цикл повторяется, пока модель не ответит текстом: готово">
+              <rect x="20" y="70" width="170" height="80" fill="#ffffff"/><text x="34" y="98">Задание</text><text class="soft" x="34" y="120">+ AGENTS.md</text>
+              <path d="M190 110 H 236"/><path d="M228 104 L 236 110 L 228 116"/>
+              <rect x="244" y="60" width="190" height="100" fill="#161A2E"/><text class="on-dark" x="258" y="88">Модель</text><text class="soft on-dark-soft" x="258" y="112">выбирает инструмент</text><text class="soft on-dark-soft" x="258" y="132">или отвечает текстом</text>
+              <path d="M434 90 H 480"/><path d="M472 84 L 480 90 L 472 96"/>
+              <rect x="488" y="40" width="252" height="110" fill="#D6F0F9"/><text x="502" y="66">Continue выполняет</text><text class="mono" x="502" y="92">read_file</text><text class="mono" x="502" y="112">edit_existing_file ✓?</text><text class="mono" x="502" y="132">run_terminal_command ✓?</text>
+              <path d="M614 150 V 190 H 339 V 160"/><path d="M333 168 L 339 160 L 345 168"/>
+              <text class="soft" x="420" y="210">результат инструмента — снова модели</text>
+            </svg>
+          </div>
+          <p class="scheme__note">✓? — действие выполняется после подтверждения человека.</p>
+        </figure>
+
+        <p>На схеме один оборот цикла. Слева задание и правила проекта: их агент получает в начале работы. Модель в тёмном блоке не выполняет ничего сама, она только отвечает: «вызови такой-то инструмент с такими-то параметрами». Инструменты выполняет расширение Continue. Чтение файлов проходит сразу, а правку файла и команду в терминале Continue сначала показывает человеку и ждёт подтверждения. Результат возвращается модели, и оборот повторяется.</p>
+
+        <p>В главе 0.5 описан цикл работы с агентом из шести шагов: задача, постановка, код, автоматическая проверка, чтение и проверка, решение. Четыре шага из шести выполняет человек. В этой главе цикл проходится от начала до конца, и решающими окажутся как раз человеческие шаги.</p>
+
+        <p class="bridge">Агенту нужна модель. В модуле 2 модель работала в Docker; для агента её удобнее поставить прямо в систему.</p>
+
+        <h2 id="s2"><span class="sec">§2</span>Модель на своём компьютере</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Какая модель нужна агенту</p>
+
+        <p>Агенту подходит не всякая модель. Ей нужно уметь <span class="term">вызывать инструменты</span>: отвечать заявкой вида «функция <code>read_file</code>, параметр <code>filepath</code>». Такие модели в каталоге Ollama помечены меткой <i>tools</i>. Вторая оговорка — режим рассуждений. Модель <code>qwen3:4b</code> перед ответом рассуждает. В опыте для этой главы она тратила на рассуждения все 4096 токенов ответа, которые ей даёт Continue, и так и не вызвала инструмент. Её вариант <code>qwen3:4b-instruct</code> отвечает сразу: тот же размер 2,5 ГБ, вызов инструмента приходит за 7 секунд.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Где работает Ollama</th><th>Генерация, токенов в секунду</th><th>Что ограничивает</th></tr></thead>
+            <tbody>
+              <tr><td>В Docker на Mac (только процессор)</td><td>10</td><td>Виртуальной машине Docker по умолчанию дано 4 ГБ; с контекстом 16 тысяч токенов контейнер завершился из-за нехватки памяти</td></tr>
+              <tr><td>Приложение Ollama на Mac M4 (видеоядро)</td><td>33</td><td>Вся память компьютера; модель занимает около 4 ГБ</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Цифры в таблице получены на одном компьютере с одной моделью <code>qwen3:4b</code>. Агент за одну задачу отправляет модели несколько запросов по несколько тысяч токенов. Поэтому скорость заметна сразу: в Docker один шаг агента занимал больше минуты, в приложении — несколько секунд. На Windows без видеокарты Ollama работает на процессоре, примерно как в первой строке таблицы.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Ставим Ollama и модель</p>
+
+        <ol class="steps">
+          <li><b>Установите Ollama</b><p>Скачайте установщик для своей системы со страницы <a href="https://ollama.com/download" target="_blank" rel="noreferrer">ollama.com/download</a> и запустите его. Если Ollama из главы 2.8 запущена в Docker, остановите контейнер: оба занимают порт 11434.</p></li>
+          <li><b>Загрузите модель</b>
+            <figure class="code"><figcaption><span>Терминал</span></figcaption><pre>ollama pull qwen3:4b-instruct
+ollama list</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/01-ollama-list.png" width="1240" height="280" alt="Терминал VS Code: ollama list; NAME qwen3:4b-instruct, ID 0edcdef34593, SIZE 2.5 GB" loading="lazy"><figcaption>Модель загружена: 2,5 ГБ</figcaption></figure>
+            <p><code>ollama list</code> показывает загруженные модели. В строке <code>qwen3:4b-instruct</code> размер — 2.5 GB.</p></li>
+        </ol>
+
+        <p class="bridge">Модель готова отвечать на запросы по адресу <code>http://localhost:11434</code>. Осталось подключить к ней агента в VS Code.</p>
+
+        <h2 id="s3"><span class="sec">§3</span>Continue в VS Code</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Расширение и его настройки</p>
+
+        <p><span class="term">Continue</span> — расширение VS Code с открытым кодом. Оно добавляет панель чата и режим агента и работает с моделями разных поставщиков, в том числе с Ollama на своём компьютере. Модели перечисляются в файле <code>config.yaml</code> в папке <code>.continue</code> домашнего каталога: на Windows это <code>C:\Users\имя\.continue</code>, на macOS и Linux — <code>~/.continue</code>.</p>
+
+        <p>В настройках есть ловушка, найденная при подготовке главы. У Continue 2.0 есть отдельный способ подключения Ollama — <code>provider: ollama</code>. С ним агент передаёт модели список инструментов только в первом запросе. После того как модель прочитала файл, инструментов в запросе уже нет, и модели остаётся только написать код в чат. Поэтому та же Ollama подключается как сервис с программным интерфейсом OpenAI. Ollama отвечает на него по адресу <code>/v1</code>, и при таком подключении Continue передаёт инструменты на каждом шаге.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Ставим и настраиваем Continue</p>
+
+        <ol class="steps">
+          <li><b>Установите расширение</b><p>В VS Code откройте Extensions (<kbd>Ctrl+Shift+X</kbd>), найдите <b>Continue</b> и нажмите <b>Install</b>. Слева появится значок Continue.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/02-continue-extension.png" width="1240" height="780" alt="VS Code, Extensions: Installed — Continue - open-source AI code agent, издатель Continue; на панели слева значок Continue" loading="lazy"><figcaption>Continue установлен, значок — на панели слева</figcaption></figure></li>
+          <li><b>Опишите модель</b><p>Откройте панель Continue, нажмите значок шестерёнки и выберите правку файла настроек, либо откройте <code>~/.continue/config.yaml</code> сами. Замените содержимое.</p>
+            <!--CODE tools/code43/config.yaml | ~/.continue/config.yaml--><figure class="code"><figcaption><span>~/.continue/config.yaml</span></figcaption><pre><span class="a">name</span>: Локальный агент
+<span class="a">version</span>: <span class="n">0</span>.0.1
+<span class="a">schema</span>: v1
+<span class="a">models</span>:
+<span class="a">  - name</span>: Qwen3 4B
+<span class="a">    provider</span>: openai
+<span class="a">    model</span>: qwen3:4b-instruct
+<span class="a">    apiBase</span>: http://localhost:11434/v1
+<span class="a">    apiKey</span>: ollama
+<span class="a">    roles</span>:
+      - chat
+      - edit
+      - apply
+<span class="a">    capabilities</span>:
+      - tool_use
+<span class="a">    defaultCompletionOptions</span>:
+<span class="a">      contextLength</span>: <span class="n">16384</span>
+<span class="a">      maxTokens</span>: <span class="n">4096</span></pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/03-config-yaml.png" width="1240" height="780" alt="VS Code: config.yaml — name Локальный агент; модель Qwen3 4B: provider openai, model qwen3:4b-instruct, apiBase http://localhost:11434/v1, apiKey ollama, roles chat, edit, apply; capabilities tool_use; contextLength 16384, maxTokens 4096" loading="lazy"><figcaption>config.yaml: модель Qwen3 4B через адрес /v1</figcaption></figure>
+            <p><code>provider: openai</code> и адрес с <code>/v1</code> — подключение, при котором инструменты передаются на каждом шаге. <code>apiKey</code> Ollama не проверяет, но поле должно быть заполнено. <code>capabilities: [tool_use]</code> разрешает режим агента. <code>contextLength</code> — сколько токенов модель видит сразу: задание, правила, прочитанные файлы и ответы команд.</p></li>
+          <li><b>Включите режим агента</b><p>В панели Continue под полем ввода нажмите переключатель режима и выберите <b>Agent</b>. Рядом должно стоять имя модели — <b>Qwen3 4B</b>.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/04-agent-mode.png" width="1240" height="780" alt="Панель Continue: под полем Ask anything открыт список режимов Chat, Plan, Agent; отмечен Agent; рядом модель Qwen3 4B" loading="lazy"><figcaption>Режим Agent</figcaption></figure></li>
+        </ol>
+
+        <p class="bridge">Агент подключён. Теперь — первые два человеческих шага цикла: понять задачу и записать её для агента.</p>
+
+        <h2 id="s4"><span class="sec">§4</span>Задание и правила проекта</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Задача пользователя</p>
+
+        <p>В мониторе шесть сайтов, а в группе их может быть тридцать. Чтобы найти нужный сайт или посмотреть только неработающие, на странице «Сайты» нужны поле поиска по названию и флажок «Только неработающие». Задание агенту устроено как пример из главы 0.5: что сделать, правила проекта и раздел «Готово, когда», в котором каждая строка проверяется командой или действием.</p>
+
+        <figure class="code"><figcaption><span>Задание агенту · поиск и флажок</span></figcaption><pre>Задача: поиск и фильтр на странице «Сайты» в проекте «Мониторинг сайтов группы» (React 19, TypeScript, Vite, react-router 8).
+
+Что сделать в src/pages/SitesPage.tsx:
+- поле поиска над карточками: показываются сайты, в названии которых есть введённый текст, без учёта регистра;
+- флажок «Только неработающие»: показываются сайты, которые не открылись при последней проверке;
+- поиск и флажок работают вместе;
+- если ни один сайт не подходит — строка «Сайтов не найдено».
+
+Правила проекта:
+- данные берутся из useMonitoring(), как сейчас;
+- в состоянии хранятся только текст поиска и флажок; отфильтрованный список вычисляется при отрисовке;
+- сводка («Не открываются: 1 из 6») по-прежнему считает все сайты, а не только показанные;
+- у поля и у флажка есть подписи &lt;label&gt;, связанные с ними;
+- карточки остаются ссылками Link;
+- существующие тесты не удалять и не менять.
+
+Готово, когда:
+- npm run lint -- --deny-warnings — без предупреждений;
+- npm test — проходят прежние тесты и новые в src/pages/SitesPage.test.tsx: поиск, флажок, пустой результат;
+- npm run build проходит без ошибок;
+- поиском и флажком можно пользоваться только с клавиатуры.</pre></figure>
+
+        <p>В правила записано то, что модель без подсказки сделала бы иначе. Отфильтрованный список модели часто хранят в состоянии и копируют через <code>useEffect</code>; глава 0.5 называет это ошибкой «состояние без дублей». Подписи к полям модели заменяют атрибутом <code>aria-label</code> или пропускают. Сводка должна считать все сайты: иначе после поиска «git» она сообщит «Все 1 сайт открываются».</p>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Правила проекта для агента</p>
+
+        <p>Часть правил относится ко всему проекту: версии библиотек, способ запуска тестов, язык интерфейса. Их записывают один раз в файл <code>AGENTS.md</code> в корне проекта. Это общепринятое имя: такой файл читают Continue и многие другие агенты, а человеку он служит кратким описанием проекта.</p>
+
+        <figure class="code"><figcaption><span>monitoring/AGENTS.md</span></figcaption><pre># Мониторинг сайтов группы
+
+React 19, TypeScript, Vite 8, react-router 8. Тесты — Vitest и Testing Library (не Jest).
+
+## Как работать
+
+- Изменения в файлы вносишь инструментами правки (edit_existing_file, create_new_file), а не кодом в ответе.
+- Перед правкой читаешь файл целиком.
+- После правок запускаешь `npm run lint -- --deny-warnings` и `CI=true npm test` и исправляешь ошибки.
+- В конце коротко перечисляешь, какие файлы изменены и что проверено.
+
+## Правила кода
+
+- Компоненты — функции; хуки вызываются в начале компонента, до любого return.
+- То, что вычисляется из данных, не хранится в состоянии и не копируется через useEffect.
+- Адрес страницы сайта — `/site/:id`; карточки — ссылки `Link`.
+- Тексты интерфейса — на русском языке.
+- У полей ввода есть `&lt;label&gt;`; не заменять подписи атрибутом aria-label.
+- Тесты лежат рядом с файлом: `*.test.tsx`; данные передаются через `MonitoringContext` и `MemoryRouter`, как в существующих тестах.</pre></figure>
+
+        <ol class="steps">
+          <li><b>Создайте AGENTS.md</b><p>Создайте в корне проекта <code>monitoring</code> файл <code>AGENTS.md</code> с текстом выше.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/05-agents-md.png" width="1240" height="780" alt="VS Code: AGENTS.md в корне проекта monitoring — разделы «Как работать» и «Правила кода»" loading="lazy"><figcaption>AGENTS.md в корне проекта</figcaption></figure>
+            <p>Continue добавляет этот файл к каждому запросу. В панели над ответом агента это видно строкой <b>1 rule</b>; если её раскрыть, будет написано <b>monitoring/AGENTS.md · Always applied</b>.</p></li>
+        </ol>
+
+        <p class="bridge">Задание и правила готовы. Отдадим агенту задачу целиком.</p>
+
+        <h2 id="s5"><span class="sec">§5</span>Первый запуск: задача целиком</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Отправляем задание</p>
+
+        <ol class="steps">
+          <li><b>Убедитесь, что изменений нет</b><p>Закоммитьте работу после главы 4.2: тогда всё, что сделает агент, будет видно в Source Control отдельно.</p></li>
+          <li><b>Отправьте задание</b><p>Вставьте текст задания в поле Continue и нажмите <kbd>Enter</kbd>.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/06-zadanie.png" width="1240" height="780" alt="Панель Continue: в поле ввода текст задания — что сделать, правила проекта, готово, когда; режим Agent, модель Qwen3 4B" loading="lazy"><figcaption>Задание в поле Continue</figcaption></figure></li>
+          <li><b>Дождитесь ответа</b><p>Агент работает несколько минут. Над ответом появляется список его действий: <b>Continue searched for files like…</b>, <b>Continue read src/pages/SitesPage.tsx</b>.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/07-otvet-celikom.png" width="1240" height="780" alt="Панель Continue: конец ответа агента — пункты 6 и 7 с зелёными галочками; The implementation is complete and meets all the requirements; No changes are needed to the current implementation as it already satisfies all the requirements; The implementation is complete and working correctly" loading="lazy"><figcaption>Отчёт агента: «изменения не нужны» — а поля поиска нет</figcaption></figure></li>
+        </ol>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что сделал агент</p>
+
+        <p>Задание отправлялось трижды, каждый раз в новом разговоре и с чистым проектом. Результат один и тот же.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Запуск</th><th>Действия агента</th><th>Изменено файлов</th><th>Что агент написал в конце</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>нашёл и прочитал <code>SitesPage.tsx</code> и тест, поиск по тексту</td><td>0</td><td>описание текущего кода страницы</td></tr>
+              <tr><td>2</td><td>прочитал 4 файла, 6 поисков</td><td>0</td><td>«The implementation looks correct» и семь пунктов с ✅</td></tr>
+              <tr><td>3</td><td>прочитал 5 файлов, включая <code>status.ts</code></td><td>0</td><td>«Всё выглядит корректно» о функции <code>statusText</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Агент прочитал нужные файлы и ни разу не попытался их изменить. Во втором запуске он отчитался семью пунктами с галочками, например «All text is in Russian as required». Закончил он фразой «No changes are needed to the current implementation». Поля поиска на странице нет. Отчёт агента — это текст, который написала модель; проверкой он не является.</p>
+
+        <p>Проверка по разделу «Готово, когда» занимает минуту. <code>git status</code> не показывает изменённых файлов. <code>npm test</code> показывает те же 20 тестов, что после главы 4.2: новых нет. Работа не принята.</p>
+
+        <p>В задании четыре требования, шесть правил и четыре проверки. Во всех трёх запусках агент дошёл до чтения файлов и дальше описывал то, что прочитал. Маленькой модели такой объём оказался не по силам, и это видно только по результату: сам агент об этом не сообщил.</p>
+
+        <p class="bridge">Слишком большую задачу делят на части. Попробуем дать агенту задачу по шагам.</p>
+
+        <h2 id="s6"><span class="sec">§6</span>Задача по шагам и проверка кода</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Шаг 1: только поиск</p>
+
+        <p>Первый шаг — одно поле поиска. В задании прямо названы подпись, хук, способ вычисления списка и место вызова хука, а в конце — две команды проверки, которые агент должен запустить сам.</p>
+
+        <figure class="code"><figcaption><span>Задание агенту · шаг 1</span></figcaption><pre>Шаг 1 из 3. Поле поиска на странице «Сайты» (src/pages/SitesPage.tsx).
+
+Что сделать:
+- над карточками — поле поиска с подписью &lt;label&gt;«Поиск по названию»&lt;/label&gt;;
+- показываются сайты, в названии которых есть введённый текст, без учёта регистра;
+- текст поиска хранится в useState; список показанных сайтов вычисляется при отрисовке через filter, без useEffect;
+- useState вызывается в начале компонента, до первого return;
+- сводка «Не открываются: …» по-прежнему считает все сайты.
+
+Готово, когда: npm run lint -- --deny-warnings без предупреждений и CI=true npm test проходит. Запусти обе команды и покажи вывод.</pre></figure>
+
+        <ol class="steps">
+          <li><b>Начните новый разговор</b><p>Кнопка <b>+</b> в заголовке панели Continue. Вставьте задание шага 1 и отправьте.</p></li>
+          <li><b>Подтвердите правку</b><p>Когда агент вызывает правку, изменения появляются в редакторе цветом: зелёным — добавленные строки, красным — удалённые. В панели у имени файла кнопки ✓ (принять) и ✗ (отклонить). Правка попадает в файл только после ✓. Перед подтверждением прочитайте её.</p>
+            <figure class="shot" style="max-width: 1246px"><img src="img/08-pravka.png" width="1240" height="780" alt="Слева панель Continue: задание шага 1, 1 rule, Continue read src/pages/SitesPage.tsx, Continue is editing src/pages/SitesPage.tsx, у SitesPage.tsx — 3 diffs, Reject и Accept. Справа SitesPage.tsx: зелёные строки useState и filteredSites после блоков return, над ними Accept | Reject; красная строка sites.map и зелёная filteredSites.map" loading="lazy"><figcaption>Правка ждёт подтверждения: зелёное добавлено, красное удалено</figcaption></figure></li>
+          <li><b>Подтвердите команды</b><p>Команды в терминале агент тоже запускает после подтверждения: в панели появляется строка <b>Run Terminal Command</b> с кнопками <b>Reject</b> и <b>Accept</b>. В записанном запуске агент выполнил <code>npm run lint -- --deny-warnings</code>, после ошибки линтера ещё раз изменил файл — ошибка осталась — и попросил разрешения запустить <code>CI=true npm test</code>.</p></li>
+        </ol>
+
+        <p class="phase phase--do"><span>Делаем</span>Автоматическая проверка</p>
+
+        <p>Четвёртый шаг цикла — команды, которые проверяют работу без чтения кода. Выполните их сами, даже если агент сообщил, что запускал их.</p>
+
+        <ol class="steps">
+          <li><b>Проверка типов</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npx tsc -b</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/10-tsc.png" width="1240" height="280" alt="Терминал: npx tsc -b; src/pages/SitesPage.tsx:33:39 - error TS2304: Cannot find name 'useState'; Found 1 error" loading="lazy"><figcaption>tsc: useState не импортирован</figcaption></figure>
+            <p><code>Cannot find name 'useState'</code>: агент вызвал хук и не импортировал его. Без импорта страница «Сайты» не откроется вовсе.</p></li>
+          <li><b>Линтер</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npm run lint -- --deny-warnings</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/11-lint.png" width="1240" height="441" alt="Терминал: npm run lint -- --deny-warnings; react-hooks(rules-of-hooks): React Hook useState is called conditionally; SitesPage.tsx:33:39; This Hook call is not reachable on every render path; Found 0 warnings and 1 error" loading="lazy"><figcaption>Линтер: хук вызывается не при каждой отрисовке</figcaption></figure>
+            <p><code>React Hook "useState" is called conditionally</code>: хук стоит после <code>if (loading) return</code> и <code>if (error !== '') return</code>. Пока данные загружаются, компонент выходит раньше и вызывает только <code>useMonitoring</code>, после загрузки — ещё и <code>useState</code>. React требует, чтобы при каждой отрисовке хуки вызывались в одном и том же порядке и количестве. Правило «хуки до любого return» было и в задании, и в <code>AGENTS.md</code>. Агент запускал эту команду и видел эту ошибку.</p></li>
+          <li><b>Тесты</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>CI=true npm test</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/12-testy.png" width="1240" height="780" alt="Терминал: CI=true npm test; FAIL — шесть тестов App и SitesPage; ReferenceError: useState is not defined; Test Files 2 failed | 3 passed; Tests 6 failed | 14 passed (20)" loading="lazy"><figcaption>6 из 20 тестов падают</figcaption></figure>
+            <p>Падают 6 тестов из 20 с сообщением <code>ReferenceError: useState is not defined</code> — все, где страница «Сайты» показывает данные. Проходит только тест загрузки: в нём компонент выходит раньше, чем доходит до <code>useState</code>. Тесты из главы 4.1 поймали ошибку, которая сломала всю страницу целиком.</p></li>
+        </ol>
+
+        <p class="phase phase--do"><span>Делаем</span>Чтение изменений</p>
+
+        <p>Пятый шаг цикла — прочитать изменения целиком. Откройте Source Control (<kbd>Ctrl+Shift+G</kbd>) и щёлкните <code>SitesPage.tsx</code>: слева прежняя версия, справа новая.</p>
+
+        <figure class="shot" style="max-width: 1246px"><img src="img/13-diff.png" width="1240" height="780" alt="Сравнение SitesPage.tsx (Working Tree): слева прежняя версия, справа новая; справа добавлены строки 32–37 с useState и filteredSites; в строке сводки справа два пробела перед 0; sites.map заменён на filteredSites.map" loading="lazy"><figcaption>Изменения агента рядом с прежней версией</figcaption></figure>
+
+        <p>Команды нашли две ошибки, чтение находит ещё две. Поле поиска стоит под карточками, а задание требовало «над карточками»: расположение элементов тесты и линтер не проверяют. И в строке сводки, которую задача не трогала, между <code>&gt;</code> и <code>0</code> появился второй пробел. Сам по себе лишний пробел безвреден, но правка вне задачи — признак, что агент переписывал строки, не понимая, какие менять.</p>
+
+        <figure class="scheme">
+          <p class="scheme__head">Какая проверка какую ошибку шага 1 нашла</p>
+          <div class="scheme__body">
+            <svg class="sch" viewBox="0 0 760 210" role="img" aria-label="Четыре ошибки шага 1 и проверки. Нет import useState — нашли tsc и тесты. useState после return — нашёл линтер. Поле под карточками — нашло только чтение. Лишний пробел в сводке — нашло только чтение">
+              <text x="20" y="34">Ошибка</text><text x="380" y="34">tsc</text><text x="460" y="34">линтер</text><text x="560" y="34">тесты</text><text x="650" y="34">чтение</text>
+              <path d="M20 46 H 740"/>
+              <text class="mono" x="20" y="76">нет import useState</text><text class="ok-text" x="388" y="76">✓</text><text class="ok-text" x="572" y="76">✓</text><text class="ok-text" x="666" y="76">✓</text>
+              <text class="mono" x="20" y="112">useState после return</text><text class="ok-text" x="478" y="112">✓</text><text class="ok-text" x="666" y="112">✓</text>
+              <text class="mono" x="20" y="148">поле под карточками</text><text class="ok-text" x="666" y="148">✓</text>
+              <text class="mono" x="20" y="184">пробел в чужой строке</text><text class="ok-text" x="666" y="184">✓</text>
+            </svg>
+          </div>
+          <p class="scheme__note">✓ — проверка эту ошибку нашла. Пустая клетка — не нашла.</p>
+        </figure>
+
+        <p>В таблице четыре ошибки и четыре проверки. Каждая команда находит не больше двух ошибок, и ни одна не находит все. Только чтение находит все четыре, но читать проще, когда грубые ошибки уже указаны командами. Поэтому в цикле сначала идут автоматические проверки, потом чтение.</p>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Шаги 2 и 3</p>
+
+        <p>Шаг 2 — флажок «Только неработающие». В записанном запуске агент прочитал файл, написал план и код, но код остался в чате: инструмент правки он не вызвал, файл не изменился. Шаг 3 — три теста для поиска и флажка. Агент добавил их в <code>SitesPage.test.tsx</code>, и в них нашлись ещё три ошибки.</p>
+
+        <!--CODE tools/code43/SitesPage-agent.test.tsx | SitesPage.test.tsx · тест агента | lines=73-80 mark=75-76--><figure class="code"><figcaption><span>SitesPage.test.tsx · тест агента</span></figcaption><pre>  <span class="f">it</span>(<span class="s">'поиск react оставляет одну карточку'</span>, () =<span class="t">&gt;</span> {
+    <span class="f">show</span>({})
+<span class="hl">    <span class="k">const</span> searchInput = screen.<span class="f">getByLabelText</span>(<span class="s">'Поиск по сайту'</span>)</span>
+<span class="hl">    userEvent.<span class="k">type</span>(searchInput, <span class="s">'react'</span>)</span>
+    <span class="f">expect</span>(screen.<span class="f">getByText</span>(<span class="s">'Справочник по React'</span>)).<span class="f">toBeInTheDocument</span>()
+    <span class="f">expect</span>(screen.<span class="f">queryByText</span>(<span class="s">'Справочник по Git'</span>)).not.<span class="f">toBeInTheDocument</span>()
+    <span class="f">expect</span>(screen.<span class="f">queryByText</span>(<span class="s">'Задачник по SQL'</span>)).not.<span class="f">toBeInTheDocument</span>()
+  })</pre></figure><!--/CODE-->
+
+        <ul>
+          <li>Нет <code>import userEvent</code>: <code>npx tsc -b</code> пишет <code>Cannot find name 'userEvent'</code>.</li>
+          <li>Подпись поля в тесте — «Поиск по сайту», а в компоненте, который агент написал на шаге 1, — «Поиск по названию».</li>
+          <li><code>userEvent.type</code> вызван без <code>userEvent.setup()</code> и без <code>await</code>. В главе 4.1 щелчок записан как <code>await user.click(…)</code>: ввод и щелчок занимают время, и <code>await</code> ждёт их окончания. Без него проверка выполняется раньше, чем введён текст.</li>
+        </ul>
+
+        <p>Последняя ошибка самая коварная. Чтобы проверить её отдельно, в тесты агента добавили импорт и исправили подпись, а компонент взяли заведомо правильный. Все три теста всё равно упали: без <code>await</code> они смотрят на страницу до ввода, где видны все три сайта.</p>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Один и тот же шаг — разные результаты</p>
+
+        <p>Каждый шаг отправлялся агенту четыре раза, каждый раз в новом разговоре. Модель выбирает слова с долей случайности, поэтому одно и то же задание даёт разные результаты.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Шаг</th><th>Что получилось в четырёх запусках</th></tr></thead>
+            <tbody>
+              <tr><td>1. Поиск</td><td>Три раза — одна и та же правка с ошибками, разобранными выше. Один раз агент попытался создать отдельный файл <code>SitesPageWithSearch.tsx</code>, не создал его и написал, что запись в папку проекта запрещена «ограничениями безопасности». Такого запрета нет: в других запусках он менял файлы в той же папке.</td></tr>
+              <tr><td>2. Флажок</td><td>Один раз флажок и строка «Сайтов не найдено» появились в файле, с отчётом «I've successfully implemented…», но без импорта <code>useState</code>. Три раза файл не изменился: код в чате, поиск несуществующих файлов вроде <code>MonitoringContext.tsx</code>, чтение без правок.</td></tr>
+              <tr><td>3. Тесты</td><td>Два раза — три теста с ошибками, разобранными выше. Один раз агент вместо тестов изменил <code>SitesPage.tsx</code>, увидел ошибку линтера и выдал в чат новый компонент с импортами из несуществующих путей. Один раз — ни одной правки.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Из таблицы следуют два вывода. Один удачный запуск не доказывает, что агент справляется: в следующий раз он может сделать иначе. И проверка нужна после каждого запуска.</p>
+
+        <p class="bridge">В записанном запуске после трёх шагов из 23 тестов падают 9. Пора решать, что делать с работой агента.</p>
+
+        <h2 id="s7"><span class="sec">§7</span>Возврат с замечаниями и решение</h2>
+
+        <p class="phase phase--do"><span>Делаем</span>Возвращаем работу</p>
+
+        <p>Шестой шаг цикла даёт три варианта: принять, вернуть с замечаниями или переписать самому. Принять нельзя. Сначала вернём: замечания написаны так, чтобы каждое можно было выполнить и проверить.</p>
+
+        <figure class="code"><figcaption><span>Возврат с замечаниями</span></figcaption><pre>Работа не принята. Исправь ошибки в src/pages/SitesPage.tsx и src/pages/SitesPage.test.tsx:
+
+1. npx tsc -b: «Cannot find name 'useState'» — добавь import { useState } from 'react'.
+2. npm run lint: «React Hook "useState" is called conditionally» — перенеси useState в начало компонента, до if (loading).
+3. Поле поиска стоит под карточками — перенеси label и input над &lt;div className="sites"&gt;.
+4. Строку со сводкой (className={last !== undefined &amp;&amp; down &gt; 0 …}) не меняй: верни один пробел перед 0.
+5. В тестах «Cannot find name 'userEvent'» — добавь import userEvent from '@testing-library/user-event'.
+
+После правок запусти npx tsc -b, npm run lint -- --deny-warnings и CI=true npm test и покажи вывод.</pre></figure>
+
+        <figure class="shot" style="max-width: 1246px"><img src="img/14-vozvrat.png" width="1240" height="780" alt="Панель Continue: вывод команды npm run со списком скриптов, Command completed; ответ агента: The test script is actually named test, not test:unit; ниже Terminal: npm run test и строка Run Terminal Command с кнопками Reject и Accept" loading="lazy"><figcaption>После замечаний агент изучает скрипты и просит запустить тесты</figcaption></figure>
+
+        <p>За шесть минут агент прочитал файлы и выполнил три команды. Одна из них — <code>npm run test:unit</code>, которой в проекте нет. После неё агент нашёл в <code>package.json</code> правильное имя скрипта и попросил разрешения запустить <code>npm run test</code>. Это видно на кадре: внизу панели строка <b>Run Terminal Command</b>. Ни одного файла он не изменил, все пять ошибок на месте.</p>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Решение</p>
+
+        <p>Можно разрешить команду и ждать дальше. Но за шесть минут агент не исправил ни одной из пяти ошибок, хотя для каждой в замечаниях указана готовая правка. Две из них — одна строка импорта. Ждать дальше дольше, чем исправить самому. В главе 0.5 решение «переписать самому» стоит в одном ряду с «принять». Правки агента отменяются командой <code>git checkout -- src</code>, и задача решается вручную. Кое-что из работы агента пригодилось: вычисление списка через <code>filter</code> в шаге 1 и три сценария тестов в шаге 3.</p>
+
+        <p class="phase phase--do"><span>Делаем</span>Пишем решение сами</p>
+
+        <ol class="steps">
+          <li><b>Отмените правки агента</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>git checkout -- src</pre></figure></li>
+          <li><b>Поиск и флажок</b><p>Хуки — в начале компонента. Список <code>shown</code> вычисляется при каждой отрисовке из сайтов, текста поиска и флажка; сводка по-прежнему считает <code>sites</code>.</p>
+            <!--CODE tools/code43/SitesPage.tsx | monitoring/src/pages/SitesPage.tsx | mark=1,9-10,36-39,47-57,59--><figure class="code"><figcaption><span>monitoring/src/pages/SitesPage.tsx</span></figcaption><pre><span class="hl"><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span></span>
+<span class="k">import</span> { Link } <span class="k">from</span> <span class="s">'react-router'</span>
+<span class="k">import</span> { useMonitoring } <span class="k">from</span> <span class="s">'../monitoring'</span>
+<span class="k">import</span> { sitesWord } <span class="k">from</span> <span class="s">'../plural'</span>
+<span class="k">import</span> { statusText } <span class="k">from</span> <span class="s">'../status'</span>
+
+<span class="k">function</span> <span class="f">SitesPage</span>() {
+  <span class="k">const</span> { sites, history, loading, error } = <span class="f">useMonitoring</span>()
+<span class="hl">  <span class="k">const</span> [query, setQuery] = <span class="f">useState</span>(<span class="s">''</span>)</span>
+<span class="hl">  <span class="k">const</span> [onlyDown, setOnlyDown] = <span class="f">useState</span>(<span class="k">false</span>)</span>
+
+  <span class="k">if</span> (loading) {
+    <span class="k">return</span> (
+      <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span> <span class="a">role</span>=<span class="s">"status"</span><span class="t">&gt;</span>
+        Загрузка результатов…
+      <span class="t">&lt;/p</span><span class="t">&gt;</span>
+    )
+  }
+  <span class="k">if</span> (error !== <span class="s">''</span>) {
+    <span class="k">return</span> (
+      <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"load-error"</span> <span class="a">role</span>=<span class="s">"alert"</span><span class="t">&gt;</span>
+        {error}
+      <span class="t">&lt;/p</span><span class="t">&gt;</span>
+    )
+  }
+
+  <span class="k">const</span> last = history[<span class="n">0</span>]
+  <span class="k">const</span> down = sites.<span class="f">filter</span>((site) =<span class="t">&gt;</span> !last?.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === site.id)?.ok).length
+  <span class="k">let</span> summary = <span class="s">`Все ${sites.length} ${sitesWord(sites.length)} открываются`</span>
+  <span class="k">if</span> (last === <span class="k">undefined</span>) {
+    summary = <span class="s">'Проверок ещё не было'</span>
+  } <span class="k">else</span> <span class="k">if</span> (down <span class="t">&gt;</span> <span class="n">0</span>) {
+    summary = <span class="s">`Не открываются: ${down} из ${sites.length}`</span>
+  }
+
+<span class="hl">  <span class="k">const</span> shown = sites.<span class="f">filter</span>((site) =<span class="t">&gt;</span> {</span>
+<span class="hl">    <span class="k">const</span> ok = last?.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === site.id)?.ok</span>
+<span class="hl">    <span class="k">return</span> site.name.<span class="f">toLowerCase</span>().<span class="f">includes</span>(query.<span class="f">trim</span>().<span class="f">toLowerCase</span>()) &amp;&amp; (!onlyDown || !ok)</span>
+<span class="hl">  })</span>
+
+  <span class="k">return</span> (
+    <span class="t">&lt;&gt;</span>
+      <span class="t">&lt;title</span><span class="t">&gt;</span>Сайты · Мониторинг сайтов группы<span class="t">&lt;/title</span><span class="t">&gt;</span>
+      <span class="t">&lt;p</span> <span class="a">className</span>={last !== <span class="k">undefined</span> &amp;&amp; down <span class="t">&gt;</span> <span class="n">0</span> ? <span class="s">'summary summary--bad'</span> : <span class="s">'summary'</span>}<span class="t">&gt;</span>
+        {summary}
+      <span class="t">&lt;/p</span><span class="t">&gt;</span>
+<span class="hl">      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"filters"</span><span class="t">&gt;</span></span>
+<span class="hl">        <span class="t">&lt;label</span><span class="t">&gt;</span></span>
+<span class="hl">          Поиск по названию</span>
+<span class="hl">          <span class="t">&lt;input</span> <span class="a">type</span>=<span class="s">"search"</span> <span class="a">value</span>={query} <span class="a">onChange</span>={(e) =<span class="t">&gt;</span> <span class="f">setQuery</span>(e.target.value)} <span class="t">/&gt;</span></span>
+<span class="hl">        <span class="t">&lt;/label</span><span class="t">&gt;</span></span>
+<span class="hl">        <span class="t">&lt;label</span><span class="t">&gt;</span></span>
+<span class="hl">          <span class="t">&lt;input</span> <span class="a">type</span>=<span class="s">"checkbox"</span> <span class="a">checked</span>={onlyDown} <span class="a">onChange</span>={(e) =<span class="t">&gt;</span> <span class="f">setOnlyDown</span>(e.target.checked)} <span class="t">/&gt;</span></span>
+<span class="hl">          Только неработающие</span>
+<span class="hl">        <span class="t">&lt;/label</span><span class="t">&gt;</span></span>
+<span class="hl">      <span class="t">&lt;/div</span><span class="t">&gt;</span></span>
+<span class="hl">      {shown.length === <span class="n">0</span> &amp;&amp; <span class="t">&lt;p</span> <span class="a">className</span>=<span class="s">"empty"</span><span class="t">&gt;</span>Сайтов не найдено<span class="t">&lt;/p</span><span class="t">&gt;</span>}</span>
+      <span class="t">&lt;div</span> <span class="a">className</span>=<span class="s">"sites"</span><span class="t">&gt;</span>
+<span class="hl">        {shown.<span class="f">map</span>((site) =<span class="t">&gt;</span> {</span>
+          <span class="k">const</span> check = last?.checks.<span class="f">find</span>((c) =<span class="t">&gt;</span> c.id === site.id)
+          <span class="k">return</span> (
+            <span class="t">&lt;Link</span> <span class="a">key</span>={site.id} <span class="a">to</span>={<span class="s">`/site/${site.id}`</span>} <span class="a">className</span>={check?.ok ? <span class="s">'site'</span> : <span class="s">'site site--bad'</span>}<span class="t">&gt;</span>
+              <span class="t">&lt;h2</span><span class="t">&gt;</span>{site.name}<span class="t">&lt;/h2</span><span class="t">&gt;</span>
+              <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"site__status"</span><span class="t">&gt;</span>{<span class="f">statusText</span>(check)}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+              <span class="t">&lt;span</span> <span class="a">className</span>=<span class="s">"site__url"</span><span class="t">&gt;</span>{site.url}<span class="t">&lt;/span</span><span class="t">&gt;</span>
+            <span class="t">&lt;/Link</span><span class="t">&gt;</span>
+          )
+        })}
+      <span class="t">&lt;/div</span><span class="t">&gt;</span>
+    <span class="t">&lt;/&gt;</span>
+  )
+}
+
+<span class="k">export</span> <span class="k">default</span> SitesPage</pre></figure><!--/CODE-->
+            <figure class="shot" style="max-width: 1246px"><img src="img/15-sitespage.png" width="1240" height="780" alt="VS Code: SitesPage.tsx, строка 36 const shown = sites.filter, ниже div className filters с подписью «Поиск по названию»" loading="lazy"><figcaption>Решение: список вычисляется при отрисовке</figcaption></figure></li>
+          <li><b>Оформление</b><p>Добавьте в конец <code>src/index.css</code> правила для блока фильтров.</p>
+            <!--CODE tools/code43/index.css | monitoring/src/index.css · последние строки | lines=28-29--><figure class="code"><figcaption><span>monitoring/src/index.css · последние строки</span></figcaption><pre>.filters { <span class="a">display</span>: flex; <span class="a">flex-wrap</span>: wrap; <span class="a">gap</span>: <span class="n">16px</span>; <span class="a">align-items</span>: center; <span class="a">margin</span>: <span class="n">12px</span> <span class="n">0</span>; }
+.filters input[type=<span class="s">"search"</span>] { <span class="a">margin-left</span>: <span class="n">8px</span>; <span class="a">padding</span>: <span class="n">6px</span> <span class="n">10px</span>; <span class="a">border</span>: <span class="n">1px</span> solid <span class="n">#c4cad8</span>; <span class="a">border-radius</span>: <span class="n">6px</span>; <span class="a">font</span>: inherit; }</pre></figure><!--/CODE--></li>
+          <li><b>Тесты</b><p>Добавьте в <code>SitesPage.test.tsx</code> импорт <code>userEvent</code> и три теста — сценарии агента, исправленные по правилам главы 4.1.</p>
+            <!--CODE tools/code43/SitesPage.test.tsx | monitoring/src/pages/SitesPage.test.tsx · новые тесты | lines=74-98--><figure class="code"><figcaption><span>monitoring/src/pages/SitesPage.test.tsx · новые тесты</span></figcaption><pre>  <span class="f">it</span>(<span class="s">'поиск react оставляет одну карточку'</span>, async () =<span class="t">&gt;</span> {
+    <span class="k">const</span> user = userEvent.<span class="f">setup</span>()
+    <span class="f">show</span>({})
+    await user.<span class="k">type</span>(screen.<span class="f">getByLabelText</span>(<span class="s">'Поиск по названию'</span>), <span class="s">'react'</span>)
+    <span class="f">expect</span>(screen.<span class="f">getByText</span>(<span class="s">'Справочник по React'</span>)).<span class="f">toBeInTheDocument</span>()
+    <span class="f">expect</span>(screen.<span class="f">queryByText</span>(<span class="s">'Справочник по Git'</span>)).not.<span class="f">toBeInTheDocument</span>()
+    <span class="f">expect</span>(screen.<span class="f">queryByText</span>(<span class="s">'Задачник по SQL'</span>)).not.<span class="f">toBeInTheDocument</span>()
+  })
+
+  <span class="f">it</span>(<span class="s">'флажок Только неработающие оставляет одну карточку'</span>, async () =<span class="t">&gt;</span> {
+    <span class="k">const</span> user = userEvent.<span class="f">setup</span>()
+    <span class="f">show</span>({})
+    await user.<span class="f">click</span>(screen.<span class="f">getByLabelText</span>(<span class="s">'Только неработающие'</span>))
+    <span class="f">expect</span>(screen.<span class="f">getByText</span>(<span class="s">'Справочник по React'</span>)).<span class="f">toBeInTheDocument</span>()
+    <span class="f">expect</span>(screen.<span class="f">queryByText</span>(<span class="s">'Справочник по Git'</span>)).not.<span class="f">toBeInTheDocument</span>()
+    <span class="f">expect</span>(screen.<span class="f">queryByText</span>(<span class="s">'Задачник по SQL'</span>)).not.<span class="f">toBeInTheDocument</span>()
+  })
+
+  <span class="f">it</span>(<span class="s">'поиск git с флажком показывает Сайтов не найдено'</span>, async () =<span class="t">&gt;</span> {
+    <span class="k">const</span> user = userEvent.<span class="f">setup</span>()
+    <span class="f">show</span>({})
+    await user.<span class="k">type</span>(screen.<span class="f">getByLabelText</span>(<span class="s">'Поиск по названию'</span>), <span class="s">'git'</span>)
+    await user.<span class="f">click</span>(screen.<span class="f">getByLabelText</span>(<span class="s">'Только неработающие'</span>))
+    <span class="f">expect</span>(screen.<span class="f">getByText</span>(<span class="s">'Сайтов не найдено'</span>)).<span class="f">toBeInTheDocument</span>()
+  })</pre></figure><!--/CODE--></li>
+          <li><b>Проверьте всё</b>
+            <figure class="code"><figcaption><span>Терминал · папка monitoring</span></figcaption><pre>npx tsc -b
+npm run lint -- --deny-warnings
+CI=true npm test</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/16-vse-zeleno.png" width="1240" height="521" alt="Терминал: npx tsc -b, npm run lint -- --deny-warnings, CI=true npm test; Found 0 warnings and 0 errors; Test Files 5 passed; Tests 23 passed (23)" loading="lazy"><figcaption>23 теста, линтер и типы — без ошибок</figcaption></figure>
+            <p>23 теста: 20 прежних и 3 новых. Проверку типов и линтер код проходит без сообщений.</p></li>
+          <li><b>Проверьте руками</b><p>Запустите <code>npm run dev</code>. Нажимайте <kbd>Tab</kbd>: после вкладок «Сайты» и «О проверке» фокус переходит на поле поиска, затем на флажок. Пробел отмечает флажок.</p>
+            <figure class="shot" style="max-width: 1106px"><img src="img/17-stranica.png" width="1100" height="468" alt="Браузер: страница «Сайты», под сводкой поле «Поиск по названию» и отмеченный флажок «Только неработающие» с рамкой фокуса; одна карточка — Старый проект, Не открывается · 404" loading="lazy"><figcaption>Флажок отмечен с клавиатуры: осталась одна карточка</figcaption></figure></li>
+        </ol>
+
+        <p class="bridge">Работа сделана. Последнее — записать, что произошло с работой агента.</p>
+
+        <h2 id="s8"><span class="sec">§8</span>Журнал работы с ИИ</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Зачем журнал</p>
+
+        <p>В главе 0.5 журнал работы с ИИ — обязательная часть сдачи в режимах Р1 и Р2. В нём записано, каким инструментом пользовались, какие задачи ставили, что приняли, что отклонили и почему. Отклонённое предложение с объяснением причины засчитывается как часть работы. По журналу видно, умеет ли студент замечать ошибки.</p>
+
+        <ol class="steps">
+          <li><b>Создайте ai-log.md</b><p>Создайте в корне проекта файл <code>ai-log.md</code>. Для этой главы запись выглядит так.</p>
+            <figure class="code"><figcaption><span>monitoring/ai-log.md</span></figcaption><pre># Журнал работы с ИИ
+
+## 16.11.2026 · поиск и флажок на странице «Сайты»
+
+Инструмент: Continue 2.0.0 в VS Code, режим Agent, модель qwen3:4b-instruct в Ollama на своём компьютере.
+Правила проекта для агента: AGENTS.md.
+
+### Попытка 1 — задача целиком (zadanie.md)
+Агент прочитал SitesPage.tsx и SitesPage.test.tsx и ответил «The implementation looks correct».
+Файлы не изменены: git status пустой. Отклонено: задача не выполнена.
+
+### Попытка 2 — задача по шагам (shag1.md, shag2.md, shag3.md)
+Шаг 1 (поиск). Агент изменил SitesPage.tsx, запустил lint и попросил запустить тесты. Отклонено:
+- нет import { useState } — npx tsc -b: TS2304, падают все тесты страницы;
+- useState вызван после return — oxlint: react-hooks(rules-of-hooks);
+- поле поиска стоит под карточками;
+- лишний пробел в строке сводки, которую задача не трогала.
+Шаг 2 (флажок). Код только в чате, файл не изменён. Отклонено.
+Шаг 3 (тесты). Отклонено: нет import userEvent; подпись «Поиск по сайту» не совпадает с полем;
+userEvent без setup() и без await — даже с правильной страницей все три теста падают.
+
+### Возврат с замечаниями
+Отправлен список ошибок с готовыми правками. За 6 минут агент прочитал файлы, выполнил три команды
+(в том числе несуществующий npm run test:unit) и не изменил ни одного файла. Отклонено.
+
+### Решение
+Правки агента отменены (git checkout -- src). Поиск, флажок и тесты написаны вручную;
+из ответа агента взяты: вычисление списка через filter и три сценария тестов.
+Проверено: npx tsc -b, npm run lint -- --deny-warnings, npm test — 23 теста; страница проверена с клавиатуры.</pre></figure>
+            <figure class="shot" style="max-width: 1246px"><img src="img/18-ai-log.png" width="1240" height="780" alt="VS Code: ai-log.md — Журнал работы с ИИ: попытки 1 и 2, возврат с замечаниями, решение" loading="lazy"><figcaption>Журнал: что отклонено и почему</figcaption></figure></li>
+          <li><b>Закоммитьте</b><p>Сделайте коммит с изменениями страницы, тестами, <code>AGENTS.md</code> и <code>ai-log.md</code>, затем <code>git push</code>. Шаги линтера и тестов в <code>deploy.yml</code> проверят код перед публикацией.</p></li>
+        </ol>
+
+        <p>В журнале каждая отклонённая правка записана вместе с проверкой, которая её поймала. Через месяц по такой записи видно, какие ошибки агент делает чаще всего, и их можно добавить в <code>AGENTS.md</code> или в задание.</p>
+
+        <h2 id="s9"><span class="sec">§9</span>Другие варианты и их недостатки</h2>
+
+        <p class="phase phase--read"><span>Разбираемся</span>Что можно поменять в связке «агент — модель»</p>
+
+        <p>В этой главе выбраны бесплатные инструменты, которые работают на компьютере студента без регистрации и без отправки кода на чужие серверы. Цена этого выбора — слабая модель. В таблице — что ещё можно поменять и чем за это придётся платить. В последнем столбце отмечено, проверялся ли вариант при подготовке главы.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Вариант</th><th>Что даёт</th><th>Недостатки</th><th>Проверено</th></tr></thead>
+            <tbody>
+              <tr><td>Модель крупнее на своём компьютере, например <code>qwen2.5-coder:7b</code> (около 4,7 ГБ)</td><td>Больше параметров, модель обучена на коде и умеет вызывать инструменты</td><td>Нужен компьютер от 16 ГБ памяти; параметров почти вдвое больше, и каждый шаг агента медленнее. Тоже ошибается, проверка всё равно нужна</td><td>нет</td></tr>
+              <tr><td>Задание ещё мельче: одна правка за раз («добавь импорт», «перенеси хук выше»)</td><td>Короткое задание маленькая модель выполняет чаще</td><td>Это уже диктовка: человек сам находит место и решение, агент только печатает. Времени уходит больше, чем на правку руками</td><td>частично: шаги §6 — такой вариант, правки появились, но с ошибками</td></tr>
+              <tr><td>Облачный агент: GitHub Copilot в VS Code, Cursor, Claude Code и другие</td><td>Модели намного крупнее 4B, работают на серверах компании</td><td>Платная подписка или лимиты бесплатного тарифа; код уходит на сервер компании; из России оплата и доступ могут быть затруднены. Ошибаются и они: отчёт «готово» по-прежнему проверяется</td><td>нет</td></tr>
+              <tr><td>Российские сервисы-помощники для кода, например GigaCode</td><td>Работают из России без VPN</td><td>Нужны регистрация и учётная запись; код уходит на сервер; режим агента и подключение к Continue — по документации сервиса</td><td>нет</td></tr>
+              <tr><td>Другие расширения VS Code для Ollama: Cline, Roo Code</td><td>Тот же принцип агента, другой интерфейс и набор инструментов</td><td>Требования к модели те же: вызов инструментов, длинный контекст</td><td>нет</td></tr>
+              <tr><td>Ollama в Docker, как в модуле 2</td><td>Ничего не ставится в систему</td><td>На Mac виртуальной машине Docker по умолчанию дано 4 ГБ: с контекстом 16 тысяч токенов контейнер завершился из-за нехватки памяти. Только процессор: 10 токенов в секунду против 33 у приложения</td><td>да, §2</td></tr>
+              <tr><td>Модель с рассуждениями <code>qwen3:4b</code> вместо <code>qwen3:4b-instruct</code></td><td>Перед ответом модель рассуждает, это помогает в сложных задачах</td><td>Рассуждения съели все 4096 токенов ответа; до вызова инструмента модель не дошла ни разу</td><td>да, §2</td></tr>
+              <tr><td>Подключение <code>provider: ollama</code> вместо <code>provider: openai</code> с адресом <code>/v1</code></td><td>Короче запись в <code>config.yaml</code></td><td>Continue 2.0 передаёт инструменты только в первом запросе: агент читает файл и дальше пишет код в чат</td><td>да, §3</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>У всех строк таблицы одно общее: ни один вариант не убирает шаги проверки и решения. Сильная модель ошибается реже, но её отчёт «готово» остаётся текстом модели. Поэтому навык из этой главы — задание с критериями, автоматические проверки, чтение изменений и журнал — пригодится с любым агентом.</p>
+
+        <h2 id="s10"><span class="sec">§10</span>Частые ошибки</h2>
+
+        <p>Сообщения и случаи получены при подготовке главы на проекте <code>monitoring</code>.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Что видно</th><th>Почему</th><th>Что сделать</th></tr></thead>
+            <tbody>
+              <tr><td>Агент прочитал файл и пишет код в чат, файл не меняется</td><td>В <code>config.yaml</code> указано <code>provider: ollama</code>: Continue 2.0 передаёт инструменты только в первом запросе</td><td><code>provider: openai</code>, <code>apiBase: http://localhost:11434/v1</code>, <code>apiKey: ollama</code></td></tr>
+              <tr><td>Агент долго «думает» и обрывается, ничего не сделав</td><td>Модель с режимом рассуждений, например <code>qwen3:4b</code>, расходует весь ответ на рассуждения</td><td>Взять <code>qwen3:4b-instruct</code></td></tr>
+              <tr><td><code>an error was encountered while running the model: unexpected EOF</code></td><td>Процессу Ollama не хватило памяти; так было в Docker с лимитом 4 ГБ</td><td>Приложение Ollama вместо Docker, меньше <code>contextLength</code>, закрыть лишние программы</td></tr>
+              <tr><td>Агент сообщил «готово», а <code>git status</code> пустой</td><td>Отчёт агента — текст модели, проверкой он не является</td><td>Проверять по разделу «Готово, когда»</td></tr>
+              <tr><td>Правка видна в редакторе, но <code>git diff</code> пустой</td><td>Правка не принята: нет нажатия ✓</td><td>Прочитать и принять или отклонить правку в панели</td></tr>
+              <tr><td>Новые тесты агента падают даже на правильном коде</td><td><code>userEvent</code> без <code>setup()</code> и <code>await</code>: проверка раньше ввода</td><td><code>const user = userEvent.setup()</code>, <code>await user.type(…)</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="s11"><span class="sec">§11</span>Проверьте себя</h2>
+
+        <details>
+          <summary>Чем агент отличается от чата с моделью?</summary>
+          <p>Агент сам вызывает инструменты: читает и меняет файлы, запускает команды и получает их результат. В чате модель только пишет текст, а переносить код и запускать проверки приходится человеку.</p>
+        </details>
+        <details>
+          <summary>Агент написал «все требования выполнены ✅». Что сделать перед тем, как принять работу?</summary>
+          <p>Пройти раздел «Готово, когда»: посмотреть <code>git status</code> и изменения, выполнить сборку, линтер и тесты самому, проверить страницу руками. В этой главе такой отчёт пришёл, когда файлы не изменились вовсе.</p>
+        </details>
+        <details>
+          <summary>Зачем нужен файл AGENTS.md, если всё можно написать в задании?</summary>
+          <p>В нём правила всего проекта: версии, команды проверки, правила кода. Continue добавляет его к каждому запросу, и повторять эти правила в каждом задании не нужно.</p>
+        </details>
+        <details>
+          <summary>Какую ошибку шага 1 не нашла ни одна команда?</summary>
+          <p>Поле поиска под карточками вместо «над карточками» и лишний пробел в строке сводки. Обе нашлись только при чтении изменений.</p>
+        </details>
+        <details>
+          <summary>Почему тест без <code>await</code> перед <code>user.type</code> не проверяет поиск?</summary>
+          <p>Ввод текста занимает время. Без <code>await</code> проверка выполняется сразу, на странице ещё все сайты, и тест проверяет состояние до ввода.</p>
+        </details>
+        <details>
+          <summary>Агент не исправил ошибки после возврата. Это провал работы?</summary>
+          <p>Нет. Решение «переписать самому» входит в цикл. В журнал записывается, что агент сделал, что отклонено и почему; эта запись засчитывается как часть работы.</p>
+        </details>
+
+        <h3>Шпаргалка</h3>
+        <div class="cheat">
+          <div><b>Модель</b><code>ollama pull qwen3:4b-instruct</code>, <code>ollama list</code></div>
+          <div><b>Continue и Ollama</b><code>provider: openai</code>, <code>apiBase: http://localhost:11434/v1</code>, <code>capabilities: [tool_use]</code></div>
+          <div><b>Правила проекта</b><code>AGENTS.md</code> в корне проекта</div>
+          <div><b>Задание</b>что сделать · правила проекта · готово, когда</div>
+          <div><b>Большая задача</b>делить на шаги, по одному требованию</div>
+          <div><b>Автопроверка</b><code>npx tsc -b</code>, <code>npm run lint -- --deny-warnings</code>, <code>CI=true npm test</code></div>
+          <div><b>Чтение</b>Source Control → файл: прежняя и новая версии рядом</div>
+          <div><b>Отмена правок</b><code>git checkout -- src</code></div>
+          <div><b>Журнал</b><code>ai-log.md</code>: инструмент, задача, принято, отклонено и почему</div>
+        </div>
+
+        <h3>Итог главы</h3>
+        <ul>
+          <li>Агент — модель с инструментами: она читает и меняет файлы, запускает команды, а правки и команды выполняются после подтверждения человека. Continue в VS Code подключается к Ollama на своём компьютере через адрес <code>/v1</code>; модель — <code>qwen3:4b-instruct</code>.</li>
+          <li>Задание агенту содержит «что сделать», правила проекта и «готово, когда». Правила всего проекта записываются в <code>AGENTS.md</code>.</li>
+          <li>Задачу целиком маленькая модель не выполнила в трёх запусках из трёх и при этом отчиталась об успехе. По шагам она начала править код, но в каждом шаге оставила ошибки.</li>
+          <li>Ошибки шага 1 нашли разные проверки. <code>tsc</code> нашёл отсутствующий импорт, линтер — хук после <code>return</code>, тесты главы 4.1 — сломанную страницу. Чтение изменений нашло поле не на месте и правку вне задачи.</li>
+          <li>Возврат с замечаниями не помог, и решение было написано вручную. В журнал <code>ai-log.md</code> записаны все попытки, отклонённые правки и проверки, которые их поймали.</li>
+        </ul>
+
+        <h3>Источники</h3>
+        <ol class="biblio">
+          <li><a href="https://docs.continue.dev/" target="_blank" rel="noreferrer">Continue — документация</a></li>
+          <li><a href="https://docs.continue.dev/guides/ollama-guide" target="_blank" rel="noreferrer">Continue — Using Ollama with Continue</a></li>
+          <li><a href="https://agents.md/" target="_blank" rel="noreferrer">AGENTS.md — формат файла с правилами проекта для агентов</a></li>
+          <li><a href="https://ollama.com/library/qwen3" target="_blank" rel="noreferrer">Ollama — модель qwen3</a></li>
+          <li><a href="https://github.com/ollama/ollama/blob/main/docs/openai.md" target="_blank" rel="noreferrer">Ollama — совместимость с программным интерфейсом OpenAI</a></li>
+          <li><a href="https://react.dev/reference/rules/rules-of-hooks" target="_blank" rel="noreferrer">React — Rules of Hooks</a></li>
+          <li><a href="https://testing-library.com/docs/user-event/setup" target="_blank" rel="noreferrer">Testing Library — user-event: setup</a></li>
+        </ol>
+
+        <div class="pager">
+          <a href="../42-dostupnost/index.html">← 4.2 Доступность интерфейса</a>
+          <a href="../../index.html">К оглавлению →</a>
+        </div>
+
+        <div class="colophon">
+          <span>Справочник по Angular и React</span>
+          <span class="author-line">© Макаров Максим Николаевич</span>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../book.js"></script>
+</body>
+</html>

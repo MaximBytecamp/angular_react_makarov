@@ -194,3 +194,23 @@ upload-pages-artifact@v5, deploy-pages@v5.
   (советует <output>) выключено в .oxlintrc.json с объяснением. Шаг «Проверить код линтером» (`npm run lint -- --deny-warnings`)
   в deploy.yml перед тестами. Итог 20 тестов. Факты: WebAIM Million 2026 (95,9 %, контраст 83,9 %), ВОЗ 2,2 млрд (10.02.2026),
   ГОСТ Р 52872-2019 на основе WCAG 2.1, WCAG 1.4.3 — 4,5:1 и 3:1.
+- 4.3 `temy/43-zadacha-agentu` (прототип 16.11.2026, не закончен). Задание агенту — `tools/code43/zadanie.md` (поиск и флажок
+  «Только неработающие» на странице «Сайты»), эталон `SitesPage-etalon.tsx`, приёмка `priemka.test.tsx` (7 тестов, с эталоном 27/27).
+  Агент: Continue 2.0.0 (Continue.continue) в отдельном профиле VS Code `/private/tmp/vsc-agent` (порт 9363), настройки
+  `CONTINUE_GLOBAL_DIR=/private/tmp/vsc-agent/continue` (config.yaml: provider ollama, capabilities tool_use, contextLength 16384).
+  Модель: qwen3:4b из GGUF Hugging Face (Qwen/Qwen3-4B-GGUF Q4_K_M; реестр Ollama через VPN не качает — R2 резолвится в 240.0.0.x),
+  `ollama create`; Ollama 0.40.12 в Docker (контейнер ollama43, том proto2_ollama_data). CPU: чтение 82 ток/с, генерация 10 ток/с.
+  Docker VM 4 ГБ: с KV q8_0 и 16k контейнер OOMKilled; с q4_0 модель занимает 3,1 из 3,8 ГБ. Прогон 2: агент прочитал файл и выдал
+  код в чат (не инструментом правки), Apply → «Could not resolve filepath to apply changes»; код: useEffect+setSelectedSites (нарушение
+  правила), английские подписи, aria-label поверх label, `/sites/` вместо `/site/`, несуществующий site.status, сводка пропала.
+  Управление панелью Continue — сырой CDP к цели iframe (scratchpad wv.py), data-testid: mode-select-button, submit-input-button.
+  16.11.2026, продолжение. Ollama 0.40.16 нативно (`/private/tmp/ollama-mac`, OLLAMA_MODELS=./models, Metal: 33 ток/с). Официальные
+  модели качаются через `curl` по манифесту registry.ollama.ai (сама Ollama отказывается: R2 → 240.0.0.x) — скрипт `/private/tmp/gguf/fetch.py`.
+  qwen3:4b (с рассуждением) не годится: рассуждает до лимита 4096 и не вызывает инструмент; взят qwen3:4b-instruct (тот же 2,5 ГБ).
+  Ловушка Continue 2.0: провайдер `ollama` шлёт tools только если последнее сообщение от user (после результата инструмента — без
+  инструментов, модель пишет код в чат). Обход: `provider: openai`, `apiBase: http://localhost:11434/v1`, `apiKey: ollama`.
+  AGENTS.md в корне проекта Continue вставляет в системную подсказку («1 rule · Always applied»).
+  Прогоны: полное задание (r7–r9) — 0 правок, приёмка 0/7, отчёт «✅ implementation looks correct». По шагам (shag1–3.md):
+  шаг 1 — правка +16 строк, агент сам запустил lint и test, но: нет import useState (tsc TS2304, 13 тестов падают), useState после
+  return (oxlint rules-of-hooks error), поле под карточками, лишний пробел в чужой строке; шаг 2 — код в чат, без правки; шаг 3 — 3 теста
+  в SitesPage.test.tsx без import userEvent (TS2552). Итог 16 из 30 тестов падают. Итоги прогонов — scratchpad runs/{r7,r8,r9,s1,s2,s3}.
